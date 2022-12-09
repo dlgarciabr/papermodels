@@ -2,7 +2,7 @@
 #
 # To get started with Next.js see: https://nextjs.org/docs/getting-started
 #
-name: Deploy Next.js site to Pages
+name: Deploy Blitz.js site to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -74,8 +74,8 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Blitz.js
         run: ${{ steps.detect-package-manager.outputs.runner }} blitz build
-      - name: Start Blitz.js server
-        run: ${{ steps.detect-package-manager.outputs.runner }} blitz start
+      # - name: Start Blitz.js server
+      #   run: ${{ steps.detect-package-manager.outputs.runner }} blitz start
       - name: Static HTML export with Blitz.js
         run: ${{ steps.detect-package-manager.outputs.runner }} blitz export
       - name: Upload artifact
