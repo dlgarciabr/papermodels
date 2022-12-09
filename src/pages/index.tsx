@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import Image from "next/image"
+// import Image from "next/image"
 import Link from "next/link"
 import Layout from "src/core/layouts/Layout"
 import { useCurrentUser } from "src/users/hooks/useCurrentUser"
@@ -59,7 +59,8 @@ const Home: BlitzPage = () => {
       <div className="container">
         <main>
           <div className="logo">
-            <Image src={`${logo.src}`} alt="blitzjs" width="256px" height="118px" layout="fixed" />
+            {/* eslint-disable-next-line @next/next/no-img-element*/}
+            <img src={`${logo.src}`} alt="blitzjs" width="256px" height="118px" />
           </div>
           <p>
             <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
