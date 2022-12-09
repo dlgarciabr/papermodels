@@ -4,8 +4,6 @@ const { withBlitz } = require("@blitzjs/next")
 /**
  * @type {import('@blitzjs/next').BlitzConfig}
  **/
-const config = {
-  "images.unoptimized": true,
-}
+const config = {}
 
 module.exports = withBlitz(config)

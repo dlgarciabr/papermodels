@@ -74,6 +74,8 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Blitz.js
         run: ${{ steps.detect-package-manager.outputs.runner }} blitz build
+      - name: Start Blitz.js server
+        run: ${{ steps.detect-package-manager.outputs.runner }} blitz start
       - name: Static HTML export with Blitz.js
         run: ${{ steps.detect-package-manager.outputs.runner }} blitz export
       - name: Upload artifact
