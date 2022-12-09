@@ -2,16 +2,20 @@ import { Suspense } from "react"
 import { Routes } from "@blitzjs/next"
 import Head from "next/head"
 import Link from "next/link"
-import { usePaginatedQuery } from "@blitzjs/rpc"
+import { usePaginatedQuery, useQuery, useMutation } from "@blitzjs/rpc"
 import { useRouter } from "next/router"
+import {} from "@blitzjs/rpc"
 import Layout from "src/core/layouts/Layout"
 import getQuestions from "src/questions/queries/getQuestions"
+import updateChoice from "src/choices/mutations/updateChoice"
 
 const ITEMS_PER_PAGE = 100
 
 export const QuestionsList = () => {
   const router = useRouter()
   const page = Number(router.query.page) || 0
+  const [updateChoiceMutation] = useMutation(updateChoice)
+
   const [{ questions, hasMore }] = usePaginatedQuery(getQuestions, {
     orderBy: { id: "asc" },
     skip: ITEMS_PER_PAGE * page,

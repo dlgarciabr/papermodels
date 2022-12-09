@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { useQuery, useMutation } from "@blitzjs/rpc"
 import { useParam } from "@blitzjs/next"
+import updateChoice from "src/choices/mutations/updateChoice"
 
 import Layout from "src/core/layouts/Layout"
 import getQuestion from "src/questions/queries/getQuestion"
@@ -14,7 +15,17 @@ export const Question = () => {
   const router = useRouter()
   const questionId = useParam("questionId", "number")
   const [deleteQuestionMutation] = useMutation(deleteQuestion)
-  const [question] = useQuery(getQuestion, { id: questionId })
+  const [question, { refetch }] = useQuery(getQuestion, { id: questionId })
+  const [updateChoiceMutation] = useMutation(updateChoice)
+
+  const handleVote = async (id: number) => {
+    try {
+      await updateChoiceMutation({ id })
+      void refetch()
+    } catch (error) {
+      alert("Error updating choice " + JSON.stringify(error, null, 2))
+    }
+  }
 
   return (
     <>
@@ -29,6 +40,15 @@ export const Question = () => {
         <Link href={Routes.EditQuestionPage({ questionId: question.id })}>
           <a>Edit</a>
         </Link>
+
+        <ul>
+          {question.choices.map((choice) => (
+            <li key={choice.id}>
+              {choice.text} - {choice.votes} votes
+              <button onClick={() => handleVote(choice.id)}>Vote</button>
+            </li>
+          ))}
+        </ul>
 
         <button
           type="button"
