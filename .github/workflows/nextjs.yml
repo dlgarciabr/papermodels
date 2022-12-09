@@ -74,12 +74,12 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Blitz.js
         run: ${{ steps.detect-package-manager.outputs.runner }} blitz build
-      # - name: Static HTML export with Next.js
-      #   run: ${{ steps.detect-package-manager.outputs.runner }} next export
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v1
-      #   with:
-      #     path: ./out
+      - name: Static HTML export with Blitz.js
+        run: ${{ steps.detect-package-manager.outputs.runner }} blitz export
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./out
 
   # Deployment job
   # deploy:
