@@ -1,5 +1,5 @@
 // import { useCurrentUser } from "src/users/hooks/useCurrentUser"
-// import { render } from "test/utils"
+import { render } from "test/utils"
 
 // import Home from "../src/pages/index"
 
