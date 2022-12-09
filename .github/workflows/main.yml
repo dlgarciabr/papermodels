@@ -6,9 +6,9 @@ name: Build and test
 on:
   # Triggers the workflow on push or pull request events for the master and develop branches
   push:
-    branches: [develop, main]
+    branches: [develop]
   pull_request:
-    branches: [develop, main]
+    branches: [develop]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
