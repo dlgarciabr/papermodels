@@ -1,1 +1,3 @@
-module.exports = require("@blitzjs/next/eslint")
+module.exports = {
+  ...require("@blitzjs/next/eslint"),
+}
