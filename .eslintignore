@@ -1,4 +1,1 @@
-{
-    "ignorePatterns": ["/root/functions/*.*"],
-    "rules": {}
-}
+functions
