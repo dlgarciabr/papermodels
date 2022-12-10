@@ -1,4 +1,4 @@
 {
-    "ignorePatterns": ["<tsconfigRootDir>/functions/"],
+    "ignorePatterns": ["/root/functions/*.*"],
     "rules": {}
 }
