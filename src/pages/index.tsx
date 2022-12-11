@@ -59,8 +59,6 @@ const Home: BlitzPage = () => {
       <div className="container">
         <main>
           <div className="logo">
-            {/* eslint-disable-next-line @next/next/no-img-element*/}
-            {/* <img src={`${logo.src}`} alt="blitzjs" width="256px" height="118px" /> */}
             <Image src={`${logo.src}`} alt="blitzjs" width="256px" height="118px" layout="fixed" />
           </div>
           <p>
