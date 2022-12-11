@@ -94,7 +94,7 @@ const Home: BlitzPage = () => {
             <p>
               and go to{" "}
               <Link href="/questions">
-                <a>/projects</a>
+                <a>/questions</a>
               </Link>
             </p>
           </div>
