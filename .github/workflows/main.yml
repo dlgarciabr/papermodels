@@ -49,4 +49,4 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_TEST_URL }}
           AAAAAAA: ${{ secrets.ANOTHER_SECRET }}
         run: "$DATABASE_URL"
-        # run: "echo $DATABASE_URL & npm test"
+        # run: "echo aaa"
