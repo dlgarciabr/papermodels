@@ -7,9 +7,10 @@ const globalSetup = async () => {
 =======================       The tests were started       =======================
 ==================================================================================
 `);
+  console.info("DB connection is beeing initialized...");
   void db.$connect();
-  await new Promise((res) => setTimeout(() => res(""), 5000));
-  console.info("DB connection started...");
+  await new Promise((res) => setTimeout(() => res(""), 10000));
+  console.info("DB connection initialized!");
 };
 
 export default globalSetup;
