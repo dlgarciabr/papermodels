@@ -8,6 +8,7 @@ const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
   globalSetup: "<rootDir>/src/jestGlobalSetup.ts",
   setupFiles: ["<rootDir>/src/setupTests.js"],
+  collectCoverage: true,
   coverageThreshold: {
     global: {
       branches: 80,
