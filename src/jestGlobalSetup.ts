@@ -8,8 +8,8 @@ const globalSetup = async () => {
 ==================================================================================
 `);
   console.info("DB connection is beeing initialized...");
-  void db.$connect();
-  await new Promise((res) => setTimeout(() => res(""), 10000));
+  await db.$connect();
+  // await new Promise((res) => setTimeout(() => res(""), 10000));
   console.info("DB connection initialized!");
 };
 
