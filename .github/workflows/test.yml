@@ -32,10 +32,11 @@ jobs:
           files_separator: ","
           separator: " "
           
-#       - name: List all changed files
-#         run: |
-#           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-#             echo "$file was changed"
-#           done
+      - name: List all changed files
+        run: |
+          echo "files=" >> $GITHUB_ENV
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$files= \"$file\"," >> $GITHUB_ENV
+          done
       - name: Run tests
-        run: jest --collectCoverageFrom='[${{ steps.changed-files.outputs.all_changed_files }}]'
+        run: jest --collectCoverageFrom='[${{ env.files }}]'
