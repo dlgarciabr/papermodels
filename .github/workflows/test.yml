@@ -39,4 +39,4 @@ jobs:
             FILES=$FILES $FILE
           done
       - name: Run tests
-        run: jest --collectCoverageFrom='[${{ env.files }}]'
+        run: jest --collectCoverageFrom='[${{ env.FILES }}]'
