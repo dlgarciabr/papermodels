@@ -82,3 +82,11 @@ model Choice {
   question   Question @relation(fields: [questionId], references: [id])
   questionId Int
 }
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String
+  description String
+}
