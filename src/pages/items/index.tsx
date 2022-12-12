@@ -32,7 +32,6 @@ export const ItemsList = () => {
           </li>
         ))}
       </ul>
-
       <button disabled={page === 0} onClick={goToPreviousPage}>
         Previous
       </button>

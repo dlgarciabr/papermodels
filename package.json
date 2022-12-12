@@ -8,6 +8,7 @@
     "studio": "blitz prisma studio",
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test": "jest",
+    "test:coverage-ci": "jest --onlyChanged",
     "test:watch": "jest --watch",
     "test:coverage": "jest --watchAll --collect-coverage",
     "prepare": "husky install"

@@ -50,12 +50,12 @@ jobs:
       #   steps:
       # - uses: actions/checkout@v3
       # - uses: ArtiomTr/jest-coverage-report-action@v2
-      - name: Generate coverage report
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        id: coverage
-        with:
-          coverage-file: coverage/report.json
-          # output: report-markdown
-      - uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          message: ${{ steps.coverage.outputs.report }}
+      # - name: Generate coverage report
+      #   uses: ArtiomTr/jest-coverage-report-action@v2
+      #   id: coverage
+      #   with:
+      #     coverage-file: coverage/report.json
+      #     # output: report-markdown
+      # - uses: marocchino/sticky-pull-request-comment@v2
+      #   with:
+      #     message: ${{ steps.coverage.outputs.report }}
