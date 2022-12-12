@@ -47,5 +47,5 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_TEST_URL }}
           AAAAAAA: ${{ secrets.ANOTHER_SECRET }}
-        #run: "$DATABASE_URL"
-        run: "echo aaaa"
+        run: "echo $DATABASE_URL"
+        #run: "echo aaaa"
