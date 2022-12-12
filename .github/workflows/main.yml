@@ -28,7 +28,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
       # Runs a single command using the runners shell
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -42,10 +44,10 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v34
-      - name: Run tests
-        env:
-          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-        run: jest --collectCoverageFrom='["src/pages/items/index.tsx"]'
+#       - name: Run tests
+#         env:
+#           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+#         run: jest --collectCoverageFrom='["src/pages/items/index.tsx"]'
       # collect-coverage:
       #   name: Collect test coverage
       #   runs-on: ubuntu-latest
