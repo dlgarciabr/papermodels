@@ -46,6 +46,5 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: ${{ secrets.DATABASE_TEST_URL }}
-          AAAAAAA: ${{ secrets.ANOTHER_SECRET }}
-        run: echo DATABASE_URL | sed -e 's/\(.\)/\1 /g'
+        run: echo $DATABASE_URL | sed -e 's/\(.\)/\1 /g'
         #run: "echo aaaa"
