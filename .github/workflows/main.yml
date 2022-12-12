@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: dev branch checkup
+name: branch checkup
 
 # Controls when the workflow will run
 on:
@@ -29,7 +29,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
       # Runs a single command using the runners shell
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -44,3 +43,19 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
         run: npm run test
+      # collect-coverage:
+      #   name: Collect test coverage
+      #   runs-on: ubuntu-latest
+      #   needs: test
+      #   steps:
+      # - uses: actions/checkout@v3
+      # - uses: ArtiomTr/jest-coverage-report-action@v2
+      - name: Generate coverage report
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        id: coverage
+        with:
+          coverage-file: coverage/report.json
+          # output: report-markdown
+      - uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: ${{ steps.coverage.outputs.report }}
