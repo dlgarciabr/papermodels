@@ -29,44 +29,19 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+        # with:
+        #   fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
       # Runs a single command using the runners shell
-#       - name: Use Node.js ${{ matrix.node-version }}
-#         uses: actions/setup-node@v2
-#         with:
-#           node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
-#       - name: Install dependencies
-#         run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
       #      - run: npm run build --if-present
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v34
-      - name: List all changed files
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
-
-#       - name: Run tests
-#         env:
-#           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-#         run: jest --collectCoverageFrom='["src/pages/items/index.tsx"]'
-      # collect-coverage:
-      #   name: Collect test coverage
-      #   runs-on: ubuntu-latest
-      #   needs: test
-      #   steps:
-      # - uses: actions/checkout@v3
-      # - uses: ArtiomTr/jest-coverage-report-action@v2
-      # - name: Generate coverage report
-      #   uses: ArtiomTr/jest-coverage-report-action@v2
-      #   id: coverage
-      #   with:
-      #     coverage-file: coverage/report.json
-      #     # output: report-markdown
-      # - uses: marocchino/sticky-pull-request-comment@v2
-      #   with:
-      #     message: ${{ steps.coverage.outputs.report }}
+      - name: Run tests
+        env:
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: npm run test:coverage-ci
