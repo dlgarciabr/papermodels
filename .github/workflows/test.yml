@@ -34,7 +34,7 @@ jobs:
           
       - name: List all changed files
         run: |
-          $files=\"\","
+          $files=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             $files=$files $file
           done
