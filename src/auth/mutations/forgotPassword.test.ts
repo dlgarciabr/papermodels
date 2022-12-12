@@ -55,5 +55,5 @@ describe("forgotPassword mutation", () => {
     expect(token.hashedToken).toBe(hash256(generatedToken));
     expect(token.expiresAt > new Date()).toBe(true);
     expect(previewEmail).toBeCalled();
-  });
+  }, 10000);
 });

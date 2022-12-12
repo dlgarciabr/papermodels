@@ -78,5 +78,5 @@ describe("resetPassword mutation", () => {
     expect(await SecurePassword.verify(updatedUser!.hashedPassword, newPassword)).toBe(
       SecurePassword.VALID
     );
-  });
+  }, 10000);
 });
