@@ -1,14 +1,10 @@
 import resetPassword from "./resetPassword";
 import db from "db";
 import { SecurePassword, hash256 } from "@blitzjs/auth";
-try {
-  beforeEach(async () => {
-    await db.$reset();
-  }, 10000);
-} catch (error) {
-  console.log("An error ocurred!");
-  console.error(error);
-}
+
+beforeEach(async () => {
+  await db.$reset();
+});
 
 const mockCtx: any = {
   session: {

@@ -11,7 +11,11 @@ beforeEach(async () => {
   //   console.log(db_url.charAt(i))
   // }
   // console.log("db", db)
-  await db.$reset();
+  try {
+    await db.$reset();
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 const generatedToken = "plain-token";
