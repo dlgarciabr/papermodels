@@ -1,7 +1,7 @@
 import "tsconfig-paths/register";
 import db from "db";
 
-const globalSetup = async (globalConfig, projectConfig) => {
+const globalSetup = async () => {
   console.debug(`
 ==================================================================================
 =======================       The tests were started       =======================
