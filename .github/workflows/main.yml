@@ -39,10 +39,13 @@ jobs:
         run: npm ci
 
       #      - run: npm run build --if-present
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v34
       - name: Run tests
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-        run: npm run test:coverage-ci
+        run: jest --collectCoverageFrom='["src/pages/items/index.tsx"]'
       # collect-coverage:
       #   name: Collect test coverage
       #   runs-on: ubuntu-latest
