@@ -5,6 +5,7 @@ import previewEmail from "preview-email"
 import { Ctx } from "@blitzjs/next"
 
 beforeEach(async () => {
+  console.log("##############DB###################", process.env.DATABASE_URL)
   await db.$reset()
 })
 
