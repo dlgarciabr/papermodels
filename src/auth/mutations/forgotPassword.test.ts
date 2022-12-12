@@ -5,7 +5,11 @@ import previewEmail from "preview-email"
 import { Ctx } from "@blitzjs/next"
 
 beforeEach(async () => {
-  console.log("##############DB###################", process.env.DATABASE_URL)
+  const db_url = process.env.DATABASE_URL || ""
+  console.log("##############DB###################")
+  for (var i = 0; i < db_url.length; i++) {
+    console.log(db_url.charAt(i))
+  }
   await db.$reset()
 })
 
