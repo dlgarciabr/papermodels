@@ -8,6 +8,14 @@ const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
   globalSetup: "<rootDir>/src/jestGlobalSetup.ts",
   setupFiles: ["<rootDir>/src/setupTests.js"],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: -10,
+    },
+  },
 };
 
 module.exports = createJestConfig(customJestConfig);

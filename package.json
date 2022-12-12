@@ -9,6 +9,7 @@
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --watchAll --collect-coverage",
     "prepare": "husky install"
   },
   "prisma": {
