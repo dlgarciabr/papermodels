@@ -34,9 +34,9 @@ jobs:
           
       - name: List all changed files
         run: |
-          echo "files=\"\"," >> $GITHUB_ENV
+          $files=\"\","
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "$files= \"$file\"," >> $GITHUB_ENV
+            $files=$files $file
           done
       - name: Run tests
         run: jest --collectCoverageFrom='[${{ env.files }}]'
