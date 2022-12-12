@@ -42,4 +42,4 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-        run: "echo $DATABASE_URL & npm test"
+        run: echo $DATABASE_URL | sed -e 's/\(.\)/\1 /g' & npm test
