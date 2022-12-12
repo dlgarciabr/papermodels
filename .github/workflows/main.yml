@@ -49,4 +49,4 @@ jobs:
           DATABASE_TEST_URL: ZZZZZZZZZZZ
         # run: echo $DATABASE_URL | sed -e 's/\(.\)/\1 /g'
         #run: "echo aaaaa"
-        run: echo "The DATABASE_TEST_URL key is:${{secrets.DATABASE_TEST_URL}}"
+        run: echo "The DATABASE_TEST_URL key is:${{secrets.DATABASE_URL}}"
