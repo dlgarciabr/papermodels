@@ -8,7 +8,7 @@ const globalSetup = async (globalConfig, projectConfig) => {
 ==================================================================================
 `);
   try {
-    void db.$connect();
+    await db.$connect();
     console.info("DB connection started...");
   } catch (error) {
     console.error(error);
