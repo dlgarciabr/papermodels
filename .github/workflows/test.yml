@@ -38,5 +38,6 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             FILES=$FILES $FILE
           done
+          echo $FILES >>
       - name: Run tests
         run: jest --collectCoverageFrom='[${{ env.FILES }}]'
