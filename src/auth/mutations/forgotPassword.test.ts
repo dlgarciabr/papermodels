@@ -10,7 +10,7 @@ beforeEach(async () => {
   // for (var i = 0; i < db_url.length; i++) {
   //   console.log(db_url.charAt(i))
   // }
-  console.log("db", db)
+  // console.log("db", db)
   await db.$reset()
 })
 
