@@ -7,12 +7,9 @@ const globalSetup = async () => {
 =======================       The tests were started       =======================
 ==================================================================================
 `);
-  try {
-    await db.$connect();
-    console.info("DB connection started...");
-  } catch (error) {
-    console.error(error);
-  }
+  void db.$connect();
+  await new Promise((res) => setTimeout(() => res(""), 5000));
+  console.info("DB connection started...");
 };
 
 export default globalSetup;
