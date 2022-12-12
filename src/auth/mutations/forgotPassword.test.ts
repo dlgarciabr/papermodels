@@ -5,17 +5,7 @@ import previewEmail from "preview-email";
 import { Ctx } from "@blitzjs/next";
 
 beforeEach(async () => {
-  // const db_url = process.env.DATABASE_URL || ""
-  // console.log("##############DB###################")
-  // for (var i = 0; i < db_url.length; i++) {
-  //   console.log(db_url.charAt(i))
-  // }
-  // console.log("db", db)
-  try {
-    await db.$reset();
-  } catch (error) {
-    console.log(error);
-  }
+  await db.$reset();
 });
 
 const generatedToken = "plain-token";
