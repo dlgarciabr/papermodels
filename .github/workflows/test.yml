@@ -34,9 +34,9 @@ jobs:
           
       - name: List all changed files
         run: |
-          $files=""
+          FILES=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            $files=$files $file
+            FILES=$FILES $FILE
           done
       - name: Run tests
         run: jest --collectCoverageFrom='[${{ env.files }}]'
