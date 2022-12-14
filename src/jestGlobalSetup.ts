@@ -7,9 +7,9 @@ const globalSetup = async () => {
 =======================       The tests were started       =======================
 ==================================================================================
 `);
-  console.info("DB connection is beeing initialized...");
-  await db.$connect();
-  console.info("DB connection initialized!");
+  // console.info("DB connection is beeing initialized...");
+  // await db.$connect();
+  // console.info("DB connection initialized!");
 };
 
 export default globalSetup;

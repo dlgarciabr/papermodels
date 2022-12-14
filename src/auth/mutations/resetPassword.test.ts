@@ -1,3 +1,4 @@
+import { vi, describe, it, beforeEach, expect } from "vitest";
 import resetPassword from "./resetPassword";
 import db from "db";
 import { SecurePassword, hash256 } from "@blitzjs/auth";
@@ -8,7 +9,7 @@ beforeEach(async () => {
 
 const mockCtx: any = {
   session: {
-    $create: jest.fn,
+    $create: vi.fn(),
   },
 };
 
@@ -78,5 +79,5 @@ describe("resetPassword mutation", () => {
     expect(await SecurePassword.verify(updatedUser!.hashedPassword, newPassword)).toBe(
       SecurePassword.VALID
     );
-  }, 10000);
+  });
 });

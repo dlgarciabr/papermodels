@@ -26,7 +26,8 @@ export const CategoriesList = () => {
       <ul>
         {categories.map((category) => (
           <li key={category.id}>
-            <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
+            {/* <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}> */}
+            <Link href="">
               <a>{category.name}</a>
             </Link>
           </li>
@@ -52,7 +53,8 @@ const CategoriesPage = () => {
 
       <div>
         <p>
-          <Link href={Routes.NewCategoryPage()}>
+          {/* <Link href={Routes.NewCategoryPage()}> */}
+          <Link href="">
             <a>Create Category</a>
           </Link>
         </p>

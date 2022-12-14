@@ -1,11 +1,12 @@
-import Head from "next/head"
-import React, { FC } from "react"
-import { BlitzLayout } from "@blitzjs/next"
+import Head from "next/head";
+import React, { FC } from "react";
+import { BlitzLayout } from "@blitzjs/next";
 
-const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
-  title,
-  children,
-}) => {
+const Layout: BlitzLayout<{
+  title?: string;
+  children?: React.ReactNode;
+  authenticate?: boolean;
+}> = ({ title, children }) => {
   return (
     <>
       <Head>
@@ -15,7 +16,7 @@ const Layout: BlitzLayout<{ title?: string; children?: React.ReactNode }> = ({
 
       {children}
     </>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;
