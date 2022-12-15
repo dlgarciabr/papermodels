@@ -9,6 +9,7 @@
     "lint": "eslint --ignore-path .gitignore --ext .js,.ts,.tsx .",
     "test:local": "prisma generate && vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:coverage-ci": "vitest",
     "prepare": "husky install"
   },
   "prisma": {
