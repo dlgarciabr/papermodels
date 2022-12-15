@@ -3,5 +3,7 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  }
+  },
+  "todo-tree.filtering.excludedWorkspaces": ["node_modules"],
+  "files.eol": "\n"
 }

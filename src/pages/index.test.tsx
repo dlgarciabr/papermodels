@@ -38,3 +38,5 @@ test("renders blitz documentation link", () => {
   const linkElement = screen.getByText(/Documentation/i);
   expect(linkElement).toBeInTheDocument();
 });
+
+test.todo("User click on logout buton");

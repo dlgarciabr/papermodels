@@ -17,7 +17,13 @@ export default defineConfig({
     globalSetup: "./src/setupTestGlobal.ts",
     setupFiles: "./src/setupTests.ts",
     coverage: {
+      provider: "istanbul",
       reporter: ["text", "json", "html"],
+      exclude: ["src/__mocks__", "src/auth/mutations", "test"],
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: -10,
     },
   },
 });
