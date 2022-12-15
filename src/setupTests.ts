@@ -3,6 +3,7 @@
 
 // import { cleanup } from 'utils/test-utils';
 // import { mswServer } from './__mocks__/msw-server';
+import { mswServer } from "./__mocks__/msw-server";
 // import { store } from './redux/reduxStore';
 // import { volunteerHubApi } from './services/volunteerHubApi';
 
@@ -16,24 +17,24 @@ beforeEach(() => {
 beforeAll(() => {
   // console.debug('==========================================================================================');
   // console.debug('Initiating tests...');
-  console.log("1 - beforeAll");
+  // console.log("1 - beforeAll");
   // void db.$connect();
-  // mswServer.listen({
-  //   onUnhandledRequest: 'error',
-  //   // onUnhandledRequest: 'bypass',
-  // })
+  mswServer.listen({
+    onUnhandledRequest: "error",
+    // onUnhandledRequest: 'bypass',
+  });
 });
 
 afterEach(() => {
-  // mswServer.resetHandlers();
+  mswServer.resetHandlers();
   // store.dispatch(volunteerHubApi.util.resetApiState());
   // window.sessionStorage.clear();
 });
 
 afterAll(() => {
-  // mswServer.close();
-  console.log("1 - afterAll");
-  console.debug(
-    "=========================================================================================="
-  );
+  mswServer.close();
+  // console.log("1 - afterAll");
+  // console.debug(
+  //   "=========================================================================================="
+  // );
 });

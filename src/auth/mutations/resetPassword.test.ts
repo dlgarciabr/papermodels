@@ -3,9 +3,10 @@ import resetPassword from "./resetPassword";
 import db from "db";
 import { SecurePassword, hash256 } from "@blitzjs/auth";
 
-beforeEach(async () => {
-  await db.$reset();
-});
+// TODO uncomment
+// beforeEach(async () => {
+//   await db.$reset();
+// });
 
 const mockCtx: any = {
   session: {
@@ -14,7 +15,7 @@ const mockCtx: any = {
 };
 
 describe("resetPassword mutation", () => {
-  it("works correctly", async () => {
+  test.skip("works correctly", async () => {
     expect(true).toBe(true);
 
     // Create test user

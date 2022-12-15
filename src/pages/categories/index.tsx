@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { Routes } from "@blitzjs/next";
+import { Suspense, useContext } from "react";
+import { RouterContext, Routes } from "@blitzjs/next";
 import Head from "next/head";
 import Link from "next/link";
 import { usePaginatedQuery } from "@blitzjs/rpc";
@@ -10,8 +10,16 @@ import getCategories from "src/categories/queries/getCategories";
 const ITEMS_PER_PAGE = 100;
 
 export const CategoriesList = () => {
-  const router = useRouter();
+  // const router = useRouter();
+  const router = useContext(RouterContext);
+  // console.log('###ctx###', ctx);
+  // console.log('###router2###', router)
   const page = Number(router.query.page) || 0;
+  // void (async()=>{
+  //   const ret = await getCategories({orderBy: { id: "asc" });
+  //   console.log(ret);
+  // })();
+  console.log("###getCategories###", getCategories);
   const [{ categories, hasMore }] = usePaginatedQuery(getCategories, {
     orderBy: { id: "asc" },
     skip: ITEMS_PER_PAGE * page,
@@ -26,8 +34,7 @@ export const CategoriesList = () => {
       <ul>
         {categories.map((category) => (
           <li key={category.id}>
-            {/* <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}> */}
-            <Link href="">
+            <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
               <a>{category.name}</a>
             </Link>
           </li>
@@ -53,8 +60,7 @@ const CategoriesPage = () => {
 
       <div>
         <p>
-          {/* <Link href={Routes.NewCategoryPage()}> */}
-          <Link href="">
+          <Link href={Routes.NewCategoryPage()}>
             <a>Create Category</a>
           </Link>
         </p>

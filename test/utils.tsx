@@ -7,6 +7,29 @@ import { QueryClient } from "@blitzjs/rpc";
 
 export * from "@testing-library/react";
 
+export const mockRouter: NextRouter = {
+  basePath: "",
+  pathname: "/",
+  route: "/",
+  asPath: "/",
+  query: {},
+  isReady: true,
+  isLocaleDomain: false,
+  isPreview: false,
+  push: vi.fn(),
+  replace: vi.fn(),
+  reload: vi.fn(),
+  back: vi.fn(),
+  prefetch: vi.fn(),
+  beforePopState: vi.fn(),
+  events: {
+    on: vi.fn(),
+    off: vi.fn(),
+    emit: vi.fn(),
+  },
+  isFallback: false,
+};
+
 // --------------------------------------------------------------------------------
 // This file customizes the render() and renderHook() test functions provided
 // by React testing library. It adds a router context wrapper with a mocked router.
@@ -34,14 +57,17 @@ export function render(
   { wrapper, router, dehydratedState, ...options }: RenderOptions = {}
 ) {
   if (!wrapper) {
+    // console.log('###router1###', router)
     // Add a default context wrapper if one isn't supplied from the test
-    wrapper = ({ children }: { children: React.ReactNode }) => (
-      <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-        <RouterContext.Provider value={{ ...mockRouter, ...router }}>
-          {children}
-        </RouterContext.Provider>
-      </BlitzProvider>
-    );
+    wrapper = ({ children }: { children: React.ReactNode }) => {
+      return (
+        <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
+          <RouterContext.Provider value={{ ...mockRouter, ...router }}>
+            {children}
+          </RouterContext.Provider>
+        </BlitzProvider>
+      );
+    };
   }
   return defaultRender(ui, { wrapper, ...options });
 }
@@ -73,29 +99,6 @@ export function renderHook(
   }
   return defaultRenderHook(hook, { wrapper, ...options });
 }
-
-export const mockRouter: NextRouter = {
-  basePath: "",
-  pathname: "/",
-  route: "/",
-  asPath: "/",
-  query: {},
-  isReady: true,
-  isLocaleDomain: false,
-  isPreview: false,
-  push: vi.fn(),
-  replace: vi.fn(),
-  reload: vi.fn(),
-  back: vi.fn(),
-  prefetch: vi.fn(),
-  beforePopState: vi.fn(),
-  events: {
-    on: vi.fn(),
-    off: vi.fn(),
-    emit: vi.fn(),
-  },
-  isFallback: false,
-};
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];

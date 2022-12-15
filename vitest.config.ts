@@ -14,7 +14,8 @@ export default defineConfig({
     dir: "./",
     globals: true,
     environment: "jsdom",
-    setupFiles: "./test/setup.ts",
+    globalSetup: "./src/setupTestGlobal.ts",
+    setupFiles: "./src/setupTests.ts",
     coverage: {
       reporter: ["text", "json", "html"],
     },
