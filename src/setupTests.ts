@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 // import '../jest.config.js';
 // import db from "db";
 
@@ -19,10 +20,11 @@ beforeAll(() => {
   // console.debug('Initiating tests...');
   // console.log("1 - beforeAll");
   // void db.$connect();
-  mswServer.listen({
-    onUnhandledRequest: "error",
-    // onUnhandledRequest: 'bypass',
-  });
+  // mswServer.listen({
+  //   onUnhandledRequest: "error",
+  //   // onUnhandledRequest: 'bypass',
+  // });
+  // console.info('[MSW] Mock Service Worker initialized!');
 });
 
 afterEach(() => {

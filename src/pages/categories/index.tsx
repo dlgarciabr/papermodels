@@ -3,11 +3,10 @@ import { RouterContext, Routes } from "@blitzjs/next";
 import Head from "next/head";
 import Link from "next/link";
 import { usePaginatedQuery } from "@blitzjs/rpc";
-import { useRouter } from "next/router";
 import Layout from "src/core/layouts/Layout";
 import getCategories from "src/categories/queries/getCategories";
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 10;
 
 export const CategoriesList = () => {
   // const router = useRouter();
@@ -19,13 +18,14 @@ export const CategoriesList = () => {
   //   const ret = await getCategories({orderBy: { id: "asc" });
   //   console.log(ret);
   // })();
-  console.log("###getCategories###", getCategories);
+  // console.log("###getCategories###", getCategories);
+  // console.log('####CategoriesList1###')
   const [{ categories, hasMore }] = usePaginatedQuery(getCategories, {
     orderBy: { id: "asc" },
     skip: ITEMS_PER_PAGE * page,
     take: ITEMS_PER_PAGE,
   });
-
+  // console.log('####CategoriesList2###')
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
 

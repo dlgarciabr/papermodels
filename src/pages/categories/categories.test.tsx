@@ -3,9 +3,9 @@
 // import { render } from "@testing-library/react";
 // import { RouterContext, BlitzProvider } from 'blitz';
 import { render } from "test/utils";
-import { vitest } from "vitest";
+// import { vitest } from "vitest";
 import CategoriesPage from ".";
-import getCategories from "src/categories/queries/getCategories";
+// import getCategories from "src/categories/queries/getCategories";
 
 // const router = createRouter('', { user: 'nikita' }, '', {
 //   initialProps: {},
@@ -16,7 +16,7 @@ import getCategories from "src/categories/queries/getCategories";
 
 describe("Category", () => {
   test("Open Category list", () => {
-    render(<CategoriesPage />);
+    // render(<CategoriesPage />);
     // const { baseElement } = render(<CategoriesPage />, {
     //   router: {
     //     pathname: '/categories',
