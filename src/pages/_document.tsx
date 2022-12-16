@@ -1,4 +1,6 @@
-import Document, { Html, Main, NextScript, Head } from "next/document"
+/* istanbul ignore file -- @preserve */
+// TODO remove ignore and improve coverage
+import Document, { Html, Main, NextScript, Head } from "next/document";
 
 class MyDocument extends Document {
   // Only uncomment if you need to customize this behaviour
@@ -15,8 +17,8 @@ class MyDocument extends Document {
           <NextScript />
         </body>
       </Html>
-    )
+    );
   }
 }
 
-export default MyDocument
+export default MyDocument;

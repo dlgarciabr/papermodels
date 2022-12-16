@@ -1,29 +1,30 @@
-import { Suspense } from "react"
-import { Routes } from "@blitzjs/next"
-import Head from "next/head"
-import Link from "next/link"
-import { usePaginatedQuery, useQuery, useMutation } from "@blitzjs/rpc"
-import { useRouter } from "next/router"
-import {} from "@blitzjs/rpc"
-import Layout from "src/core/layouts/Layout"
-import getQuestions from "src/questions/queries/getQuestions"
-import updateChoice from "src/choices/mutations/updateChoice"
+/* istanbul ignore file -- @preserve */
+import { Suspense } from "react";
+import { Routes } from "@blitzjs/next";
+import Head from "next/head";
+import Link from "next/link";
+import { usePaginatedQuery, useQuery, useMutation } from "@blitzjs/rpc";
+import { useRouter } from "next/router";
+import {} from "@blitzjs/rpc";
+import Layout from "src/core/layouts/Layout";
+import getQuestions from "src/questions/queries/getQuestions";
+import updateChoice from "src/choices/mutations/updateChoice";
 
-const ITEMS_PER_PAGE = 100
+const ITEMS_PER_PAGE = 100;
 
 export const QuestionsList = () => {
-  const router = useRouter()
-  const page = Number(router.query.page) || 0
-  const [updateChoiceMutation] = useMutation(updateChoice)
+  const router = useRouter();
+  const page = Number(router.query.page) || 0;
+  const [updateChoiceMutation] = useMutation(updateChoice);
 
   const [{ questions, hasMore }] = usePaginatedQuery(getQuestions, {
     orderBy: { id: "asc" },
     skip: ITEMS_PER_PAGE * page,
     take: ITEMS_PER_PAGE,
-  })
+  });
 
-  const goToPreviousPage = () => router.push({ query: { page: page - 1 } })
-  const goToNextPage = () => router.push({ query: { page: page + 1 } })
+  const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
+  const goToNextPage = () => router.push({ query: { page: page + 1 } });
 
   return (
     <div>
@@ -51,8 +52,8 @@ export const QuestionsList = () => {
         Next
       </button>
     </div>
-  )
-}
+  );
+};
 
 const QuestionsPage = () => {
   return (
@@ -73,7 +74,7 @@ const QuestionsPage = () => {
         </Suspense>
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default QuestionsPage
+export default QuestionsPage;

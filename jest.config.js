@@ -1,4 +1,5 @@
 // jest.config.js
+// TODO remove when vitest is stable on the project
 const nextJest = require("@blitzjs/next/jest");
 
 const createJestConfig = nextJest({

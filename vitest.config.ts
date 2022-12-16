@@ -1,3 +1,4 @@
+// vitest.config.js
 import { loadEnvConfig } from "@next/env";
 import { defineConfig } from "vitest/config";
 
@@ -18,8 +19,9 @@ export default defineConfig({
     setupFiles: "./src/setupTests.ts",
     coverage: {
       provider: "istanbul",
+      all: true,
       reporter: ["text", "json", "html"],
-      exclude: ["src/__mocks__", "src/auth/mutations", "test"],
+      include: ["src/pages/**"],
       branches: 80,
       functions: 80,
       lines: 80,
