@@ -101,6 +101,44 @@ export function renderHook(
   return defaultRenderHook(hook, { wrapper, ...options });
 }
 
+export const mockNextImage = () => {
+  vi.mock("next/image", () => ({
+    __esModule: true,
+    default: (props: any) => {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <img {...props} />;
+    },
+  }));
+};
+
+export const createBlitzRPCMock = (/*params:IBlitzRPCMockParams*/): any => {
+  // const t = `${params.entityPluralName}`;
+  return {
+    useMutation: () => [],
+    usePaginatedQuery: (queryFn: any, params: any, options: any) => [
+      {
+        categories: [],
+        nextPage: {
+          take: 0,
+          skip: 0,
+        },
+        hasMore: false,
+        count: 0,
+      },
+      {},
+    ],
+  };
+};
+
+export interface IBlitzRPCMockParams {
+  entityPluralName: string;
+}
+
+interface IBlitzRPCMock {
+  useMutation: () => [];
+  usePaginatedQuery: <T>(queryFn: T) => Promise<T>;
+}
+
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];
 type RenderOptions = DefaultParams[1] & { router?: Partial<NextRouter>; dehydratedState?: unknown };

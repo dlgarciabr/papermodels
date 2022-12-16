@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom";
+import { vi } from "vitest";
 // import '../jest.config.js';
 // import db from "db";
 
@@ -28,13 +29,14 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-  mswServer.resetHandlers();
+  // mswServer.resetHandlers();
   // store.dispatch(volunteerHubApi.util.resetApiState());
   // window.sessionStorage.clear();
+  vi.resetAllMocks();
 });
 
 afterAll(() => {
-  mswServer.close();
+  // mswServer.close();
   // console.log("1 - afterAll");
   // console.debug(
   //   "=========================================================================================="

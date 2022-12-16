@@ -1,28 +1,37 @@
-// import userEvent from '@testing-library/user-event';
-// import { BlitzProvider } from '@blitzjs/next';
-// import { render } from "@testing-library/react";
-// import { RouterContext, BlitzProvider } from 'blitz';
-import { render } from "test/utils";
-// import { vitest } from "vitest";
-import CategoriesPage from ".";
-// import getCategories from "src/categories/queries/getCategories";
+import { expect, vi } from "vitest";
 
-// const router = createRouter('', { user: 'nikita' }, '', {
-//   initialProps: {},
-//   pageLoader: jest.fn(),
-//   App: jest.fn(),
-//   Component: jest.fn(),
-// });
+import { render } from "test/utils";
+import CategoriesPage from ".";
+
+// global arrange
+vi.mock("@blitzjs/rpc", () => ({
+  useMutation: () => [],
+  usePaginatedQuery: (queryFn: any, params: any, options: any) => [
+    {
+      categories: [],
+      nextPage: {
+        take: 0,
+        skip: 0,
+      },
+      hasMore: false,
+      count: 0,
+    },
+    {},
+  ],
+}));
+
+vi.mock("src/categories/queries/getCategories", () => {
+  const resolver = vi.fn() as any;
+  resolver._resolverType = "query";
+  resolver._routePath = "/api/rpc/getCategories";
+  return { default: resolver };
+});
 
 describe("Category", () => {
   test("Open Category list", () => {
-    // render(<CategoriesPage />);
-    // const { baseElement } = render(<CategoriesPage />, {
-    //   router: {
-    //     pathname: '/categories',
-    //     query: {}
-    //   },
-    // });
+    // arrange
+    render(<CategoriesPage />);
+
     expect(true).toBeTruthy();
   });
 });
