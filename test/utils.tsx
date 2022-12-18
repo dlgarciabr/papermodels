@@ -130,14 +130,33 @@ export const createBlitzRPCMock = (/*params:IBlitzRPCMockParams*/): any => {
   };
 };
 
-export interface IBlitzRPCMockParams {
-  entityPluralName: string;
-}
+export const mockUsePaginatedQuery = (
+  collectionName: string,
+  items: any[],
+  hasMore: boolean
+): [any, any] => {
+  return [
+    {
+      [collectionName]: items,
+      nextPage: {
+        take: 10,
+        skip: 0,
+      },
+      hasMore,
+      count: 0,
+    },
+    null as any,
+  ];
+};
 
-interface IBlitzRPCMock {
-  useMutation: () => [];
-  usePaginatedQuery: <T>(queryFn: T) => Promise<T>;
-}
+// export interface IBlitzRPCMockParams {
+//   entityPluralName: string;
+// }
+
+// interface IBlitzRPCMock {
+//   useMutation: () => [];
+//   usePaginatedQuery: <T>(queryFn: T) => Promise<T>;
+// }
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];

@@ -141,7 +141,7 @@ const Home: BlitzPage = () => {
           </a>
         </footer>
 
-        <style jsx global>{`
+        {/* <style jsx global>{`
           @import url("https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap");
 
           html,
@@ -272,7 +272,7 @@ const Home: BlitzPage = () => {
               flex-direction: column;
             }
           }
-        `}</style>
+        `}</style> */}
       </div>
     </Layout>
   );

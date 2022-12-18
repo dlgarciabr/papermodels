@@ -1,7 +1,8 @@
 import { expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { usePaginatedQuery } from "@blitzjs/rpc";
 
-import { render, screen } from "test/utils";
+import { render, screen, mockUsePaginatedQuery } from "test/utils";
 import CategoriesPage from ".";
 
 // global arrange
@@ -52,24 +53,10 @@ const categories = [
   },
 ];
 
-// const testMock = () => {
-vi.mock("@blitzjs/rpc", () => ({
-  useMutation: () => [],
-  usePaginatedQuery: (queryFn: any, params: any, options: any) => [
-    {
-      categories: categories.slice(0, 10),
-      // categories,
-      nextPage: {
-        take: 10,
-        skip: 0,
-      },
-      hasMore: true,
-      count: 11,
-    },
-    {},
-  ],
-}));
-// }
+// vi.mock("@blitzjs/rpc", () => ({
+//   useMutation: () => [],
+//   usePaginatedQuery: vi.fn()
+// }));
 
 vi.mock("src/categories/queries/getCategories", () => {
   const resolver = vi.fn() as any;
@@ -81,40 +68,30 @@ vi.mock("src/categories/queries/getCategories", () => {
 describe("Category", () => {
   test("Open Category list with items", () => {
     // arrange
+    vi.mocked(usePaginatedQuery).mockReturnValueOnce(
+      mockUsePaginatedQuery("categories", categories.slice(0, 10), true)
+    );
 
     // act
     render(<CategoriesPage />);
 
     // assert
-
     expect(screen.getByRole("link", { name: "Create Category" })).toBeInTheDocument();
-
     expect(screen.getByRole("link", { name: categories[0]?.name })).toBeInTheDocument();
   });
 
   test("Open Category list and navigate through pages", async () => {
     // arrange
+    vi.mocked(usePaginatedQuery).mockReturnValueOnce(
+      mockUsePaginatedQuery("categories", categories.slice(10), false)
+    );
     render(<CategoriesPage />);
 
-    vi.mock("@blitzjs/rpc", () => ({
-      useMutation: () => [],
-      usePaginatedQuery: (queryFn: any, params: any, options: any) => [
-        {
-          categories: categories.slice(11),
-          nextPage: {
-            take: 1,
-            skip: 0,
-          },
-          hasMore: true,
-          count: 11,
-        },
-        {},
-      ],
-    }));
+    // screen.debug();
     // act
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
     // assert
-    expect(screen.getByRole("link", { name: categories[11]?.name })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: categories[10]?.name })).toBeInTheDocument();
   });
 });
