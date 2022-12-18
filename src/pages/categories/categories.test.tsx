@@ -1,9 +1,10 @@
 import { expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { usePaginatedQuery } from "@blitzjs/rpc";
+// import { usePaginatedQuery } from "@blitzjs/rpc";
 
-import { render, screen, mockUsePaginatedQuery } from "test/utils";
+import { render, screen, setupUsePaginatedQueryOnce } from "test/utils";
 import CategoriesPage from ".";
+import { ISetupUsePaginatedQuery } from "test/types";
 
 // global arrange
 const categories = [
@@ -53,11 +54,6 @@ const categories = [
   },
 ];
 
-// vi.mock("@blitzjs/rpc", () => ({
-//   useMutation: () => [],
-//   usePaginatedQuery: vi.fn()
-// }));
-
 vi.mock("src/categories/queries/getCategories", () => {
   const resolver = vi.fn() as any;
   resolver._resolverType = "query";
@@ -65,12 +61,16 @@ vi.mock("src/categories/queries/getCategories", () => {
   return { default: resolver };
 });
 
+const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
+  collectionName: "categories",
+  items: categories.slice(0, 10),
+  hasMore: true,
+};
+
 describe("Category", () => {
   test("Open Category list with items", () => {
     // arrange
-    vi.mocked(usePaginatedQuery).mockReturnValueOnce(
-      mockUsePaginatedQuery("categories", categories.slice(0, 10), true)
-    );
+    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
 
     // act
     render(<CategoriesPage />);
@@ -82,12 +82,20 @@ describe("Category", () => {
 
   test("Open Category list and navigate through pages", async () => {
     // arrange
-    vi.mocked(usePaginatedQuery).mockReturnValueOnce(
-      mockUsePaginatedQuery("categories", categories.slice(10), false)
-    );
-    render(<CategoriesPage />);
+    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
 
-    // screen.debug();
+    const { rerender } = render(<CategoriesPage />);
+
+    expect(screen.getByRole("link", { name: categories[0]?.name })).toBeInTheDocument();
+
+    setupUsePaginatedQueryOnce({
+      ...globalUsePaginatedQueryParams,
+      items: categories.slice(10),
+      hasMore: false,
+    });
+
+    rerender(<CategoriesPage />);
+
     // act
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
 

@@ -10,6 +10,7 @@ beforeAll(() => {
     resolver: {
       pipe: vi.fn(),
       zod: vi.fn(),
+      //   authorize: vi.fn()
     },
   }));
 });

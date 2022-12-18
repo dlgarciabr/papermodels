@@ -1,13 +1,11 @@
 import { expect, vi } from "vitest";
 
-import { createBlitzRPCMock, render, screen } from "test/utils";
+import { render, screen } from "test/utils";
 import Home from "./index";
 
 test("renders blitz documentation link", () => {
   // arrange
   const userEmail = "user@email.com";
-
-  vi.mock("@blitzjs/rpc", () => createBlitzRPCMock());
 
   vi.mock("src/users/hooks/useCurrentUser", () => ({
     useCurrentUser: () => ({

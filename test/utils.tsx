@@ -3,8 +3,9 @@ import { render as defaultRender } from "@testing-library/react";
 import { renderHook as defaultRenderHook } from "@testing-library/react-hooks";
 import { NextRouter } from "next/router";
 import { BlitzProvider, RouterContext } from "@blitzjs/next";
-// import { QueryClient } from "@blitzjs/rpc";
+import { usePaginatedQuery } from "@blitzjs/rpc";
 import { QueryClient } from "@tanstack/react-query";
+import { ISetupUsePaginatedQuery } from "./types";
 
 export * from "@testing-library/react";
 
@@ -106,31 +107,12 @@ export const mockNextImage = () => {
     __esModule: true,
     default: (props: any) => {
       // eslint-disable-next-line @next/next/no-img-element
-      return <img {...props} />;
+      return <img {...props} alt={props.alt} />;
     },
   }));
 };
 
-export const createBlitzRPCMock = (/*params:IBlitzRPCMockParams*/): any => {
-  // const t = `${params.entityPluralName}`;
-  return {
-    useMutation: () => [],
-    usePaginatedQuery: (queryFn: any, params: any, options: any) => [
-      {
-        categories: [],
-        nextPage: {
-          take: 0,
-          skip: 0,
-        },
-        hasMore: false,
-        count: 0,
-      },
-      {},
-    ],
-  };
-};
-
-export const mockUsePaginatedQuery = (
+const mockUsePaginatedQuery = (
   collectionName: string,
   items: any[],
   hasMore: boolean
@@ -149,14 +131,18 @@ export const mockUsePaginatedQuery = (
   ];
 };
 
-// export interface IBlitzRPCMockParams {
-//   entityPluralName: string;
-// }
+export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
+  vi.mocked(usePaginatedQuery).mockReturnValue(
+    mockUsePaginatedQuery(params.collectionName, params.items, params.hasMore)
+  );
+};
 
-// interface IBlitzRPCMock {
-//   useMutation: () => [];
-//   usePaginatedQuery: <T>(queryFn: T) => Promise<T>;
-// }
+export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
+  vi.mocked(usePaginatedQuery).mockClear();
+  vi.mocked(usePaginatedQuery).mockReturnValueOnce(
+    mockUsePaginatedQuery(params.collectionName, params.items, params.hasMore)
+  );
+};
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];
