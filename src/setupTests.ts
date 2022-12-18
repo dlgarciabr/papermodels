@@ -5,7 +5,7 @@ beforeEach(() => {});
 
 beforeAll(() => {
   vi.mock("@blitzjs/rpc", () => ({
-    useMutation: () => [],
+    useMutation: () => [() => {}],
     usePaginatedQuery: vi.fn(),
     resolver: {
       pipe: vi.fn(),

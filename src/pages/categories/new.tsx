@@ -1,13 +1,13 @@
-import { Routes } from "@blitzjs/next";
+import { useContext } from "react";
+import { Routes, RouterContext } from "@blitzjs/next";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useMutation } from "@blitzjs/rpc";
 import Layout from "src/core/layouts/Layout";
 import createCategory from "src/categories/mutations/createCategory";
 import { CategoryForm, FORM_ERROR } from "src/categories/components/CategoryForm";
 
 const NewCategoryPage = () => {
-  const router = useRouter();
+  const router = useContext(RouterContext);
   const [createCategoryMutation] = useMutation(createCategory);
 
   return (
@@ -23,8 +23,8 @@ const NewCategoryPage = () => {
         // initialValues={{}}
         onSubmit={async (values) => {
           try {
-            const category = await createCategoryMutation(values);
-            await router.push(Routes.ShowCategoryPage({ categoryId: category.id }));
+            await createCategoryMutation(values);
+            await router.push(Routes.CategoriesPage());
           } catch (error: any) {
             console.error(error);
             return {

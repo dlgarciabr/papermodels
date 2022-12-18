@@ -1,12 +1,11 @@
-import { Routes } from "@blitzjs/next";
+import { useContext } from "react";
+import { Routes, RouterContext } from "@blitzjs/next";
 if (process.env.parentModel) {
   import Link from "next/link";
   import { useParam } from "@blitzjs/next";
-  import { useRouter } from "next/router";
   import { useMutation } from "@blitzjs/rpc";
 } else {
   import Link from "next/link";
-  import { useRouter } from "next/router";
   import { useMutation } from "@blitzjs/rpc";
 }
 import Layout from "src/core/layouts/Layout";
@@ -14,7 +13,7 @@ import create__ModelName__ from "src/__modelNamesPath__/mutations/create__ModelN
 import { __ModelName__Form, FORM_ERROR } from "src/__modelNamesPath__/components/__ModelName__Form";
 
 const New__ModelName__Page = () => {
-  const router = useRouter();
+  const router = useContext(RouterContext);
   if (process.env.parentModel) {
     const __parentModelId__ = useParam("__parentModelId__", "number");
   }
@@ -33,7 +32,7 @@ const New__ModelName__Page = () => {
         // initialValues={{}}
         onSubmit={async (values) => {
           try {
-            const __modelName__ = await create__ModelName__Mutation(
+            await create__ModelName__Mutation(
               process.env.parentModel
                 ? { ...values, __parentModelId__: __parentModelId__! }
                 : values

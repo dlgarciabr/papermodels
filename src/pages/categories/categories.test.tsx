@@ -1,7 +1,14 @@
 import { expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 
-import { render, screen, setupUsePaginatedQueryOnce, mockRouterOperation } from "test/utils";
+import {
+  render,
+  screen,
+  waitFor,
+  cleanup,
+  setupUsePaginatedQueryOnce,
+  mockRouterOperation,
+} from "test/utils";
 import CategoriesPage from ".";
 import NewCategoryPage from "./new";
 import { ISetupUsePaginatedQuery } from "test/types";
@@ -116,7 +123,26 @@ describe("Category", () => {
 describe("Category creating", () => {
   test("User create a new category", async () => {
     // arrange
-    render(<NewCategoryPage />);
+    const categoryName = "name test";
+    setupUsePaginatedQueryOnce({
+      collectionName: "categories",
+      items: [
+        {
+          id: 1,
+          name: categoryName,
+        },
+      ],
+      hasMore: false,
+    });
+
+    render(<NewCategoryPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<CategoriesPage />);
+        }),
+      },
+    });
 
     // act
     const nameTexfield = screen.getByRole("textbox", {
@@ -126,10 +152,17 @@ describe("Category creating", () => {
       name: "Description",
     });
 
-    await userEvent.type(nameTexfield, "name test");
+    await userEvent.type(nameTexfield, categoryName);
     await userEvent.type(descriptionTexfield, "description test");
 
     await userEvent.click(screen.getByRole("button", { name: "Create Category" }));
+
     // assert
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: "Create New Category" })).not.toBeInTheDocument()
+    );
+    expect(screen.getByRole("link", { name: "Create Category" })).toBeInTheDocument();
+
+    expect(screen.getByText(categoryName)).toBeInTheDocument();
   });
 });
