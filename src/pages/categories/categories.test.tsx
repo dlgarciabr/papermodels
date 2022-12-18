@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 
 import { render, screen, setupUsePaginatedQueryOnce, mockRouterOperation } from "test/utils";
 import CategoriesPage from ".";
+import NewCategoryPage from "./new";
 import { ISetupUsePaginatedQuery } from "test/types";
 
 // global arrange
@@ -60,6 +61,13 @@ vi.mock("src/categories/queries/getCategories", () => {
   return { default: resolver };
 });
 
+vi.mock("src/categories/mutations/createCategory", () => {
+  const resolver = vi.fn() as any;
+  resolver._resolverType = "query";
+  resolver._routePath = "/api/rpc/createCategory";
+  return { default: resolver };
+});
+
 const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
   collectionName: "categories",
   items: categories.slice(0, 10),
@@ -102,5 +110,26 @@ describe("Category", () => {
 
     // assert
     expect(screen.getByRole("link", { name: categories[10]?.name })).toBeInTheDocument();
+  });
+});
+
+describe("Category creating", () => {
+  test("User create a new category", async () => {
+    // arrange
+    render(<NewCategoryPage />);
+
+    // act
+    const nameTexfield = screen.getByRole("textbox", {
+      name: "Name",
+    });
+    const descriptionTexfield = screen.getByRole("textbox", {
+      name: "Description",
+    });
+
+    await userEvent.type(nameTexfield, "name test");
+    await userEvent.type(descriptionTexfield, "description test");
+
+    await userEvent.click(screen.getByRole("button", { name: "Create Category" }));
+    // assert
   });
 });
