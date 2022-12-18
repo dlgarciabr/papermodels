@@ -9,7 +9,7 @@ import { ISetupUsePaginatedQuery } from "./types";
 
 export * from "@testing-library/react";
 
-export const mockRouter: NextRouter = {
+export const createMockRouter = (router: Partial<NextRouter>): NextRouter => ({
   basePath: "",
   pathname: "/",
   route: "/",
@@ -30,7 +30,8 @@ export const mockRouter: NextRouter = {
     emit: vi.fn(),
   },
   isFallback: false,
-};
+  ...router,
+});
 
 // --------------------------------------------------------------------------------
 // This file customizes the render() and renderHook() test functions provided
@@ -64,7 +65,7 @@ export function render(
     wrapper = ({ children }: { children: React.ReactNode }) => {
       return (
         <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-          <RouterContext.Provider value={{ ...mockRouter, ...router }}>
+          <RouterContext.Provider value={createMockRouter({ ...router })}>
             {children}
           </RouterContext.Provider>
         </BlitzProvider>
@@ -93,7 +94,7 @@ export function renderHook(
     // Add a default context wrapper if one isn't supplied from the test
     wrapper = ({ children }: { children: React.ReactNode }) => (
       <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-        <RouterContext.Provider value={{ ...mockRouter, ...router }}>
+        <RouterContext.Provider value={createMockRouter({ ...router })}>
           {children}
         </RouterContext.Provider>
       </BlitzProvider>
@@ -143,6 +144,12 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
     mockUsePaginatedQuery(params.collectionName, params.items, params.hasMore)
   );
 };
+
+export const mockRouterOperation = (callback: Function) =>
+  vi.fn(async (url: any, as?: any, options?: any) => {
+    callback();
+    return true;
+  });
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];

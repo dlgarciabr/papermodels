@@ -1,8 +1,7 @@
 import { expect, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-// import { usePaginatedQuery } from "@blitzjs/rpc";
 
-import { render, screen, setupUsePaginatedQueryOnce } from "test/utils";
+import { render, screen, setupUsePaginatedQueryOnce, mockRouterOperation } from "test/utils";
 import CategoriesPage from ".";
 import { ISetupUsePaginatedQuery } from "test/types";
 
@@ -84,7 +83,11 @@ describe("Category", () => {
     // arrange
     setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
 
-    const { rerender } = render(<CategoriesPage />);
+    const { rerender } = render(<CategoriesPage />, {
+      router: {
+        push: mockRouterOperation(() => rerender(<CategoriesPage />)),
+      },
+    });
 
     expect(screen.getByRole("link", { name: categories[0]?.name })).toBeInTheDocument();
 
@@ -93,8 +96,6 @@ describe("Category", () => {
       items: categories.slice(10),
       hasMore: false,
     });
-
-    rerender(<CategoriesPage />);
 
     // act
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
