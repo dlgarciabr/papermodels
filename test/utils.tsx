@@ -1,20 +1,19 @@
-import { vi } from "vitest";
-import { render as defaultRender } from "@testing-library/react";
-import { renderHook as defaultRenderHook } from "@testing-library/react-hooks";
-import { NextRouter } from "next/router";
-import * as nextRouter from "next/router";
-import { BlitzProvider, RouterContext } from "@blitzjs/next";
-import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
-import { QueryClient } from "@tanstack/react-query";
-import { ISetupUsePaginatedQuery } from "./types";
+import { vi } from 'vitest';
+import { render as defaultRender } from '@testing-library/react';
+import { renderHook as defaultRenderHook } from '@testing-library/react-hooks';
+import { NextRouter } from 'next/router';
+import { BlitzProvider, RouterContext } from '@blitzjs/next';
+import { usePaginatedQuery, useQuery } from '@blitzjs/rpc';
+import { QueryClient } from '@tanstack/react-query';
+import { ISetupUsePaginatedQuery } from './types';
 
-export * from "@testing-library/react";
+export * from '@testing-library/react';
 
 export const createMockRouter = (router: Partial<NextRouter>): NextRouter => ({
-  basePath: "",
-  pathname: "/",
-  route: "/",
-  asPath: "/",
+  basePath: '',
+  pathname: '/',
+  route: '/',
+  asPath: '/',
   query: {},
   isReady: true,
   isLocaleDomain: false,
@@ -28,11 +27,25 @@ export const createMockRouter = (router: Partial<NextRouter>): NextRouter => ({
   events: {
     on: vi.fn(),
     off: vi.fn(),
-    emit: vi.fn(),
+    emit: vi.fn()
   },
   isFallback: false,
-  ...router,
+  ...router
 });
+
+let mockedRouter: NextRouter;
+
+export const getMockedRouter = (): NextRouter => mockedRouter;
+
+/**
+ * //TODO fix this or remove, because its acctualy not working
+ *
+ * @param router
+ * @returns
+ */
+export const modifyMockedRouter = (router: Partial<NextRouter>): NextRouter => {
+  return { ...mockedRouter, ...router };
+};
 
 // --------------------------------------------------------------------------------
 // This file customizes the render() and renderHook() test functions provided
@@ -56,14 +69,11 @@ export const createMockRouter = (router: Partial<NextRouter>): NextRouter => ({
 // --------------------------------------------------
 
 const queryClient = new QueryClient();
-export function render(
-  ui: RenderUI,
-  { wrapper, router, dehydratedState, ...options }: RenderOptions = {}
-) {
+export function render(ui: RenderUI, { wrapper, router, dehydratedState, ...options }: RenderOptions = {}) {
   if (!wrapper) {
     // Add a default context wrapper if one isn't supplied from the test
-    const mockedRouter = createMockRouter({ ...router });
-    const useRouter = vi.spyOn(require("next/router"), "useRouter");
+    mockedRouter = createMockRouter({ ...router });
+    const useRouter = vi.spyOn(require('next/router'), 'useRouter');
     useRouter.mockImplementation(() => mockedRouter);
     wrapper = ({ children }: { children: React.ReactNode }) => {
       return (
@@ -87,17 +97,12 @@ export function render(
 //   router: { pathname: '/my-custom-pathname' },
 // });
 // --------------------------------------------------
-export function renderHook(
-  hook: RenderHook,
-  { wrapper, router, dehydratedState, ...options }: RenderOptions = {}
-) {
+export function renderHook(hook: RenderHook, { wrapper, router, dehydratedState, ...options }: RenderOptions = {}) {
   if (!wrapper) {
     // Add a default context wrapper if one isn't supplied from the test
     wrapper = ({ children }: { children: React.ReactNode }) => (
       <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-        <RouterContext.Provider value={createMockRouter({ ...router })}>
-          {children}
-        </RouterContext.Provider>
+        <RouterContext.Provider value={createMockRouter({ ...router })}>{children}</RouterContext.Provider>
       </BlitzProvider>
     );
   }
@@ -105,56 +110,36 @@ export function renderHook(
 }
 
 export const mockNextImage = () => {
-  vi.mock("next/image", () => ({
+  vi.mock('next/image', () => ({
     __esModule: true,
     default: (props: any) => {
       // eslint-disable-next-line @next/next/no-img-element
       return <img {...props} alt={props.alt} />;
-    },
+    }
   }));
 };
 
-// const mockUseQuery = (
-//   collectionName: string,
-//   items: any[]
-// ): [any, any] => {
-//   return [
-//     {
-//       [collectionName]: items
-//     },
-//     null as any,
-//   ];
-// };
-
-const mockUsePaginatedQuery = (
-  collectionName: string,
-  items: any[],
-  hasMore: boolean
-): [any, any] => {
+const mockUsePaginatedQuery = (collectionName: string, items: any[], hasMore: boolean): [any, any] => {
   return [
     {
       [collectionName]: items,
       nextPage: {
         take: 10,
-        skip: 0,
+        skip: 0
       },
       hasMore,
-      count: 0,
+      count: 0
     },
-    null as any,
+    null as any
   ];
 };
 
-export const setupUseQuery = () => {
-  vi.mocked(useQuery).mockReturnValue([{}, {} as any]);
+export const setupUseQuery = (returnValue: any) => {
+  vi.mocked(useQuery).mockReturnValue([returnValue, { setQueryData: vi.fn() } as any]);
 };
 
-// TODO implement
-export const setupUseQueryOnce = (collectionName: string, items: any[]) => {
-  // vi.mocked(useQuery).mockReturnValueOnce(
-  //   mockUseQuery(collectionName, items)
-  // );
-  throw "NotImplementedError";
+export const setupUseQueryOnce = (returnValue: any) => {
+  vi.mocked(useQuery).mockReturnValueOnce([returnValue, {} as any]);
 };
 
 export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
