@@ -12,6 +12,7 @@ import {
 import CategoriesPage from ".";
 import NewCategoryPage from "./new";
 import { ISetupUsePaginatedQuery } from "test/types";
+import { ARIA_ROLE } from "test/ariaRoles";
 
 // global arrange
 const categories = [
@@ -90,8 +91,12 @@ describe("Category", () => {
     render(<CategoriesPage />);
 
     // assert
-    expect(screen.getByRole("link", { name: "Create Category" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: categories[0]?.name })).toBeInTheDocument();
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: "Create Category" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })
+    ).toBeInTheDocument();
   });
 
   test("Open Category list and navigate through pages", async () => {
@@ -104,7 +109,9 @@ describe("Category", () => {
       },
     });
 
-    expect(screen.getByRole("link", { name: categories[0]?.name })).toBeInTheDocument();
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })
+    ).toBeInTheDocument();
 
     setupUsePaginatedQueryOnce({
       ...globalUsePaginatedQueryParams,
@@ -113,10 +120,12 @@ describe("Category", () => {
     });
 
     // act
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: "Next" }));
 
     // assert
-    expect(screen.getByRole("link", { name: categories[10]?.name })).toBeInTheDocument();
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })
+    ).toBeInTheDocument();
   });
 });
 
@@ -155,13 +164,18 @@ describe("Category creating", () => {
     await userEvent.type(nameTexfield, categoryName);
     await userEvent.type(descriptionTexfield, "description test");
 
-    await userEvent.click(screen.getByRole("button", { name: "Create Category" }));
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: "Create Category" }));
 
     // assert
     await waitFor(() =>
-      expect(screen.queryByRole("heading", { name: "Create New Category" })).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: "Create New Category" })
+      ).not.toBeInTheDocument()
     );
-    expect(screen.getByRole("link", { name: "Create Category" })).toBeInTheDocument();
+
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: "Create Category" })
+    ).toBeInTheDocument();
 
     expect(screen.getByText(categoryName)).toBeInTheDocument();
   });
