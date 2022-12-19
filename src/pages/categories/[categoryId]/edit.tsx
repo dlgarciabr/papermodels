@@ -1,8 +1,7 @@
-import { Suspense } from "react";
-import { Routes } from "@blitzjs/next";
+import { Suspense, useContext } from "react";
+import { Routes, RouterContext } from "@blitzjs/next";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useQuery, useMutation } from "@blitzjs/rpc";
 import { useParam } from "@blitzjs/next";
 
@@ -12,7 +11,7 @@ import updateCategory from "src/categories/mutations/updateCategory";
 import { CategoryForm, FORM_ERROR } from "src/categories/components/CategoryForm";
 
 export const EditCategory = () => {
-  const router = useRouter();
+  const router = useContext(RouterContext);
   const categoryId = useParam("categoryId", "number");
   const [category, { setQueryData }] = useQuery(
     getCategory,
@@ -48,7 +47,7 @@ export const EditCategory = () => {
                 ...values,
               });
               await setQueryData(updated);
-              await router.push(Routes.ShowCategoryPage({ categoryId: updated.id }));
+              await router.push(Routes.CategoriesPage());
             } catch (error: any) {
               console.error(error);
               return {

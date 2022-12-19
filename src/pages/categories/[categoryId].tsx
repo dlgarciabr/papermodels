@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+// TODO remove this file after revamp on list
 import { Suspense } from "react";
 import { Routes } from "@blitzjs/next";
 import Head from "next/head";

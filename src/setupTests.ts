@@ -7,10 +7,11 @@ beforeAll(() => {
   vi.mock("@blitzjs/rpc", () => ({
     useMutation: () => [() => {}],
     usePaginatedQuery: vi.fn(),
+    useQuery: vi.fn(),
     resolver: {
       pipe: vi.fn(),
       zod: vi.fn(),
-      //   authorize: vi.fn()
+      authorize: vi.fn(),
     },
   }));
 });

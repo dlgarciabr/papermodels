@@ -29,6 +29,8 @@ export const __ModelNames__List = () => {
 
     const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
     const goToNextPage = () => router.push({ query: { page: page + 1 } });
+    const goToEditPage = (id: number) =>
+      router.push(Routes.Edit__ModelName__Page({ __modelId__: id }));
 
     return (
       <div>
@@ -38,6 +40,9 @@ export const __ModelNames__List = () => {
               <Link href={Routes.Show__ModelName__Page({ __modelId__: __modelName__.id })}>
                 <a>{__modelName__.name}</a>
               </Link>
+              <a href="#" onClick={() => goToEditPage(__modelId__.id)}>
+                &nbsp;edit
+              </a>
             </li>
           ))}
         </ul>

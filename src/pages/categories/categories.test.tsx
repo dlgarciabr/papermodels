@@ -8,11 +8,14 @@ import {
   cleanup,
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
+  setupUseQueryOnce,
+  setupUseQuery,
 } from "test/utils";
 import CategoriesPage from ".";
 import NewCategoryPage from "./new";
 import { ISetupUsePaginatedQuery } from "test/types";
 import { ARIA_ROLE } from "test/ariaRoles";
+import EditCategoryPage from "./[categoryId]/edit";
 
 // global arrange
 const categories = [
@@ -133,6 +136,7 @@ describe("Category creating", () => {
   test("User create a new category", async () => {
     // arrange
     const categoryName = "name test";
+
     setupUsePaginatedQueryOnce({
       collectionName: "categories",
       items: [
@@ -154,10 +158,10 @@ describe("Category creating", () => {
     });
 
     // act
-    const nameTexfield = screen.getByRole("textbox", {
+    const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: "Name",
     });
-    const descriptionTexfield = screen.getByRole("textbox", {
+    const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: "Description",
     });
 
@@ -178,5 +182,68 @@ describe("Category creating", () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText(categoryName)).toBeInTheDocument();
+  });
+});
+
+describe("Category changing", () => {
+  test("User edit an existing category", async () => {
+    // arrange
+    const categoryName = "name test";
+
+    setupUsePaginatedQueryOnce({
+      collectionName: "categories",
+      items: [
+        {
+          id: 1,
+          name: categoryName,
+        },
+      ],
+      hasMore: false,
+    });
+
+    setupUseQuery();
+
+    render(<CategoriesPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<EditCategoryPage />);
+        }),
+      },
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: "edit" }));
+
+    expect(
+      screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+        name: "Name",
+      }).innerText
+    ).toBe(categoryName);
+
+    // const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+    //   name: "Name",
+    // });
+    // const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+    //   name: "Description",
+    // });
+
+    // await userEvent.type(nameTexfield, categoryName);
+    // await userEvent.type(descriptionTexfield, "description test");
+
+    // await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: "Create Category" }));
+
+    // // assert
+    // await waitFor(() =>
+    //   expect(
+    //     screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: "Create New Category" })
+    //   ).not.toBeInTheDocument()
+    // );
+
+    // expect(
+    //   screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: "Create Category" })
+    // ).toBeInTheDocument();
+
+    // expect(screen.getByText(categoryName)).toBeInTheDocument();
   });
 });

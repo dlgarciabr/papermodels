@@ -2,8 +2,9 @@ import { vi } from "vitest";
 import { render as defaultRender } from "@testing-library/react";
 import { renderHook as defaultRenderHook } from "@testing-library/react-hooks";
 import { NextRouter } from "next/router";
+import * as nextRouter from "next/router";
 import { BlitzProvider, RouterContext } from "@blitzjs/next";
-import { usePaginatedQuery } from "@blitzjs/rpc";
+import { usePaginatedQuery, useQuery } from "@blitzjs/rpc";
 import { QueryClient } from "@tanstack/react-query";
 import { ISetupUsePaginatedQuery } from "./types";
 
@@ -60,14 +61,14 @@ export function render(
   { wrapper, router, dehydratedState, ...options }: RenderOptions = {}
 ) {
   if (!wrapper) {
-    // console.log('###router1###', router)
     // Add a default context wrapper if one isn't supplied from the test
+    const mockedRouter = createMockRouter({ ...router });
+    const useRouter = vi.spyOn(require("next/router"), "useRouter");
+    useRouter.mockImplementation(() => mockedRouter);
     wrapper = ({ children }: { children: React.ReactNode }) => {
       return (
         <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-          <RouterContext.Provider value={createMockRouter({ ...router })}>
-            {children}
-          </RouterContext.Provider>
+          <RouterContext.Provider value={mockedRouter}>{children}</RouterContext.Provider>
         </BlitzProvider>
       );
     };
@@ -113,6 +114,18 @@ export const mockNextImage = () => {
   }));
 };
 
+// const mockUseQuery = (
+//   collectionName: string,
+//   items: any[]
+// ): [any, any] => {
+//   return [
+//     {
+//       [collectionName]: items
+//     },
+//     null as any,
+//   ];
+// };
+
 const mockUsePaginatedQuery = (
   collectionName: string,
   items: any[],
@@ -131,6 +144,16 @@ const mockUsePaginatedQuery = (
     null as any,
   ];
 };
+
+export const setupUseQuery = () => {
+  vi.mocked(useQuery).mockReturnValue([{}, {} as any]);
+};
+
+// export const setupUseQueryOnce = (collectionName: string, items: any[]) => {
+//   vi.mocked(useQuery).mockReturnValueOnce(
+//     mockUseQuery(collectionName, items)
+//   );
+// };
 
 export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
   vi.mocked(usePaginatedQuery).mockReturnValue(
