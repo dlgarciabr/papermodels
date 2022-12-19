@@ -149,11 +149,13 @@ export const setupUseQuery = () => {
   vi.mocked(useQuery).mockReturnValue([{}, {} as any]);
 };
 
-// export const setupUseQueryOnce = (collectionName: string, items: any[]) => {
-//   vi.mocked(useQuery).mockReturnValueOnce(
-//     mockUseQuery(collectionName, items)
-//   );
-// };
+// TODO implement
+export const setupUseQueryOnce = (collectionName: string, items: any[]) => {
+  // vi.mocked(useQuery).mockReturnValueOnce(
+  //   mockUseQuery(collectionName, items)
+  // );
+  throw "NotImplementedError";
+};
 
 export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
   vi.mocked(usePaginatedQuery).mockReturnValue(
