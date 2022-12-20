@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+// TODO remove ignore and improve coverage
 import { Suspense } from "react";
 import { Routes } from "@blitzjs/next";
 import Head from "next/head";
