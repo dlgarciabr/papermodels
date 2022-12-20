@@ -1,7 +1,7 @@
 name: Vercel Production Deployment
 env:
   VERCEL_ORG_ID: dlgarciabr
-  VERCEL_PROJECT_ID: papermodels
+  VERCEL_PROJECT_ID: prj_ZlPjR3kxAR1cl2uxasUAfEkvFADu
 on:
   push:
     branches:
