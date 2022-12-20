@@ -1,12 +1,12 @@
-import { Suspense } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import Layout from "src/core/layouts/Layout"
-import { useCurrentUser } from "src/users/hooks/useCurrentUser"
-import logout from "src/auth/mutations/logout"
-import logo from "public/logo.png"
-import { useMutation } from "@blitzjs/rpc"
-import { Routes, BlitzPage } from "@blitzjs/next"
+import { Suspense } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Layout from 'src/core/layouts/Layout';
+import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
+import logout from 'src/auth/mutations/logout';
+import logo from 'public/logo.png';
+import { useMutation } from '@blitzjs/rpc';
+import { Routes, BlitzPage } from '@blitzjs/next';
 
 /*
  * This file is just for a pleasant getting started page for your new app.
@@ -14,58 +14,64 @@ import { Routes, BlitzPage } from "@blitzjs/next"
  */
 
 const UserInfo = () => {
-  const currentUser = useCurrentUser()
-  const [logoutMutation] = useMutation(logout)
+  const currentUser = useCurrentUser();
+  const [logoutMutation] = useMutation(logout);
 
+  // TODO implement logout test
+  /* istanbul ignore next -- @preserve */
+  const handleLogout = async () => await logoutMutation();
+
+  // TODO implement tests to cover all branches
+  /* istanbul ignore else -- @preserve */
   if (currentUser) {
     return (
       <>
         <button
-          className="button small"
-          onClick={async () => {
-            await logoutMutation()
-          }}
-        >
+          className='button small'
+          /* istanbul ignore next -- @preserve */
+          onClick={handleLogout}>
           Logout
         </button>
         <div>
           User id: <code>{currentUser.id}</code>
           <br />
           User role: <code>{currentUser.role}</code>
+          <br />
+          User email: <code>{currentUser.email}</code>
         </div>
       </>
-    )
+    );
   } else {
     return (
       <>
         <Link href={Routes.SignupPage()}>
-          <a className="button small">
+          <a className='button small'>
             <strong>Sign Up</strong>
           </a>
         </Link>
         <Link href={Routes.LoginPage()}>
-          <a className="button small">
+          <a className='button small'>
             <strong>Login</strong>
           </a>
         </Link>
       </>
-    )
+    );
   }
-}
+};
 
 const Home: BlitzPage = () => {
   return (
-    <Layout title="Home">
-      <div className="container">
+    <Layout title='Home'>
+      <div className='container'>
         <main>
-          <div className="logo">
-            <Image src={`${logo.src}`} alt="blitzjs" width="256px" height="118px" layout="fixed" />
+          <div className='logo'>
+            <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='118px' layout='fixed' />
           </div>
           <p>
             <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
           </p>
-          <div className="buttons" style={{ marginTop: "1rem", marginBottom: "1rem" }}>
-            <Suspense fallback="Loading...">
+          <div className='buttons' style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+            <Suspense fallback='Loading...'>
               <UserInfo />
             </Suspense>
           </div>
@@ -78,7 +84,7 @@ const Home: BlitzPage = () => {
           <pre>
             <code>blitz generate all project name:string</code>
           </pre>
-          <div style={{ marginBottom: "1rem" }}>(And select Yes to run prisma migrate)</div>
+          <div style={{ marginBottom: '1rem' }}>(And select Yes to run prisma migrate)</div>
           <div>
             <p>
               Then <strong>restart the server</strong>
@@ -90,35 +96,28 @@ const Home: BlitzPage = () => {
               <code>blitz dev</code>
             </pre>
             <p>
-              and go to{" "}
-              <Link href="/questions">
-                <a>/questions</a>
+              and go to{' '}
+              <Link href='/categories'>
+                <a>/categories</a>
               </Link>
             </p>
           </div>
-          <div className="buttons" style={{ marginTop: "5rem" }}>
+          <div className='buttons' style={{ marginTop: '5rem' }}>
             <a
-              className="button"
-              href="https://blitzjs.com/docs/getting-started?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+              className='button'
+              href='https://blitzjs.com/docs/getting-started?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
+              target='_blank'
+              rel='noopener noreferrer'>
               Documentation
             </a>
             <a
-              className="button-outline"
-              href="https://github.com/blitz-js/blitz"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+              className='button-outline'
+              href='https://github.com/blitz-js/blitz'
+              target='_blank'
+              rel='noopener noreferrer'>
               Github Repo
             </a>
-            <a
-              className="button-outline"
-              href="https://discord.blitzjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a className='button-outline' href='https://discord.blitzjs.com' target='_blank' rel='noopener noreferrer'>
               Discord Community
             </a>
           </div>
@@ -126,23 +125,22 @@ const Home: BlitzPage = () => {
 
         <footer>
           <a
-            href="https://blitzjs.com?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+            href='https://blitzjs.com?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
+            target='_blank'
+            rel='noopener noreferrer'>
             Powered by Blitz.js
           </a>
         </footer>
 
         <style jsx global>{`
-          @import url("https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap");
+          @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap');
 
           html,
           body {
             padding: 0;
             margin: 0;
-            font-family: "Libre Franklin", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-              Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+            font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
+              Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
           }
 
           * {
@@ -245,8 +243,8 @@ const Home: BlitzPage = () => {
           }
           code {
             font-size: 0.9rem;
-            font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-              Bitstream Vera Sans Mono, Courier New, monospace;
+            font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono,
+              Courier New, monospace;
           }
 
           .grid {
@@ -268,7 +266,7 @@ const Home: BlitzPage = () => {
         `}</style>
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

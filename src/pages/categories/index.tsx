@@ -1,16 +1,17 @@
-import { Suspense } from "react";
-import { Routes } from "@blitzjs/next";
+import { Suspense, useContext } from "react";
+import { RouterContext, Routes } from "@blitzjs/next";
 import Head from "next/head";
 import Link from "next/link";
 import { usePaginatedQuery } from "@blitzjs/rpc";
-import { useRouter } from "next/router";
 import Layout from "src/core/layouts/Layout";
 import getCategories from "src/categories/queries/getCategories";
+// import { useRouter } from "next/router";
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 10;
 
 export const CategoriesList = () => {
-  const router = useRouter();
+  const router = useContext(RouterContext);
+  // const router = useRouter();
   const page = Number(router.query.page) || 0;
   const [{ categories, hasMore }] = usePaginatedQuery(getCategories, {
     orderBy: { id: "asc" },
@@ -20,6 +21,7 @@ export const CategoriesList = () => {
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
+  const goToEditPage = (id: number) => router.push(Routes.EditCategoryPage({ categoryId: id }));
 
   return (
     <div>
@@ -29,6 +31,9 @@ export const CategoriesList = () => {
             <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
               <a>{category.name}</a>
             </Link>
+            <a href="#" onClick={() => goToEditPage(category.id)}>
+              &nbsp;edit
+            </a>
           </li>
         ))}
       </ul>
@@ -49,14 +54,12 @@ const CategoriesPage = () => {
       <Head>
         <title>Categories</title>
       </Head>
-
       <div>
         <p>
           <Link href={Routes.NewCategoryPage()}>
             <a>Create Category</a>
           </Link>
         </p>
-
         <Suspense fallback={<div>Loading...</div>}>
           <CategoriesList />
         </Suspense>

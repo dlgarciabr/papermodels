@@ -1,31 +1,32 @@
-import { Suspense } from "react"
-import { Routes } from "@blitzjs/next"
-import Head from "next/head"
-import Link from "next/link"
-import { useRouter } from "next/router"
-import { useQuery, useMutation } from "@blitzjs/rpc"
-import { useParam } from "@blitzjs/next"
-import updateChoice from "src/choices/mutations/updateChoice"
+/* istanbul ignore file -- @preserve */
+import { Suspense } from "react";
+import { Routes } from "@blitzjs/next";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useQuery, useMutation } from "@blitzjs/rpc";
+import { useParam } from "@blitzjs/next";
+import updateChoice from "src/choices/mutations/updateChoice";
 
-import Layout from "src/core/layouts/Layout"
-import getQuestion from "src/questions/queries/getQuestion"
-import deleteQuestion from "src/questions/mutations/deleteQuestion"
+import Layout from "src/core/layouts/Layout";
+import getQuestion from "src/questions/queries/getQuestion";
+import deleteQuestion from "src/questions/mutations/deleteQuestion";
 
 export const Question = () => {
-  const router = useRouter()
-  const questionId = useParam("questionId", "number")
-  const [deleteQuestionMutation] = useMutation(deleteQuestion)
-  const [question, { refetch }] = useQuery(getQuestion, { id: questionId })
-  const [updateChoiceMutation] = useMutation(updateChoice)
+  const router = useRouter();
+  const questionId = useParam("questionId", "number");
+  const [deleteQuestionMutation] = useMutation(deleteQuestion);
+  const [question, { refetch }] = useQuery(getQuestion, { id: questionId });
+  const [updateChoiceMutation] = useMutation(updateChoice);
 
   const handleVote = async (id: number) => {
     try {
-      await updateChoiceMutation({ id })
-      void refetch()
+      await updateChoiceMutation({ id });
+      void refetch();
     } catch (error) {
-      alert("Error updating choice " + JSON.stringify(error, null, 2))
+      alert("Error updating choice " + JSON.stringify(error, null, 2));
     }
-  }
+  };
 
   return (
     <>
@@ -54,8 +55,8 @@ export const Question = () => {
           type="button"
           onClick={async () => {
             if (window.confirm("This will be deleted")) {
-              await deleteQuestionMutation({ id: question.id })
-              await router.push(Routes.QuestionsPage())
+              await deleteQuestionMutation({ id: question.id });
+              await router.push(Routes.QuestionsPage());
             }
           }}
           style={{ marginLeft: "0.5rem" }}
@@ -64,8 +65,8 @@ export const Question = () => {
         </button>
       </div>
     </>
-  )
-}
+  );
+};
 
 const ShowQuestionPage = () => {
   return (
@@ -80,10 +81,10 @@ const ShowQuestionPage = () => {
         <Question />
       </Suspense>
     </div>
-  )
-}
+  );
+};
 
-ShowQuestionPage.authenticate = true
-ShowQuestionPage.getLayout = (page) => <Layout>{page}</Layout>
+ShowQuestionPage.authenticate = true;
+ShowQuestionPage.getLayout = (page) => <Layout>{page}</Layout>;
 
-export default ShowQuestionPage
+export default ShowQuestionPage;
