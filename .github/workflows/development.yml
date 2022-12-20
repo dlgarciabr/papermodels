@@ -17,7 +17,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   QA:
     runs-on: ubuntu-latest
@@ -34,13 +33,11 @@ jobs:
       # Runs a single command using the runners shell
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
+        # with:
+        #   node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: npm ci
-
-      #      - run: npm run build --if-present
       - name: Run tests
         run: npm run test:coverage
   Deploy-Preview:
