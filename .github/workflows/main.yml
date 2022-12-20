@@ -47,7 +47,7 @@ jobs:
       - name: Run tests
         run: npm run test:coverage
   Deploy-Preview:
-    needs: test
+    needs: QA
     runs-on: ubuntu-latest
     environment: preview
     steps:
