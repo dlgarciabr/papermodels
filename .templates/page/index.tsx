@@ -1,17 +1,17 @@
-import { Suspense } from "react";
-import { RouterContext, Routes } from "@blitzjs/next";
+import { Suspense } from 'react';
+import { RouterContext, Routes } from '@blitzjs/next';
 if (process.env.parentModel) {
-  import Head from "next/head";
-  import Link from "next/link";
-  import { usePaginatedQuery } from "@blitzjs/rpc";
-  import { useParam } from "@blitzjs/next";
+  import Head from 'next/head';
+  import Link from 'next/link';
+  import { usePaginatedQuery } from '@blitzjs/rpc';
+  import { useParam } from '@blitzjs/next';
 } else {
-  import Head from "next/head";
-  import Link from "next/link";
-  import { usePaginatedQuery } from "@blitzjs/rpc";
+  import Head from 'next/head';
+  import Link from 'next/link';
+  import { usePaginatedQuery } from '@blitzjs/rpc';
 }
-import Layout from "src/core/layouts/Layout";
-import get__ModelNames__ from "src/__modelNamesPath__/queries/get__ModelNames__";
+import Layout from 'src/core/layouts/Layout';
+import get__ModelNames__ from 'src/__modelNamesPath__/queries/get__ModelNames__';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -19,18 +19,17 @@ export const __ModelNames__List = () => {
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
   if (process.env.parentModel) {
-    const __parentModelId__ = useParam("__parentModelId__", "number");
+    const __parentModelId__ = useParam('__parentModelId__', 'number');
     const [{ __modelNames__, hasMore }] = usePaginatedQuery(get__ModelNames__, {
       where: { __parentModel__: { id: __parentModelId__! } },
-      orderBy: { id: "asc" },
+      orderBy: { id: 'asc' },
       skip: ITEMS_PER_PAGE * page,
-      take: ITEMS_PER_PAGE,
+      take: ITEMS_PER_PAGE
     });
 
     const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
     const goToNextPage = () => router.push({ query: { page: page + 1 } });
-    const goToEditPage = (id: number) =>
-      router.push(Routes.Edit__ModelName__Page({ __modelId__: id }));
+    const goToEditPage = (id: number) => router.push(Routes.Edit__ModelName__Page({ __modelId__: id }));
 
     return (
       <div>
@@ -40,7 +39,7 @@ export const __ModelNames__List = () => {
               <Link href={Routes.Show__ModelName__Page({ __modelId__: __modelName__.id })}>
                 <a>{__modelName__.name}</a>
               </Link>
-              <a href="#" onClick={() => goToEditPage(__modelId__.id)}>
+              <a href='#' onClick={() => goToEditPage(__modelId__.id)}>
                 &nbsp;edit
               </a>
             </li>
@@ -57,9 +56,9 @@ export const __ModelNames__List = () => {
     );
   } else {
     const [{ __modelNames__, hasMore }] = usePaginatedQuery(get__ModelNames__, {
-      orderBy: { id: "asc" },
+      orderBy: { id: 'asc' },
       skip: ITEMS_PER_PAGE * page,
-      take: ITEMS_PER_PAGE,
+      take: ITEMS_PER_PAGE
     });
 
     const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
@@ -70,13 +69,12 @@ export const __ModelNames__List = () => {
         <ul>
           {__modelNames__.map((__modelName__) => (
             <li key={__modelName__.id}>
-              <if condition="parentModel">
+              <if condition='parentModel'>
                 <Link
                   href={Routes.Show__ModelName__Page({
                     __parentModelId__: __parentModelId__!,
-                    __modelId__: __modelName__.id,
-                  })}
-                >
+                    __modelId__: __modelName__.id
+                  })}>
                   <a>{__modelName__.name}</a>
                 </Link>
                 <else>
@@ -102,7 +100,7 @@ export const __ModelNames__List = () => {
 
 const __ModelNames__Page = () => {
   if (process.env.parentModel) {
-    const __parentModelId__ = useParam("__parentModelId__", "number");
+    const __parentModelId__ = useParam('__parentModelId__', 'number');
   }
 
   return (
@@ -113,7 +111,7 @@ const __ModelNames__Page = () => {
 
       <div>
         <p>
-          <if condition="parentModel">
+          <if condition='parentModel'>
             <Link href={Routes.New__ModelName__Page({ __parentModelId__: __parentModelId__! })}>
               <a>Create __ModelName__</a>
             </Link>
