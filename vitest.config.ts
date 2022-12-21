@@ -1,9 +1,9 @@
 // vitest.config.js
-import { loadEnvConfig } from "@next/env";
-import { defineConfig } from "vitest/config";
+import { loadEnvConfig } from '@next/env';
+import { defineConfig } from 'vitest/config';
 
-import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
+import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 const projectDir = process.cwd();
 loadEnvConfig(projectDir);
@@ -12,20 +12,20 @@ loadEnvConfig(projectDir);
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
-    dir: "./",
+    dir: './',
     globals: true,
-    environment: "jsdom",
-    globalSetup: "./src/setupTestGlobal.ts",
-    setupFiles: "./src/setupTests.ts",
+    environment: 'jsdom',
+    globalSetup: './src/setupTestGlobal.ts',
+    setupFiles: './src/setupTests.ts',
     coverage: {
-      provider: "istanbul",
+      provider: 'istanbul',
       all: true,
-      reporter: ["text", "json", "html"],
-      include: ["src/pages/**"],
+      reporter: ['text', 'json', 'html'],
+      include: ['src/pages/**', 'src/pageComponents/**'],
       branches: 80,
       functions: 80,
       lines: 80,
-      statements: -10,
-    },
-  },
+      statements: -10
+    }
+  }
 });
