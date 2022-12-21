@@ -1,3 +1,2 @@
-import ShowCategoryPage from 'src/pageComponents/category/[categoryId]';
-
+import ShowCategoryPage from 'src/pageComponents/categories/[categoryId]';
 export default ShowCategoryPage;

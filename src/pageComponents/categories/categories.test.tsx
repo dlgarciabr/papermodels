@@ -8,9 +8,7 @@ import {
   cleanup,
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
-  setupUseQuery,
-  modifyMockedRouter,
-  getMockedRouter
+  setupUseQuery
 } from 'test/utils';
 import CategoriesPage from '.';
 import NewCategoryPage from './new';

@@ -4,16 +4,14 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { usePaginatedQuery } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
-import getCategories from 'src/categories/queries/getCategories';
-// import { useRouter } from "next/router";
+import getItems from 'src/items/queries/getItems';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 100;
 
-export const CategoriesList = () => {
+export const ItemsList = () => {
   const router = useContext(RouterContext);
-  // const router = useRouter();
   const page = Number(router.query.page) || 0;
-  const [{ categories, hasMore }] = usePaginatedQuery(getCategories, {
+  const [{ items, hasMore }] = usePaginatedQuery(getItems, {
     orderBy: { id: 'asc' },
     skip: ITEMS_PER_PAGE * page,
     take: ITEMS_PER_PAGE
@@ -21,23 +19,18 @@ export const CategoriesList = () => {
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
-  const goToEditPage = (id: number) => router.push(Routes.EditCategoryPage({ categoryId: id }));
 
   return (
     <div>
       <ul>
-        {categories.map((category) => (
-          <li key={category.id}>
-            <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
-              <a>{category.name}</a>
+        {items.map((item) => (
+          <li key={item.id}>
+            <Link href={Routes.ShowItemPage({ itemId: item.id })}>
+              <a>{item.name}</a>
             </Link>
-            <a href='#' onClick={() => goToEditPage(category.id)}>
-              &nbsp;edit
-            </a>
           </li>
         ))}
       </ul>
-
       <button disabled={page === 0} onClick={goToPreviousPage}>
         Previous
       </button>
@@ -48,24 +41,26 @@ export const CategoriesList = () => {
   );
 };
 
-const CategoriesPage = () => {
+const ItemsPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Categories</title>
+        <title>Items</title>
       </Head>
+
       <div>
         <p>
-          <Link href={Routes.NewCategoryPage()}>
-            <a>Create Category</a>
+          <Link href={Routes.NewItemPage()}>
+            <a>Create Item</a>
           </Link>
         </p>
+
         <Suspense fallback={<div>Loading...</div>}>
-          <CategoriesList />
+          <ItemsList />
         </Suspense>
       </div>
     </Layout>
   );
 };
 
-export default CategoriesPage;
+export default ItemsPage;

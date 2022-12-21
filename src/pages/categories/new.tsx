@@ -1,3 +1,2 @@
-import NewCategoryPage from 'src/pageComponents/category/new';
-
+import NewCategoryPage from 'src/pageComponents/categories/new';
 export default NewCategoryPage;
