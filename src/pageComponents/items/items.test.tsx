@@ -105,7 +105,7 @@ describe('Item', () => {
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 
-  test.skip('Open Item list and navigate through pages', async () => {
+  test('Open Item list and navigate through pages', async () => {
     // arrange
     setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
 
@@ -132,7 +132,7 @@ describe('Item', () => {
 });
 
 describe('Item creating', () => {
-  test.skip('User create a new item', async () => {
+  test('User create a new item', async () => {
     // arrange
     const itemName = 'name test';
 
@@ -163,9 +163,13 @@ describe('Item creating', () => {
     const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Description'
     });
+    const categoryTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'categoryId'
+    });
 
     await userEvent.type(nameTexfield, itemName);
     await userEvent.type(descriptionTexfield, 'description test');
+    await userEvent.type(categoryTexfield, '1');
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
@@ -181,7 +185,7 @@ describe('Item creating', () => {
 });
 
 describe('Item changing', () => {
-  test.skip('User edit an existing item', async () => {
+  test('User edit an existing item', async () => {
     // arrange
     const itemName = 'name test';
     const itemDescription = 'desc test';

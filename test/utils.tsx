@@ -3,7 +3,7 @@ import { render as defaultRender } from '@testing-library/react';
 import { renderHook as defaultRenderHook } from '@testing-library/react-hooks';
 import { NextRouter } from 'next/router';
 import { BlitzProvider, RouterContext } from '@blitzjs/next';
-import { usePaginatedQuery, useQuery } from '@blitzjs/rpc';
+import { useMutation, usePaginatedQuery, useQuery } from '@blitzjs/rpc';
 import { QueryClient } from '@tanstack/react-query';
 import { ISetupUsePaginatedQuery } from './types';
 
@@ -153,6 +153,10 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
   vi.mocked(usePaginatedQuery).mockReturnValueOnce(
     mockUsePaginatedQuery(params.collectionName, params.items, params.hasMore)
   );
+};
+
+export const setupUseMutationOnce = (createMutation: Promise<void>) => {
+  vi.mocked(useMutation).mockReturnValueOnce([createMutation as any, {} as any]);
 };
 
 export const mockRouterOperation = (callback: Function) =>

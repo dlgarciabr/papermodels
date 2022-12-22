@@ -26,7 +26,7 @@ const NewCategoryPage = () => {
             await createCategoryMutation(values);
             await router.push(Routes.CategoriesPage());
           } catch (error: any) {
-            console.error(error);
+            console.error('error', error);
             return {
               [FORM_ERROR]: error.toString()
             };

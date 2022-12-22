@@ -1,13 +1,13 @@
-import { Routes } from '@blitzjs/next';
+import { useContext } from 'react';
+import { Routes, RouterContext } from '@blitzjs/next';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useMutation } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import createItem from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 
 const NewItemPage = () => {
-  const router = useRouter();
+  const router = useContext(RouterContext);
   const [createItemMutation] = useMutation(createItem);
 
   return (
@@ -27,7 +27,7 @@ const NewItemPage = () => {
               ...values,
               categoryId: new Number(values.categoryId)
             });
-            await router.push(Routes.ShowItemPage({ itemId: item.id }));
+            await router.push(Routes.ItemsPage());
           } catch (error: any) {
             console.error(error);
             return {

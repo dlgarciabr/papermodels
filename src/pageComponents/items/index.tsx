@@ -19,6 +19,7 @@ export const ItemsList = () => {
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
+  const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
   return (
     <div>
@@ -28,6 +29,9 @@ export const ItemsList = () => {
             <Link href={Routes.ShowItemPage({ itemId: item.id })}>
               <a>{item.name}</a>
             </Link>
+            <a href='#' onClick={() => goToEditPage(item.id)}>
+              &nbsp;edit
+            </a>
           </li>
         ))}
       </ul>
