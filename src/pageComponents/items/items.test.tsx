@@ -8,7 +8,8 @@ import {
   cleanup,
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
-  setupUseQuery
+  setupUseQuery,
+  setupUseMutationOnce
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -181,6 +182,48 @@ describe('Item creating', () => {
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
 
     expect(screen.getByText(itemName)).toBeInTheDocument();
+  });
+
+  test('User receives an error trying to create an incomplete new item', async () => {
+    // arrange
+    const itemName = 'name test';
+
+    const error = {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: ['name'],
+      message: 'Required'
+    };
+
+    const createItemMutation = vi.fn().mockRejectedValueOnce(error);
+    setupUseMutationOnce(createItemMutation as any);
+
+    setupUsePaginatedQueryOnce({
+      collectionName: 'items',
+      items: [
+        {
+          id: 1,
+          name: itemName
+        }
+      ],
+      hasMore: false
+    });
+
+    render(<NewItemPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<ItemsPage />);
+        })
+      }
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
+
+    // assert
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Item' })).toBeInTheDocument();
   });
 });
 
