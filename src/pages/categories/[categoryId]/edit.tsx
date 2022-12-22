@@ -1,3 +1,2 @@
-import EditCategoryPage from 'src/pageComponents/category/[categoryId]/edit';
-
+import EditCategoryPage from 'src/pageComponents/categories/[categoryId]/edit';
 export default EditCategoryPage;

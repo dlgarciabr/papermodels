@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import { useMutation } from '@blitzjs/rpc';
 
 const ignoredErrors = [
   {
@@ -18,6 +19,21 @@ const ignoredErrors = [
 
 const originalError = global.console.error;
 
+beforeAll(() => {
+  vi.mock('@blitzjs/rpc', () => ({
+    useMutation: vi.fn(),
+    usePaginatedQuery: vi.fn(),
+    useQuery: vi.fn(),
+    resolver: {
+      pipe: vi.fn(),
+      zod: vi.fn(),
+      authorize: vi.fn()
+    },
+    default: { myDefaultKey: vi.fn() },
+    namedExport: vi.fn()
+  }));
+});
+
 beforeEach(() => {
   /**
    * mock on console.error to hide problems that are shown only on test environment
@@ -30,7 +46,7 @@ beforeEach(() => {
     };
     const ignoredError = ignoredErrors.filter((ignoredError) => {
       return (
-        args[0].includes(ignoredError.message) &&
+        args.includes(ignoredError.message) &&
         (!ignoredError.params || validateArgs(ignoredError.params, args.slice(1)))
       );
     });
@@ -40,19 +56,7 @@ beforeEach(() => {
     }
     originalError(...args);
   });
-});
-
-beforeAll(() => {
-  vi.mock('@blitzjs/rpc', () => ({
-    useMutation: () => [() => {}],
-    usePaginatedQuery: vi.fn(),
-    useQuery: vi.fn(),
-    resolver: {
-      pipe: vi.fn(),
-      zod: vi.fn(),
-      authorize: vi.fn()
-    }
-  }));
+  vi.mocked(useMutation).mockReturnValue([async () => {}, {} as any]);
 });
 
 afterEach(() => {

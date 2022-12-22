@@ -1,5 +1,6 @@
 import { expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
+import { useMutation } from '@blitzjs/rpc';
 
 import {
   render,
@@ -9,14 +10,15 @@ import {
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
   setupUseQuery,
-  modifyMockedRouter,
-  getMockedRouter
+  setupUseMutationOnce,
+  setupUseMutationRejectOnce
 } from 'test/utils';
 import CategoriesPage from '.';
 import NewCategoryPage from './new';
 import { ISetupUsePaginatedQuery } from 'test/types';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditCategoryPage from './[categoryId]/edit';
+import { typeToFlattenedError, ZodError, ZodIssue } from 'zod';
 
 // global arrange
 const categories = [
@@ -172,6 +174,48 @@ describe('Category creating', () => {
 
     expect(screen.getByText(categoryName)).toBeInTheDocument();
   });
+
+  test('User receives an error trying to create an incomplete new category', async () => {
+    // arrange
+    const categoryName = 'name test';
+
+    const error = {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: ['name'],
+      message: 'Required'
+    };
+
+    const createCategoryMutation = vi.fn().mockRejectedValueOnce(error);
+    setupUseMutationOnce(createCategoryMutation as any);
+
+    setupUsePaginatedQueryOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: categoryName
+        }
+      ],
+      hasMore: false
+    });
+
+    render(<NewCategoryPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<CategoriesPage />);
+        })
+      }
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Category' }));
+
+    // assert
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Category' })).toBeInTheDocument();
+  });
 });
 
 describe('Category changing', () => {
@@ -240,5 +284,84 @@ describe('Category changing', () => {
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
 
     expect(screen.getByText(categoryNewName)).toBeInTheDocument();
+  });
+
+  // TODO review the test below to work properly
+  test.skip('User receives an error trying to edit an incomplete category', async () => {
+    // arrange
+    const categoryName = 'name test';
+    const categoryDescription = 'desc test';
+
+    const categoryNewName = ' ';
+    const categoryNewDescription = ' ';
+
+    setupUsePaginatedQueryOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: categoryName
+        }
+      ],
+      hasMore: false
+    });
+
+    // const error = {
+    //   code: 'invalid_type',
+    //   expected: 'string',
+    //   received: 'undefined',
+    //   path: ['name'],
+    //   message: 'Required'
+    // };
+
+    // const updateCategoryMutation = vi.fn().mockRejectedValueOnce({});
+    // setupUseMutationOnce(updateCategoryMutation as any);
+
+    setupUseQuery({ name: categoryName, description: categoryDescription });
+
+    render(<CategoriesPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<EditCategoryPage />);
+        })
+      }
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+
+    const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Name'
+    });
+    const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Description'
+    });
+
+    expect((nameTexfield as HTMLInputElement).value).toBe(categoryName);
+    expect((descriptionTexfield as HTMLInputElement).value).toBe(categoryDescription);
+
+    // await userEvent.type(nameTexfield, categoryNewName);
+    // await userEvent.type(descriptionTexfield, categoryNewDescription);
+    // await userEvent.clear(nameTexfield);
+    // await userEvent.clear(descriptionTexfield);
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Update Category' }));
+
+    // assert
+    // expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Edit Category' })).toBeInTheDocument();
+
+    setupUsePaginatedQueryOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: categoryNewName
+        }
+      ],
+      hasMore: false
+    });
+    cleanup();
+    render(<CategoriesPage />);
   });
 });

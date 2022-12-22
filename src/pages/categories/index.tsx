@@ -1,3 +1,2 @@
-import CategoriesPage from 'src/pageComponents/category';
-
+import CategoriesPage from 'src/pageComponents/categories';
 export default CategoriesPage;
