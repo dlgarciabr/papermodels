@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import { useMutation } from '@blitzjs/rpc';
 
-const ignoredErrors = [
+const ignoredConsoleErrors = [
   {
     message: 'Warning: Received `%s` for a non-boolean attribute `%s`.',
     params: ['true', 'jsx']
@@ -20,6 +20,45 @@ const ignoredErrors = [
 const originalError = global.console.error;
 
 beforeAll(() => {
+  mockDefaultBlitzRPC();
+});
+
+beforeEach(() => {
+  hideTestErrorsFromConsole();
+  initializeDefaultBlitzMock();
+});
+
+afterEach(() => {
+  vi.resetAllMocks();
+});
+
+afterAll(() => {});
+
+/**
+ * mock console.error to hide problems that are shown only on test environment
+ */
+const hideTestErrorsFromConsole = () => {
+  vi.spyOn(global.console, 'error').mockImplementation((...args) => {
+    const validateArgs = (ignoredParams: string[], args: string[]): boolean => {
+      return ignoredParams.every((param) => {
+        return args.indexOf(param) !== -1;
+      });
+    };
+    const ignoredError = ignoredConsoleErrors.filter((ignoredError) => {
+      return (
+        args.includes(ignoredError.message) &&
+        (!ignoredError.params || validateArgs(ignoredError.params, args.slice(1)))
+      );
+    });
+
+    if (ignoredError) {
+      return;
+    }
+    originalError(...args);
+  });
+};
+
+const mockDefaultBlitzRPC = () => {
   vi.mock('@blitzjs/rpc', () => ({
     useMutation: vi.fn(),
     usePaginatedQuery: vi.fn(),
@@ -32,35 +71,8 @@ beforeAll(() => {
     default: { myDefaultKey: vi.fn() },
     namedExport: vi.fn()
   }));
-});
+};
 
-beforeEach(() => {
-  /**
-   * mock on console.error to hide problems that are shown only on test environment
-   */
-  vi.spyOn(global.console, 'error').mockImplementation((...args) => {
-    const validateArgs = (ignoredParams: string[], args: string[]): boolean => {
-      return ignoredParams.every((param) => {
-        return args.indexOf(param) !== -1;
-      });
-    };
-    const ignoredError = ignoredErrors.filter((ignoredError) => {
-      return (
-        args.includes(ignoredError.message) &&
-        (!ignoredError.params || validateArgs(ignoredError.params, args.slice(1)))
-      );
-    });
-
-    if (ignoredError) {
-      return;
-    }
-    originalError(...args);
-  });
+const initializeDefaultBlitzMock = () => {
   vi.mocked(useMutation).mockReturnValue([async () => {}, {} as any]);
-});
-
-afterEach(() => {
-  vi.resetAllMocks();
-});
-
-afterAll(() => {});
+};
