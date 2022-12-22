@@ -155,8 +155,8 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
   );
 };
 
-export const setupUseMutationOnce = (createMutation: Promise<void>) => {
-  vi.mocked(useMutation).mockReturnValueOnce([createMutation as any, {} as any]);
+export const setupUseMutationOnce = (mutation: Promise<void>) => {
+  vi.mocked(useMutation).mockReturnValueOnce([mutation as any, {} as any]);
 };
 
 export const mockRouterOperation = (callback: Function) =>
