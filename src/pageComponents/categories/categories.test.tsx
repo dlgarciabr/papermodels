@@ -1,6 +1,5 @@
 import { expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { useMutation } from '@blitzjs/rpc';
 
 import {
   render,
@@ -10,15 +9,13 @@ import {
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
   setupUseQuery,
-  setupUseMutationOnce,
-  setupUseMutationRejectOnce
+  setupUseMutationOnce
 } from 'test/utils';
 import CategoriesPage from '.';
 import NewCategoryPage from './new';
 import { ISetupUsePaginatedQuery } from 'test/types';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditCategoryPage from './[categoryId]/edit';
-import { typeToFlattenedError, ZodError, ZodIssue } from 'zod';
 
 // global arrange
 const categories = [
