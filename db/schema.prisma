@@ -100,4 +100,14 @@ model Item {
   description String
   category    Category @relation(fields: [categoryId], references: [id])
   categoryId  Int
+  files       File[]
+}
+
+model File {
+  id        String   @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  type      String
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    Int
 }

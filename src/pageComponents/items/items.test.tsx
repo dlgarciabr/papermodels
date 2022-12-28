@@ -294,4 +294,16 @@ describe('Item changing', () => {
 
     expect(screen.getByText(itemNewName)).toBeInTheDocument();
   });
+
+  test('User list all files of an item', async () => {
+    expect(false).toBeTruthy();
+  });
+
+  test.todo('User add an image file to an item', async () => {});
+
+  test.todo('User add a pdf file to an item', async () => {});
+
+  test.todo('User remove a file from an item', async () => {});
+
+  test.todo('User download a file from an item', async () => {});
 });
