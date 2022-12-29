@@ -22,7 +22,7 @@ const seed = async () => {
           name: 'Vet clinic',
           files: [
             {
-              id: 'images/vet_clinic.jpg',
+              id: 'schemes/vet-clinic.jpg',
               type: 'scheme'
             }
           ]

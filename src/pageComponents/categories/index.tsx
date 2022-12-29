@@ -2,9 +2,10 @@ import { Suspense, useContext } from 'react';
 import { RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { usePaginatedQuery } from '@blitzjs/rpc';
+import { useMutation, usePaginatedQuery } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import getCategories from 'src/categories/queries/getCategories';
+import deleteCategory from 'src/categories/mutations/deleteCategory';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,6 +17,7 @@ export const CategoriesList = () => {
     skip: ITEMS_PER_PAGE * page,
     take: ITEMS_PER_PAGE
   });
+  const [deleteCategoryMutation] = useMutation(deleteCategory);
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
@@ -32,6 +34,17 @@ export const CategoriesList = () => {
             <a href='#' onClick={() => goToEditPage(category.id)}>
               &nbsp;edit
             </a>
+            <button
+              type='button'
+              onClick={async () => {
+                if (window.confirm('This will be deleted')) {
+                  await deleteCategoryMutation({ id: category.id });
+                  await router.push(Routes.CategoriesPage());
+                }
+              }}
+              style={{ marginLeft: '0.5rem' }}>
+              Delete
+            </button>
           </li>
         ))}
       </ul>

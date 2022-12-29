@@ -16,6 +16,7 @@ import NewItemPage from './new';
 import { ISetupUsePaginatedQuery } from 'test/types';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit';
+import * as globalUtils from 'src/utils/global';
 
 // global arrange
 const items = [
@@ -293,12 +294,59 @@ describe('Item changing', () => {
 
   test('User list all files of an item', async () => {
     // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: [
+        {
+          id: 'vet-clinic.jpg',
+          type: 'SCHEME'
+        },
+        {
+          id: 'jetplane.jpg',
+          type: 'SCHEME'
+        }
+      ]
+    };
+    setupUseQuery(item);
 
     // act
-    render(<ItemsPage />);
+    render(<EditItemPage />);
 
     // assert
-    expect(screen.getByText('vet-clinic.jpg')).toBeInTheDocument();
+    const filesContainer = screen.getByRole(ARIA_ROLE.LANDMARK.CONTENTINFO);
+    const filesTable = filesContainer.children[1] as HTMLElement;
+    const firstLine = filesTable?.children[1] as HTMLElement;
+    const secondLine = filesTable?.children[2] as HTMLElement;
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.id as string) > 0).toBeTruthy();
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.type as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.id as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.type as string) > 0).toBeTruthy();
+  });
+
+  test('User download a file from an item', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: [
+        {
+          id: 'vet-clinic.jpg',
+          type: 'SCHEME',
+          url: 'http://127.0.0.1/file.png'
+        }
+      ]
+    };
+    setupUseQuery(item);
+
+    render(<EditItemPage />);
+
+    const downloadFile = vi.spyOn(globalUtils, 'downloadFile');
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
+
+    // assert
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
   });
 
   test.todo('User add an image file to an item', async () => {});
@@ -307,5 +355,5 @@ describe('Item changing', () => {
 
   test.todo('User remove a file from an item', async () => {});
 
-  test.todo('User download a file from an item', async () => {});
+  test.todo('User delete an item');
 });

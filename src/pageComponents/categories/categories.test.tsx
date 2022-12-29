@@ -362,3 +362,5 @@ describe('Category changing', () => {
     render(<CategoriesPage />);
   });
 });
+
+test.todo('User delete a category');

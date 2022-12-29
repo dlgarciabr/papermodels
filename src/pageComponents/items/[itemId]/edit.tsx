@@ -10,6 +10,24 @@ import Layout from 'src/core/layouts/Layout';
 import getItem from 'src/items/queries/getItem';
 import updateItem from 'src/items/mutations/updateItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
+import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
+import { downloadFile } from 'src/utils/global';
+
+const renderFiles = (files) => {
+  return files.map((file, index) => {
+    return (
+      <tr key={index}>
+        <td>{file.id}</td>
+        <td>{file.type}</td>
+        <td>
+          <a href='#' onClick={() => downloadFile(file)}>
+            Download
+          </a>
+        </td>
+      </tr>
+    );
+  });
+};
 
 export const EditItem = () => {
   const router = useRouter();
@@ -32,7 +50,6 @@ export const EditItem = () => {
 
       <div>
         <h1>Edit Item {item.id}</h1>
-        <pre>{JSON.stringify(item, null, 2)}</pre>
 
         <ItemForm
           submitText='Update Item'
@@ -57,7 +74,7 @@ export const EditItem = () => {
             }
           }}
         />
-        <div>
+        <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
           <div>Files</div>
           <table>
             <tr>
@@ -65,13 +82,9 @@ export const EditItem = () => {
               <td>Type</td>
               <td>Operation</td>
             </tr>
-            {item.files.map((file, index) => (
-              <tr key={index}>
-                <td>{file.id}</td>
-              </tr>
-            ))}
+            {renderFiles(item.files)}
           </table>
-        </div>
+        </section>
       </div>
     </>
   );

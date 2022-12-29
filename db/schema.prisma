@@ -103,11 +103,17 @@ model Item {
   files       File[]
 }
 
+enum FileType {
+  SCHEME
+}
+
 model File {
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  //type      FileType
   type      String //preview_image, schema, manual
   item      Item     @relation(fields: [itemId], references: [id])
   itemId    Int
+  url       String   @ignore
 }

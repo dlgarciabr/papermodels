@@ -31,7 +31,6 @@ export const EditCategory = () => {
 
       <div>
         <h1>Edit Category {category.id}</h1>
-        <pre>{JSON.stringify(category, null, 2)}</pre>
 
         <CategoryForm
           submitText='Update Category'

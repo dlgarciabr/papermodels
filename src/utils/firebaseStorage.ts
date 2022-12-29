@@ -1,7 +1,7 @@
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
-import { getStorage as getFirebaseStorage, listAll, ref } from 'firebase/storage';
+import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL } from 'firebase/storage';
 
-const IMAGES_PATH = 'images';
+const FILES_PATH = 'artifacts';
 
 const getFirebaseApp = (): FirebaseApp => {
   const firebaseConfig: FirebaseOptions = {
@@ -22,9 +22,14 @@ const getFirebaseApp = (): FirebaseApp => {
 
 export const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
-export const listAllImages = async () => {
-  const result = await listAll(ref(getStorage(), IMAGES_PATH));
+export const listAllFiles = async () => {
+  const result = await listAll(ref(getStorage(), FILES_PATH));
   return result;
+};
+
+export const getFilePath = async (fileId) => {
+  const url = await getDownloadURL(ref(getStorage(), `${FILES_PATH}/${fileId}`));
+  return url;
 };
 
 export const saveImage = () => {

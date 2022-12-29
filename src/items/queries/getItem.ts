@@ -2,6 +2,7 @@ import { NotFoundError } from 'blitz';
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
 import { z } from 'zod';
+import { getFilePath } from 'src/utils/firebaseStorage';
 
 const GetItem = z.object({
   // This accepts type of undefined, but is required at runtime
@@ -13,6 +14,13 @@ export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async 
   const item = await db.item.findFirst({ where: { id }, include: { files: true } });
 
   if (!item) throw new NotFoundError();
+
+  const promises = item.files.map(async (file) => {
+    const url = await getFilePath(file.id);
+    (file as any).url = url;
+  });
+
+  await Promise.all(promises);
 
   return item;
 });
