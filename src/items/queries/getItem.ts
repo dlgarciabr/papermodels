@@ -11,7 +11,10 @@ const GetItem = z.object({
 
 export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async ({ id }) => {
   // TODO: in multi-tenant app, you must add validation to ensure correct tenant
-  const item = await db.item.findFirst({ where: { id }, include: { files: true } });
+  const item = await db.item.findFirst({
+    where: { id },
+    include: { files: true }
+  });
 
   if (!item) throw new NotFoundError();
 
