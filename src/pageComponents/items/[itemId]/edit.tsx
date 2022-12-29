@@ -57,6 +57,21 @@ export const EditItem = () => {
             }
           }}
         />
+        <div>
+          <div>Files</div>
+          <table>
+            <tr>
+              <td>Name</td>
+              <td>Type</td>
+              <td>Operation</td>
+            </tr>
+            {item.files.map((file, index) => (
+              <tr key={index}>
+                <td>{file.id}</td>
+              </tr>
+            ))}
+          </table>
+        </div>
       </div>
     </>
   );

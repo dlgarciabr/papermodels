@@ -230,24 +230,27 @@ describe('Item creating', () => {
 describe('Item changing', () => {
   test('User edit an existing item', async () => {
     // arrange
-    const itemName = 'name test';
-    const itemDescription = 'desc test';
+    const initialItem = {
+      name: 'name test',
+      description: 'desc test',
+      files: []
+    };
 
-    const itemNewName = 'new name test';
-    const itemNewDescription = 'new desc test';
+    const modifiedItem = {
+      name: 'new name test',
+      description: 'new desc test',
+      files: []
+    };
 
-    setupUsePaginatedQueryOnce({
+    const paginatedQueryReturnData = {
       collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemName
-        }
-      ],
+      items: [initialItem],
       hasMore: false
-    });
+    };
 
-    setupUseQuery({ name: itemName, description: itemDescription });
+    setupUsePaginatedQueryOnce(paginatedQueryReturnData);
+
+    setupUseQuery(initialItem);
 
     render(<ItemsPage />, {
       router: {
@@ -268,35 +271,34 @@ describe('Item changing', () => {
       name: 'Description'
     });
 
-    expect((nameTexfield as HTMLInputElement).value).toBe(itemName);
-    expect((descriptionTexfield as HTMLInputElement).value).toBe(itemDescription);
+    expect((nameTexfield as HTMLInputElement).value).toBe(initialItem.name);
+    expect((descriptionTexfield as HTMLInputElement).value).toBe(initialItem.description);
 
-    await userEvent.type(nameTexfield, itemNewName);
-    await userEvent.type(descriptionTexfield, itemNewDescription);
+    await userEvent.type(nameTexfield, modifiedItem.name);
+    await userEvent.type(descriptionTexfield, modifiedItem.description);
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Update Item' }));
 
     setupUsePaginatedQueryOnce({
-      collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemNewName
-        }
-      ],
-      hasMore: false
+      ...paginatedQueryReturnData,
+      items: [modifiedItem]
     });
     cleanup();
     render(<ItemsPage />);
+
     // assert
-
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-
-    expect(screen.getByText(itemNewName)).toBeInTheDocument();
+    expect(screen.getByText(modifiedItem.name)).toBeInTheDocument();
   });
 
   test('User list all files of an item', async () => {
-    expect(false).toBeTruthy();
+    // arrange
+
+    // act
+    render(<ItemsPage />);
+
+    // assert
+    expect(screen.getByText('vet-clinic.jpg')).toBeInTheDocument();
   });
 
   test.todo('User add an image file to an item', async () => {});
