@@ -85,7 +85,7 @@ const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
   hasMore: true
 };
 
-describe('Category', () => {
+describe('Listing Category', () => {
   test('Open Category list with items', () => {
     // arrange
     setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
@@ -363,4 +363,34 @@ describe('Category changing', () => {
   });
 });
 
-test.todo('User delete a category');
+describe('Category removing', () => {
+  test('User delete a category', async () => {
+    // arrange
+    const categoryName = 'name test category';
+
+    setupUsePaginatedQueryOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: categoryName
+        }
+      ],
+      hasMore: false
+    });
+
+    window.confirm = vi.fn(() => true);
+
+    render(<CategoriesPage />);
+
+    expect(screen.getByText(categoryName)).toBeInTheDocument();
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Delete' }));
+    // click on modal yes
+    // screen.debug();
+
+    // assert
+    expect(screen.getByText(categoryName)).not.toBeInTheDocument();
+  });
+});
