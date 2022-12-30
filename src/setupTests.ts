@@ -69,7 +69,8 @@ const mockDefaultBlitzRPC = () => {
       authorize: vi.fn()
     },
     default: { myDefaultKey: vi.fn() },
-    namedExport: vi.fn()
+    namedExport: vi.fn(),
+    invoke: vi.fn()
   }));
 };
 

@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
   cleanup,
-  setupUsePaginatedQueryOnce,
+  setupUseInvokeOnce,
   mockRouterOperation,
   setupUseQuery,
   setupUseMutationOnce
@@ -86,21 +86,21 @@ const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
 };
 
 describe('Listing Category', () => {
-  test('Open Category list with items', () => {
+  test('Open Category list with items', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     // act
     render(<CategoriesPage />);
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
   });
 
   test('Open Category list and navigate through pages', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     const { rerender } = render(<CategoriesPage />, {
       router: {
@@ -108,9 +108,9 @@ describe('Listing Category', () => {
       }
     });
 
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       ...globalUsePaginatedQueryParams,
       items: categories.slice(10),
       hasMore: false
@@ -120,7 +120,7 @@ describe('Listing Category', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })).toBeInTheDocument();
   });
 });
 
@@ -129,7 +129,7 @@ describe('Category creating', () => {
     // arrange
     const categoryName = 'name test';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -187,7 +187,7 @@ describe('Category creating', () => {
     const createCategoryMutation = vi.fn().mockRejectedValueOnce(error);
     setupUseMutationOnce(createCategoryMutation as any);
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -224,7 +224,7 @@ describe('Category changing', () => {
     const categoryNewName = 'new name test';
     const categoryNewDescription = 'new desc test';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -247,7 +247,7 @@ describe('Category changing', () => {
     });
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+    await userEvent.click(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
 
     const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Name'
@@ -264,7 +264,7 @@ describe('Category changing', () => {
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Update Category' }));
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -280,7 +280,7 @@ describe('Category changing', () => {
 
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
 
-    expect(screen.getByText(categoryNewName)).toBeInTheDocument();
+    expect(await screen.findByText(categoryNewName)).toBeInTheDocument();
   });
 
   // TODO review the test below to work properly
@@ -292,7 +292,7 @@ describe('Category changing', () => {
     const categoryNewName = ' ';
     const categoryNewDescription = ' ';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -348,7 +348,7 @@ describe('Category changing', () => {
     // assert
     // expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Edit Category' })).toBeInTheDocument();
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -368,7 +368,7 @@ describe('Category removing', () => {
     // arrange
     const categoryName = 'name test category';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'categories',
       items: [
         {
@@ -383,14 +383,18 @@ describe('Category removing', () => {
 
     render(<CategoriesPage />);
 
-    expect(screen.getByText(categoryName)).toBeInTheDocument();
+    expect(await screen.findByText(categoryName)).toBeInTheDocument();
+
+    setupUseInvokeOnce({
+      collectionName: 'categories',
+      items: [],
+      hasMore: false
+    });
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Delete' }));
-    // click on modal yes
-    // screen.debug();
 
     // assert
-    expect(screen.getByText(categoryName)).not.toBeInTheDocument();
+    expect(screen.queryByText(categoryName)).not.toBeInTheDocument();
   });
 });

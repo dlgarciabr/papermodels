@@ -3,9 +3,9 @@ import { render as defaultRender } from '@testing-library/react';
 import { renderHook as defaultRenderHook } from '@testing-library/react-hooks';
 import { NextRouter } from 'next/router';
 import { BlitzProvider, RouterContext } from '@blitzjs/next';
-import { useMutation, usePaginatedQuery, useQuery } from '@blitzjs/rpc';
+import { useMutation, usePaginatedQuery, useQuery, invoke } from '@blitzjs/rpc';
 import { QueryClient } from '@tanstack/react-query';
-import { ISetupUsePaginatedQuery } from './types';
+import { ISetupUseInvoke, ISetupUsePaginatedQuery } from './types';
 
 export * from '@testing-library/react';
 
@@ -152,6 +152,16 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
   vi.mocked(usePaginatedQuery).mockClear();
   vi.mocked(usePaginatedQuery).mockReturnValueOnce(
     mockUsePaginatedQuery(params.collectionName, params.items, params.hasMore)
+  );
+};
+
+export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
+  vi.mocked(invoke).mockClear();
+  vi.mocked(invoke).mockReturnValueOnce(
+    Promise.resolve({
+      [params.collectionName]: params.items,
+      hasMore: params.hasMore
+    })
   );
 };
 

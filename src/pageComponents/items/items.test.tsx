@@ -9,7 +9,8 @@ import {
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
   setupUseQuery,
-  setupUseMutationOnce
+  setupUseMutationOnce,
+  setupUseInvokeOnce
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -24,53 +25,6 @@ const items = [
     id: 1,
     name: 'B-17',
     decription: 'Flying fortress'
-  }
-];
-
-const categories = [
-  {
-    id: 1,
-    name: 'Airplanes'
-  },
-  {
-    id: 2,
-    name: 'Cars'
-  },
-  {
-    id: 3,
-    name: 'Houses'
-  },
-  {
-    id: 4,
-    name: 'Animals'
-  },
-  {
-    id: 5,
-    name: 'Trains'
-  },
-  {
-    id: 6,
-    name: 'Emergency places'
-  },
-  {
-    id: 7,
-    name: 'Boats&Ships'
-  },
-  {
-    id: 8,
-    name: 'Stores'
-  },
-  {
-    id: 9,
-    name: 'Service building'
-  },
-  {
-    id: 10,
-    name: 'Plants'
-  },
-  {
-    id: 11,
-    name: 'Miscelaneus'
   }
 ];
 
@@ -95,21 +49,21 @@ const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
 };
 
 describe('Item', () => {
-  test('Open Item list with items', () => {
+  test('Open Item list with items', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     // act
     render(<ItemsPage />);
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 
   test('Open Item list and navigate through pages', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     const { rerender } = render(<ItemsPage />, {
       router: {
@@ -117,9 +71,9 @@ describe('Item', () => {
       }
     });
 
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       ...globalUsePaginatedQueryParams,
       items: items.slice(10),
       hasMore: false
@@ -129,7 +83,7 @@ describe('Item', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
   });
 });
 
@@ -138,7 +92,7 @@ describe('Item creating', () => {
     // arrange
     const itemName = 'name test';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'items',
       items: [
         {
@@ -249,7 +203,7 @@ describe('Item changing', () => {
       hasMore: false
     };
 
-    setupUsePaginatedQueryOnce(paginatedQueryReturnData);
+    setupUseInvokeOnce(paginatedQueryReturnData);
 
     setupUseQuery(initialItem);
 
@@ -263,7 +217,7 @@ describe('Item changing', () => {
     });
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+    await userEvent.click(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
 
     const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Name'
@@ -280,7 +234,7 @@ describe('Item changing', () => {
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Update Item' }));
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       ...paginatedQueryReturnData,
       items: [modifiedItem]
     });
@@ -288,8 +242,8 @@ describe('Item changing', () => {
     render(<ItemsPage />);
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-    expect(screen.getByText(modifiedItem.name)).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
   });
 
   test('User list all files of an item', async () => {
