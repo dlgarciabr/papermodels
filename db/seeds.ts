@@ -14,7 +14,15 @@ const seed = async () => {
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
 
   const categories = [
-    { name: 'Emergency services' },
+    {
+      name: 'Emergency services',
+      items: [
+        {
+          name: 'Hospital',
+          files: []
+        }
+      ]
+    },
     {
       name: 'Service buildings',
       items: [

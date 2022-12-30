@@ -25,7 +25,8 @@ const NewItemPage = () => {
           try {
             const item = await createItemMutation({
               ...values,
-              categoryId: new Number(values.categoryId)
+              categoryId: new Number(values.categoryId),
+              files: []
             });
             await router.push(Routes.ItemsPage());
           } catch (error: any) {
