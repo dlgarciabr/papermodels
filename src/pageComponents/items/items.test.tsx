@@ -341,12 +341,13 @@ describe('Item changing', () => {
 
     render(<EditItemPage />);
 
-    const downloadFile = vi.spyOn(globalUtils, 'downloadFile');
+    const downloadFile = vi.spyOn(globalUtils, 'downloadFile').mockImplementationOnce((() => {}) as any);
+
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
 
     // assert
-    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.id, item.files[0]?.url);
   });
 
   test.todo('User add an image file to an item', async () => {});

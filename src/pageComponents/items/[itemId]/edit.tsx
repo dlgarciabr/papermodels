@@ -20,7 +20,7 @@ const renderFiles = (files) => {
         <td>{file.id}</td>
         <td>{file.type}</td>
         <td>
-          <a href='#' onClick={() => downloadFile(file)}>
+          <a href='#' onClick={() => downloadFile(file.id, file.url)}>
             Download
           </a>
         </td>
