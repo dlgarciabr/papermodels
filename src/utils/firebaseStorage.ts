@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+// TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
 import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL } from 'firebase/storage';
 
