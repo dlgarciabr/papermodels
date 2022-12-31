@@ -43,8 +43,8 @@ export const getMockedRouter = (): NextRouter => mockedRouter;
  * @param router
  * @returns
  */
-export const modifyMockedRouter = (router: Partial<NextRouter>): NextRouter => {
-  return { ...mockedRouter, ...router };
+export const modifyMockedRouter = (router: Partial<NextRouter>) => {
+  mockedRouter = { ...mockedRouter, ...router };
 };
 
 // --------------------------------------------------------------------------------
@@ -156,6 +156,7 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
 };
 
 export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
+  // console.log('###########setupUseInvoke', params.items)
   vi.mocked(invoke).mockClear();
   vi.mocked(invoke).mockReturnValueOnce(
     Promise.resolve({

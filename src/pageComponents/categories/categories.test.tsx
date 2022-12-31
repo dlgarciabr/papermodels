@@ -9,7 +9,8 @@ import {
   setupUseInvokeOnce,
   mockRouterOperation,
   setupUseQuery,
-  setupUseMutationOnce
+  setupUseMutationOnce,
+  modifyMockedRouter
 } from 'test/utils';
 import CategoriesPage from '.';
 import NewCategoryPage from './new';
@@ -104,7 +105,10 @@ describe('Listing Category', () => {
 
     const { rerender } = render(<CategoriesPage />, {
       router: {
-        push: mockRouterOperation(() => rerender(<CategoriesPage />))
+        push: mockRouterOperation(() => {
+          modifyMockedRouter({ query: { page: '1' } });
+          rerender(<CategoriesPage />);
+        })
       }
     });
 

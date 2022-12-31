@@ -10,7 +10,8 @@ import {
   mockRouterOperation,
   setupUseQuery,
   setupUseMutationOnce,
-  setupUseInvokeOnce
+  setupUseInvokeOnce,
+  modifyMockedRouter
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -24,6 +25,56 @@ const items = [
   {
     id: 1,
     name: 'B-17',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 2,
+    name: 'B-18',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 3,
+    name: 'B-19',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 4,
+    name: 'B-20',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 5,
+    name: 'B-21',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 6,
+    name: 'B-22',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 7,
+    name: 'B-23',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 8,
+    name: 'B-24',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 9,
+    name: 'B-25',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 10,
+    name: 'B-26',
+    decription: 'Flying fortress'
+  },
+  {
+    id: 11,
+    name: 'B-27',
     decription: 'Flying fortress'
   }
 ];
@@ -67,7 +118,10 @@ describe('Item', () => {
 
     const { rerender } = render(<ItemsPage />, {
       router: {
-        push: mockRouterOperation(() => rerender(<ItemsPage />))
+        push: mockRouterOperation(() => {
+          modifyMockedRouter({ query: { page: '1' } });
+          rerender(<ItemsPage />);
+        })
       }
     });
 

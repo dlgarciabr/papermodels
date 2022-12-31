@@ -8,7 +8,7 @@ import getItems from 'src/items/queries/getItems';
 import deleteItem from 'src/items/mutations/deleteItem';
 import { Item } from '@prisma/client';
 
-const ITEMS_PER_PAGE = 100;
+const ITEMS_PER_PAGE = 10;
 
 export const ItemsList = () => {
   const [items, setItems] = useState<Item[]>([]);
