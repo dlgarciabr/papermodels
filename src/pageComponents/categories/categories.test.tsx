@@ -103,7 +103,7 @@ describe('Listing Category', () => {
     // arrange
     setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
-    const { rerender } = render(<CategoriesPage />, {
+    let { rerender } = render(<CategoriesPage />, {
       router: {
         push: mockRouterOperation(() => {
           modifyMockedRouter({ query: { page: '1' } });
@@ -125,6 +125,24 @@ describe('Listing Category', () => {
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })).toBeInTheDocument();
+
+    // arrange
+    rerender = render(<CategoriesPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          modifyMockedRouter({ query: { page: '0' } });
+          rerender(<CategoriesPage />);
+        })
+      }
+    }).rerender;
+
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
+
+    // assert
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
   });
 });
 
