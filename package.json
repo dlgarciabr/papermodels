@@ -10,7 +10,8 @@
     "test": "prisma generate && vitest run --passWithNoTests",
     "test:watch": "vitest --reporter=verbose",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "format:all": "prettier --write \"src/**/*.ts?(x)\" \"src/*.ts?(x)\""
   },
   "prisma": {
     "schema": "db/schema.prisma"

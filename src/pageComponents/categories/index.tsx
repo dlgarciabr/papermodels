@@ -51,6 +51,7 @@ export const CategoriesList = () => {
             <button
               type='button'
               onClick={async () => {
+                /* istanbul ignore else -- @preserve */
                 if (window.confirm('This category will be deleted')) {
                   await deleteCategoryMutation({ id: category.id });
                   void loadCategories();

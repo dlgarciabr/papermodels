@@ -156,7 +156,6 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
 };
 
 export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
-  // console.log('###########setupUseInvoke', params.items)
   vi.mocked(invoke).mockClear();
   vi.mocked(invoke).mockReturnValueOnce(
     Promise.resolve({
@@ -166,13 +165,23 @@ export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
   );
 };
 
+export const setupUseInvoke = (promise: Promise<any>) => {
+  vi.mocked(invoke).mockClear();
+  vi.mocked(invoke).mockReturnValue(promise);
+};
+
+export const setupUseMutation = (mutation: Promise<void>) => {
+  console.log('#################mockUseMutation');
+  vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
+};
+
 export const setupUseMutationOnce = (mutation: Promise<void>) => {
   vi.mocked(useMutation).mockReturnValueOnce([mutation as any, {} as any]);
 };
 
 export const mockRouterOperation = (callback: Function) =>
   vi.fn(async (url: any, as?: any, options?: any) => {
-    callback();
+    callback(url, as, options);
     return true;
   });
 

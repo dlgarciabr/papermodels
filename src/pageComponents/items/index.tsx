@@ -51,6 +51,7 @@ export const ItemsList = () => {
             <button
               type='button'
               onClick={async () => {
+                /* istanbul ignore else -- @preserve */
                 if (window.confirm('This item will be deleted')) {
                   await deleteItemMutation({ id: item.id });
                   void loadItems();

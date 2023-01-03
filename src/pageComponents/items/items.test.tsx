@@ -112,16 +112,40 @@ describe('Item', () => {
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 
-  test('Open Item list and navigate through pages', async () => {
+  test('Open Category list and navigate through pages', async () => {
     // arrange
+    // const getCategories = () => new Promise((resolve) => {
+    //   const page = 0;
+    //   console.log('#############3mockCategories')
+    //   switch (page) {
+    //     case 0:
+    //       resolve({
+    //         categories,
+    //         hasMore: true
+    //       });
+    //     // case 1:
+    //     //   resolve({
+    //     //     items: categories.slice(10),
+    //     //     hasMore: false
+    //     //   });
+    //   }
+    // });
     setupUseInvokeOnce(globalUsePaginatedQueryParams);
+    // setupUseInvoke(getCategories());
 
-    const { rerender } = render(<ItemsPage />, {
+    // const callback = (rerender) => (url: any, as?: any, options?: any) => {
+    //   const page = url.query.page;
+    //   modifyMockedRouter({ query: { page } });
+    //   rerender(<CategoriesPage />);
+    // };
+
+    let { rerender } = render(<ItemsPage />, {
       router: {
-        push: mockRouterOperation(() => {
-          modifyMockedRouter({ query: { page: '1' } });
+        push: mockRouterOperation((url) => {
+          modifyMockedRouter(url);
           rerender(<ItemsPage />);
-        })
+        }),
+        query: { page: '0' }
       }
     });
 
@@ -138,6 +162,15 @@ describe('Item', () => {
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+
+    // arrange
+    setupUseInvokeOnce(globalUsePaginatedQueryParams);
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
+
+    // assert
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 });
 
@@ -365,4 +398,40 @@ describe('Item changing', () => {
   test.todo('User remove a file from an item', async () => {});
 
   test.todo('User delete an item');
+});
+
+describe('Item removing', () => {
+  test('User delete an item', async () => {
+    // arrange
+    const itemName = 'name test item';
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: [
+        {
+          id: 1,
+          name: itemName
+        }
+      ],
+      hasMore: false
+    });
+
+    window.confirm = vi.fn(() => true);
+
+    render(<ItemsPage />);
+
+    expect(await screen.findByText(itemName)).toBeInTheDocument();
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: [],
+      hasMore: false
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Delete' }));
+
+    // assert
+    expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+  });
 });

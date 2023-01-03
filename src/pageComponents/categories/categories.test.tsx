@@ -10,7 +10,9 @@ import {
   mockRouterOperation,
   setupUseQuery,
   setupUseMutationOnce,
-  modifyMockedRouter
+  modifyMockedRouter,
+  setupUseMutation,
+  setupUseInvoke
 } from 'test/utils';
 import CategoriesPage from '.';
 import NewCategoryPage from './new';
@@ -101,14 +103,38 @@ describe('Listing Category', () => {
 
   test('Open Category list and navigate through pages', async () => {
     // arrange
+    // const getCategories = () => new Promise((resolve) => {
+    //   const page = 0;
+    //   console.log('#############3mockCategories')
+    //   switch (page) {
+    //     case 0:
+    //       resolve({
+    //         categories,
+    //         hasMore: true
+    //       });
+    //     // case 1:
+    //     //   resolve({
+    //     //     items: categories.slice(10),
+    //     //     hasMore: false
+    //     //   });
+    //   }
+    // });
     setupUseInvokeOnce(globalUsePaginatedQueryParams);
+    // setupUseInvoke(getCategories());
+
+    // const callback = (rerender) => (url: any, as?: any, options?: any) => {
+    //   const page = url.query.page;
+    //   modifyMockedRouter({ query: { page } });
+    //   rerender(<CategoriesPage />);
+    // };
 
     let { rerender } = render(<CategoriesPage />, {
       router: {
-        push: mockRouterOperation(() => {
-          modifyMockedRouter({ query: { page: '1' } });
+        push: mockRouterOperation((url) => {
+          modifyMockedRouter(url);
           rerender(<CategoriesPage />);
-        })
+        }),
+        query: { page: '0' }
       }
     });
 
@@ -127,15 +153,6 @@ describe('Listing Category', () => {
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })).toBeInTheDocument();
 
     // arrange
-    rerender = render(<CategoriesPage />, {
-      router: {
-        push: mockRouterOperation(() => {
-          modifyMockedRouter({ query: { page: '0' } });
-          rerender(<CategoriesPage />);
-        })
-      }
-    }).rerender;
-
     setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     // act
@@ -206,8 +223,8 @@ describe('Category creating', () => {
       message: 'Required'
     };
 
-    const createCategoryMutation = vi.fn().mockRejectedValueOnce(error);
-    setupUseMutationOnce(createCategoryMutation as any);
+    const createCategoryMutation = vi.fn().mockRejectedValueOnce(error) as any;
+    setupUseMutationOnce(createCategoryMutation);
 
     setupUseInvokeOnce({
       collectionName: 'categories',
