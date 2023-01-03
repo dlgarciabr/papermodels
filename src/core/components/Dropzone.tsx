@@ -6,7 +6,8 @@ export const Dropzone = () => {
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
       Object.assign(file, {
-        preview: URL.createObjectURL(file)
+        preview: URL.createObjectURL(file),
+        tempId: Math.random().toString(36).substring(2, 15)
       })
     );
     const newFileList = [...filesToAdd, ...files];
@@ -21,10 +22,11 @@ export const Dropzone = () => {
       'image/jpeg': ['.jpeg, .jpg'],
       'image/svg+xml': ['.svg'],
       'application/pdf': ['.pdf']
-    }
+    },
+    validator: () => (files.length >= 5 ? { code: 'too-many-files', message: 'too many files' } : null)
   };
 
-  const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } = useDropzone(options);
+  const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject, fileRejections } = useDropzone(options);
 
   // TODO remove after defined styling method
   const baseStyle = {
@@ -108,6 +110,27 @@ export const Dropzone = () => {
     return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
   }, []);
 
+  const renderRejections = () => {
+    if (fileRejections.length > 0) {
+      return fileRejections.map((rejection, index) => {
+        return (
+          <>
+            <p key={rejection.file.name}>{rejection.file.name}</p>
+            <ul>
+              {rejection.errors.map((error) => (
+                <li key={error.code}>{error.message}</li>
+              ))}
+            </ul>
+          </>
+        );
+      });
+    }
+  };
+
+  const removeFileFromUploadList = (tempId) => {
+    setFiles(files.filter((file) => file.tempId !== tempId));
+  };
+
   const thumbs = files.map((file: File) => (
     <div key={file.name}>
       <div style={thumb} key={file.name}>
@@ -126,26 +149,14 @@ export const Dropzone = () => {
           )}
         </div>
       </div>
-      <div>{file.name}</div>
+      <div>
+        <p>{file.name}</p>
+        <a href='#' onClick={() => removeFileFromUploadList(file.tempId)}>
+          X
+        </a>
+      </div>
     </div>
   ));
-
-  // const acceptedFileItems = acceptedFiles.map(file => (
-  //   <li key={file.name}>
-  //     {file.name} - {file.size} bytes
-  //   </li>
-  // ));
-
-  // const fileRejectionItems = fileRejections.map(({ file, errors }) => {
-  //   return (
-  //     <li key={file.name}>
-  //       {file.name} - {file.size} bytes
-  //       <ul>
-  //         {errors.map(e => <li key={e.code}>{e.message}</li>)}
-  //       </ul>
-  //     </li>
-  //   )
-  // });
 
   return (
     <section className='container'>
@@ -155,6 +166,7 @@ export const Dropzone = () => {
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
       <aside style={thumbsContainer}>{thumbs}</aside>
+      {renderRejections()}
     </section>
   );
 };
