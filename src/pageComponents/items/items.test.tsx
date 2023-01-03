@@ -11,7 +11,8 @@ import {
   setupUseQuery,
   setupUseMutationOnce,
   setupUseInvokeOnce,
-  modifyMockedRouter
+  modifyMockedRouter,
+  setupUseInvoke
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -93,16 +94,14 @@ vi.mock('src/items/mutations/createItem', () => {
   return { default: resolver };
 });
 
-const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
-  collectionName: 'items',
-  items: items.slice(0, 10),
-  hasMore: true
-};
-
 describe('Item', () => {
   test('Open Item list with items', async () => {
     // arrange
-    setupUseInvokeOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(0, 10),
+      hasMore: true
+    });
 
     // act
     render(<ItemsPage />);
@@ -114,30 +113,27 @@ describe('Item', () => {
 
   test('Open Category list and navigate through pages', async () => {
     // arrange
-    // const getCategories = () => new Promise((resolve) => {
-    //   const page = 0;
-    //   console.log('#############3mockCategories')
-    //   switch (page) {
-    //     case 0:
-    //       resolve({
-    //         categories,
-    //         hasMore: true
-    //       });
-    //     // case 1:
-    //     //   resolve({
-    //     //     items: categories.slice(10),
-    //     //     hasMore: false
-    //     //   });
-    //   }
-    // });
-    setupUseInvokeOnce(globalUsePaginatedQueryParams);
-    // setupUseInvoke(getCategories());
+    const useInvokeCallback = async (_queryFn, params) => {
+      switch (params.skip) {
+        case 0:
+          return {
+            items: items.slice(0, 10),
+            hasMore: true
+          };
+        case 10:
+          return {
+            items: items.slice(10),
+            hasMore: false
+          };
+        default:
+          return {
+            items: [],
+            hasMore: false
+          };
+      }
+    };
 
-    // const callback = (rerender) => (url: any, as?: any, options?: any) => {
-    //   const page = url.query.page;
-    //   modifyMockedRouter({ query: { page } });
-    //   rerender(<CategoriesPage />);
-    // };
+    setupUseInvoke(useInvokeCallback);
 
     let { rerender } = render(<ItemsPage />, {
       router: {
@@ -151,20 +147,11 @@ describe('Item', () => {
 
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
 
-    setupUseInvokeOnce({
-      ...globalUsePaginatedQueryParams,
-      items: items.slice(10),
-      hasMore: false
-    });
-
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
-
-    // arrange
-    setupUseInvokeOnce(globalUsePaginatedQueryParams);
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));

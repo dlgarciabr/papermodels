@@ -1,4 +1,4 @@
-import { Suspense, useContext, useState, useEffect } from 'react';
+import { Suspense, useContext, useState, useEffect, ReactNode } from 'react';
 import { RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ const ITEMS_PER_PAGE = 10;
 
 export const CategoriesList = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+
   const [hasMore, setHasMore] = useState(false);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;

@@ -165,13 +165,12 @@ export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
   );
 };
 
-export const setupUseInvoke = (promise: Promise<any>) => {
+export const setupUseInvoke = (callback: (queryFn: (...args: any) => any, params: unknown) => Promise<any>) => {
   vi.mocked(invoke).mockClear();
-  vi.mocked(invoke).mockReturnValue(promise);
+  vi.mocked(invoke).mockImplementation(callback);
 };
 
 export const setupUseMutation = (mutation: Promise<void>) => {
-  console.log('#################mockUseMutation');
   vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
 };
 
