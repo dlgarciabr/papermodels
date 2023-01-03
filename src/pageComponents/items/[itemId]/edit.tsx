@@ -14,19 +14,23 @@ import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this wi
 import { downloadFile } from 'src/utils/global';
 
 const renderFiles = (files) => {
-  return files.map((file, index) => {
-    return (
-      <tr key={index}>
-        <td>{file.id}</td>
-        <td>{file.type}</td>
-        <td>
-          <a href='#' onClick={() => downloadFile(file.id, file.url)}>
-            Download
-          </a>
-        </td>
-      </tr>
-    );
-  });
+  if (files.length) {
+    return files.map((file, index) => {
+      return (
+        <tr key={index}>
+          <td>{file.id}</td>
+          <td>{file.type}</td>
+          <td>
+            <a href='#' onClick={() => downloadFile(file.id, file.url)}>
+              Download
+            </a>
+          </td>
+        </tr>
+      );
+    });
+  } else {
+    return 'No files found';
+  }
 };
 
 export const EditItem = () => {

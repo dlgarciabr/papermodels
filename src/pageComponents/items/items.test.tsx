@@ -378,7 +378,33 @@ describe('Item changing', () => {
     expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.id, item.files[0]?.url);
   });
 
-  test.todo('User add an image file to an item', async () => {});
+  test('User add an image file to an item', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: []
+    };
+    setupUseQuery(item);
+
+    render(<EditItemPage />);
+
+    expect(screen.getByText('No files found')).toBeInTheDocument();
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Add file' }));
+
+    // assert
+
+    // const filesContainer = screen.getByRole(ARIA_ROLE.LANDMARK.CONTENTINFO);
+    // const filesTable = filesContainer.children[1] as HTMLElement;
+    // const firstLine = filesTable?.children[1] as HTMLElement;
+    // const secondLine = filesTable?.children[2] as HTMLElement;
+    // expect(firstLine.innerHTML?.indexOf(item.files[0]?.id as string) > 0).toBeTruthy();
+    // expect(firstLine.innerHTML?.indexOf(item.files[0]?.type as string) > 0).toBeTruthy();
+    // expect(secondLine.innerHTML?.indexOf(item.files[1]?.id as string) > 0).toBeTruthy();
+    // expect(secondLine.innerHTML?.indexOf(item.files[1]?.type as string) > 0).toBeTruthy();
+  });
 
   test.todo('User add a pdf file to an item', async () => {});
 
