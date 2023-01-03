@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { DropzoneFile } from 'types';
 
 export const Dropzone = () => {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<DropzoneFile[]>([]);
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
       Object.assign(file, {
@@ -131,9 +132,9 @@ export const Dropzone = () => {
     setFiles(files.filter((file) => file.tempId !== tempId));
   };
 
-  const thumbs = files.map((file: File) => (
+  const thumbs = files.map((file: DropzoneFile) => (
     <div key={file.name}>
-      <div style={thumb} key={file.name}>
+      <div style={thumb as any} key={file.name}>
         <div style={thumbInner}>
           {file.type === 'application/pdf' ? (
             'pdf file'
@@ -160,12 +161,12 @@ export const Dropzone = () => {
 
   return (
     <section className='container'>
-      <div {...getRootProps({ className: 'dropzone', style })}>
+      <div {...getRootProps({ className: 'dropzone', style: style as any })}>
         <input {...getInputProps()} />
         <p>Drag and drop some files here, or click to select files</p>
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
-      <aside style={thumbsContainer}>{thumbs}</aside>
+      <aside style={thumbsContainer as any}>{thumbs}</aside>
       {renderRejections()}
     </section>
   );
