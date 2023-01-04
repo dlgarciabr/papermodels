@@ -2,7 +2,7 @@ import { NotFoundError } from 'blitz';
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
 import { z } from 'zod';
-import { getFilePath } from 'src/utils/firebaseStorage';
+import { getFilePath } from 'src/utils/fileStorage';
 
 const GetItem = z.object({
   // This accepts type of undefined, but is required at runtime

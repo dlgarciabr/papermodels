@@ -82,7 +82,7 @@ const Edit__ModelName__Page = () => {
           </Link>
           <else>
             <Link href={Routes.__ModelNames__Page()}>
-              <a>__ModelNames__</a>
+              <a>Back to list</a>
             </Link>
           </else>
         </if>

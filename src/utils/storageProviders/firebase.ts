@@ -22,22 +22,31 @@ const getFirebaseApp = (): FirebaseApp => {
   return getApps()[0] as FirebaseApp;
 };
 
-export const getStorage = () => getFirebaseStorage(getFirebaseApp());
+const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
-export const listAllFiles = async () => {
+const listAllFiles = async () => {
   const result = await listAll(ref(getStorage(), FILES_PATH));
   return result;
 };
 
-export const getFilePath = async (fileId) => {
+const getFilePath = async (fileId) => {
   const url = await getDownloadURL(ref(getStorage(), `${FILES_PATH}/${fileId}`));
   return url;
 };
 
-export const saveImage = () => {
+const saveImage = () => {
   throw 'Not implemented';
 };
 
-export const deleteImage = () => {
+const deleteImage = () => {
   throw 'Not implemented';
 };
+
+const firebase = {
+  getFilePath,
+  listAllFiles,
+  saveImage,
+  deleteImage
+};
+
+export default firebase;

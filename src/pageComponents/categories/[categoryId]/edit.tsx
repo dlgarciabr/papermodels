@@ -69,7 +69,7 @@ const EditCategoryPage = () => {
 
       <p>
         <Link href={Routes.CategoriesPage()}>
-          <a>Categories</a>
+          <a>Back to list</a>
         </Link>
       </p>
     </div>

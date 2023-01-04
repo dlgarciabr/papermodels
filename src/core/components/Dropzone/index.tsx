@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { DropzoneFile } from 'types';
+import { runInThisContext } from 'vm';
+import { DropzoneFile, DropzoneProps } from './types';
 
-export const Dropzone = () => {
-  const [files, setFiles] = useState<DropzoneFile[]>([]);
+export const Dropzone = (props: DropzoneProps) => {
+  const [dropedFiles, setDropedFiles] = useState<DropzoneFile[]>([]);
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
       Object.assign(file, {
@@ -11,8 +12,11 @@ export const Dropzone = () => {
         tempId: Math.random().toString(36).substring(2, 15)
       })
     );
-    const newFileList = [...filesToAdd, ...files];
-    setFiles(newFileList);
+    const newFileList = [...filesToAdd, ...dropedFiles];
+    setDropedFiles(newFileList);
+    if (props.onDropedFilesChange) {
+      props.onDropedFilesChange(newFileList);
+    }
   };
 
   const options = {
@@ -24,7 +28,7 @@ export const Dropzone = () => {
       'image/svg+xml': ['.svg'],
       'application/pdf': ['.pdf']
     },
-    validator: () => (files.length >= 5 ? { code: 'too-many-files', message: 'too many files' } : null)
+    validator: () => (dropedFiles.length >= 5 ? { code: 'too-many-files', message: 'too many files' } : null)
   };
 
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject, fileRejections } = useDropzone(options);
@@ -103,13 +107,13 @@ export const Dropzone = () => {
       ...(isDragAccept ? acceptStyle : {}),
       ...(isDragReject ? rejectStyle : {})
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isFocused, isDragAccept, isDragReject]
   );
 
   useEffect(() => {
-    // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
-    return () => files.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, []);
+    return () => dropedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
+  });
 
   const renderRejections = () => {
     if (fileRejections.length > 0) {
@@ -129,18 +133,36 @@ export const Dropzone = () => {
   };
 
   const removeFileFromUploadList = (tempId) => {
-    setFiles(files.filter((file) => file.tempId !== tempId));
+    const newDropedFiles = dropedFiles.filter((file) => file.tempId !== tempId);
+    setDropedFiles(newDropedFiles);
+    if (props.onDropedFilesChange) {
+      props.onDropedFilesChange(newDropedFiles);
+    }
   };
 
-  const thumbs = files.map((file: DropzoneFile) => (
+  const thumbs = dropedFiles.map((file: DropzoneFile) => (
     <div key={file.name}>
       <div style={thumb as any} key={file.name}>
         <div style={thumbInner}>
           {file.type === 'application/pdf' ? (
             'pdf file'
           ) : (
+            // TODO eveluate the use of next/image here
+            // <Image
+            //   src={file.preview}
+            //   alt={file.name}
+            //   style={img}
+            //   // Revoke data uri after image is loaded
+            //   onLoad={() => {
+            //     URL.revokeObjectURL(file.preview);
+            //   }}
+            //   width={70}
+            //   height={100}
+            // />
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={file.preview}
+              alt={file.name}
               style={img}
               // Revoke data uri after image is loaded
               onLoad={() => {

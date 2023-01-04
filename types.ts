@@ -12,5 +12,3 @@ declare module '@blitzjs/auth' {
     };
   }
 }
-
-export type DropzoneFile = File & { tempId: string; preview: string };
