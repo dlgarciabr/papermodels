@@ -3,7 +3,8 @@
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
 import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 
-const FILES_PATH = 'artifacts';
+console.log('process.env.REACT_APP_STORAGE_ARTIFACTS_PATH', process.env.REACT_APP_STORAGE_ARTIFACTS_PATH);
+const ARTIFACTS_PATH = process.env.REACT_APP_STORAGE_ARTIFACTS_PATH || 'artifacts';
 
 const getFirebaseApp = (): FirebaseApp => {
   const firebaseConfig: FirebaseOptions = {
@@ -24,12 +25,12 @@ const getFirebaseApp = (): FirebaseApp => {
 
 const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
-const listAllFiles = async () => await listAll(ref(getStorage(), FILES_PATH));
+const listAllFiles = async () => await listAll(ref(getStorage(), ARTIFACTS_PATH));
 
-const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorage(), `${FILES_PATH}/${fileId}`));
+const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${fileId}`));
 
 const saveFile = async (file: File) => {
-  const fileRef = ref(getStorage(), `${FILES_PATH}/${file.name}`);
+  const fileRef = ref(getStorage(), `${ARTIFACTS_PATH}/schemes/${file.name}`);
   await uploadBytes(fileRef, file);
 };
 
