@@ -3,8 +3,7 @@
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
 import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 
-console.log('process.env.REACT_APP_STORAGE_ARTIFACTS_PATH', process.env.REACT_APP_STORAGE_ARTIFACTS_PATH);
-const ARTIFACTS_PATH = process.env.REACT_APP_STORAGE_ARTIFACTS_PATH || 'artifacts';
+const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'artifacts';
 
 const getFirebaseApp = (): FirebaseApp => {
   const firebaseConfig: FirebaseOptions = {
