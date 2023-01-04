@@ -1,1 +1,1 @@
-export type FileType = 'SCHEME' | 'PREVIEW' | 'INSTRUNCTION';
+export type UploadItemFile = File & { storageName: string; id: string; preview: string; artifactType: FileType };

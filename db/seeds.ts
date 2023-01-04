@@ -1,6 +1,6 @@
 // import db from "./index"
 
-import db from 'db';
+import db, { FileType } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -31,13 +31,14 @@ const seed = async () => {
           files: [
             {
               id: 'schemes/vet-clinic.jpg',
-              type: 'scheme'
+              artifactType: FileType.scheme
             }
           ]
         }
       ]
     },
-    { name: 'Ships & boats' }
+    { name: 'Ships & boats' },
+    { name: 'Wagons' }
   ];
 
   categories.forEach(async (category) => {
@@ -49,9 +50,9 @@ const seed = async () => {
           description: item.name,
           categoryId: categoryCreated.id,
           files: {
-            create: item.files.map(({ id, type }) => ({
+            create: item.files.map(({ id, artifactType }) => ({
               id,
-              type
+              artifactType
             }))
           }
         }

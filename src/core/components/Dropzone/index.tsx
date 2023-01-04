@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { runInThisContext } from 'vm';
-import { DropzoneFile, DropzoneProps } from './types';
+import { UploadItemFile } from 'src/pageComponents/items/types';
+
+import { DropzoneProps } from './types';
 
 export const Dropzone = (props: DropzoneProps) => {
-  const [dropedFiles, setDropedFiles] = useState<DropzoneFile[]>([]);
+  const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
       Object.assign(file, {
@@ -133,14 +134,14 @@ export const Dropzone = (props: DropzoneProps) => {
   };
 
   const removeFileFromUploadList = (tempId) => {
-    const newDropedFiles = dropedFiles.filter((file) => file.tempId !== tempId);
+    const newDropedFiles = dropedFiles.filter((file) => file.id !== tempId);
     setDropedFiles(newDropedFiles);
     if (props.onDropedFilesChange) {
       props.onDropedFilesChange(newDropedFiles);
     }
   };
 
-  const thumbs = dropedFiles.map((file: DropzoneFile) => (
+  const thumbs = dropedFiles.map((file: UploadItemFile) => (
     <div key={file.name}>
       <div style={thumb as any} key={file.name}>
         <div style={thumbInner}>
@@ -174,7 +175,7 @@ export const Dropzone = (props: DropzoneProps) => {
       </div>
       <div>
         <p>{file.name}</p>
-        <a href='#' onClick={() => removeFileFromUploadList(file.tempId)}>
+        <a href='#' onClick={() => removeFileFromUploadList(file.id)}>
           X
         </a>
       </div>

@@ -2,8 +2,7 @@
 // TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
 import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
-
-const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'artifacts';
+import { ARTIFACTS_PATH } from '../fileStorage';
 
 const getFirebaseApp = (): FirebaseApp => {
   const firebaseConfig: FirebaseOptions = {
@@ -28,8 +27,8 @@ const listAllFiles = async () => await listAll(ref(getStorage(), ARTIFACTS_PATH)
 
 const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${fileId}`));
 
-const saveFile = async (file: File) => {
-  const fileRef = ref(getStorage(), `${ARTIFACTS_PATH}/schemes/${file.name}`);
+const saveFile = async (file: File, path: string) => {
+  const fileRef = ref(getStorage(), path);
   await uploadBytes(fileRef, file);
 };
 
