@@ -1,12 +1,14 @@
 import { resolver } from '@blitzjs/rpc';
-import db from 'db';
+import db, { FileType } from 'db';
 import { z } from 'zod';
 
 const CreateItem = z.object({
   name: z.string(),
   description: z.string(),
   categoryId: z.number(),
-  files: z.array(z.object({ id: z.string(), type: z.string() }))
+  files: z.array(
+    z.object({ id: z.string(), artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]) })
+  )
 });
 
 export default resolver.pipe(resolver.zod(CreateItem), resolver.authorize(), async (input) => {
@@ -17,7 +19,7 @@ export default resolver.pipe(resolver.zod(CreateItem), resolver.authorize(), asy
       files: {
         create: input.files.map((file) => ({
           id: file.id,
-          type: file.type
+          artifactType: file.artifactType
         }))
       }
     }
