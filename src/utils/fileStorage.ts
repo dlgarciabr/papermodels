@@ -3,18 +3,10 @@
 
 import storageProvider from './storageProviders/firebase';
 
-export const listAllFiles = async () => {
-  return await storageProvider.listAllFiles();
-};
+export const listAllFiles = async () => await storageProvider.listAllFiles();
 
-export const getFilePath = async (fileId) => {
-  return await storageProvider.getFilePath(fileId);
-};
+export const getFilePath = async (fileId: string) => await storageProvider.getFilePath(fileId);
 
-export const saveImage = async () => {
-  return await storageProvider.saveImage();
-};
+export const saveFile = async (file: File) => await storageProvider.saveFile(file);
 
-export const deleteImage = async () => {
-  return await storageProvider.deleteImage();
-};
+export const deleteFile = async () => await storageProvider.deleteFile();

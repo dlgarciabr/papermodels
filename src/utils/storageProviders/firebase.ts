@@ -1,7 +1,7 @@
 /* istanbul ignore file -- @preserve */
 // TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
-import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL } from 'firebase/storage';
+import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
 
 const FILES_PATH = 'artifacts';
 
@@ -24,29 +24,24 @@ const getFirebaseApp = (): FirebaseApp => {
 
 const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
-const listAllFiles = async () => {
-  const result = await listAll(ref(getStorage(), FILES_PATH));
-  return result;
+const listAllFiles = async () => await listAll(ref(getStorage(), FILES_PATH));
+
+const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorage(), `${FILES_PATH}/${fileId}`));
+
+const saveFile = async (file: File) => {
+  const fileRef = ref(getStorage(), `${FILES_PATH}/${file.name}`);
+  await uploadBytes(fileRef, file);
 };
 
-const getFilePath = async (fileId) => {
-  const url = await getDownloadURL(ref(getStorage(), `${FILES_PATH}/${fileId}`));
-  return url;
-};
-
-const saveImage = () => {
-  throw 'Not implemented';
-};
-
-const deleteImage = () => {
+const deleteFile = () => {
   throw 'Not implemented';
 };
 
 const firebase = {
   getFilePath,
   listAllFiles,
-  saveImage,
-  deleteImage
+  saveFile,
+  deleteFile
 };
 
 export default firebase;

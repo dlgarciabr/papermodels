@@ -15,6 +15,7 @@ import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this wi
 import { downloadFile } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
 import { DropzoneFile } from 'src/core/components/Dropzone/types';
+import { saveFile } from 'src/utils/fileStorage';
 
 const renderFiles = (files) => {
   if (files.length) {
@@ -99,6 +100,11 @@ export const EditItem = () => {
 
 const EditItemPage = () => {
   const [filesToUpload, setFilesToUpload] = useState<DropzoneFile[]>([]);
+
+  const saveFiles = () => {
+    void saveFile(filesToUpload[0] as File);
+  };
+
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
@@ -118,7 +124,7 @@ const EditItemPage = () => {
       ) : (
         ''
       )}
-      <button disabled={filesToUpload.length === 0} onClick={() => console.log('TODO')}>
+      <button disabled={filesToUpload.length === 0} onClick={saveFiles}>
         Save files
       </button>
     </div>
