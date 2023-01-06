@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadItemFile } from 'src/pageComponents/items/types';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 import { DropzoneProps } from './types';
 
 export const Dropzone = (props: DropzoneProps) => {
+  let resetObserver;
   const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
       Object.assign(file, {
         preview: URL.createObjectURL(file),
-        tempId: Math.random().toString(36).substring(2, 15)
+        tempId: getSimpleRandomKey()
       })
     );
     const newFileList = [...filesToAdd, ...dropedFiles];

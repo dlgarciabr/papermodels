@@ -30,7 +30,7 @@ const seed = async () => {
           name: 'Vet clinic',
           files: [
             {
-              id: 'schemes/vet-clinic.jpg',
+              id: '1/vet_clinic_scheme_1.jpg',
               artifactType: FileType.scheme
             }
           ]

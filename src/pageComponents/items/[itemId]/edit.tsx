@@ -1,4 +1,4 @@
-import { Suspense, useState, useContext } from 'react';
+import { Suspense, useState, useContext, memo } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -10,21 +10,22 @@ import getItem from 'src/items/queries/getItem';
 import updateItem from 'src/items/mutations/updateItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
-import { downloadFile } from 'src/utils/global';
+import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
-import { saveFiles } from '../utils';
+import { saveItemFiles, uploadFiles } from '../utils';
 import { UploadItemFile } from '../types';
 import { Item, ItemFile } from 'db';
+import createItemFile from 'src/items/mutations/createItemFile';
 
 const renderFiles = (files: ItemFile[]) => {
   if (files.length) {
-    return files.map((file: ItemFile & { url: string }, index) => {
+    return files.map((file: ItemFile & { url: string; item: Item }, index) => {
       return (
         <tr key={index}>
           <td>{file.id}</td>
           <td>{file.artifactType}</td>
           <td>
-            <a href='#' onClick={() => downloadFile(file.id, file.url)}>
+            <a href='#' onClick={() => downloadFile(file)}>
               Download
             </a>
           </td>
@@ -37,8 +38,10 @@ const renderFiles = (files: ItemFile[]) => {
 };
 
 export const EditItem = () => {
+  const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
+  const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const router = useContext(RouterContext);
-  const itemId = useParam('itemId', 'number');
+  const itemId = useParam('itemId', 'number') as number;
   const [item, { setQueryData }] = useQuery(
     getItem,
     { id: itemId },
@@ -48,6 +51,33 @@ export const EditItem = () => {
     }
   );
   const [updateItemMutation] = useMutation(updateItem);
+  const [createItemFileMutation] = useMutation(createItemFile);
+
+  const handleClickSaveFiles = async () => {
+    await uploadFiles(filesToUpload);
+    await saveItemFiles(filesToUpload, createItemFileMutation);
+    alert('files saved');
+    await setQueryData(item);
+    resetDropzone();
+    setFilesToUpload([]);
+    // TODO
+    // if an error occurred on db operation, try to remove file from storage
+    // allow select file type before upload
+    // allow select file after before upload
+    // try to recover status from upload files
+  };
+
+  const handleFileDroped = (dropedFiles: UploadItemFile[]) => {
+    const files = dropedFiles.map((file) => {
+      file.item = item;
+      return file;
+    });
+    setFilesToUpload(files);
+  };
+
+  const resetDropzone = () => {
+    setDropzoneKey(getSimpleRandomKey());
+  };
 
   return (
     <>
@@ -93,27 +123,24 @@ export const EditItem = () => {
             {renderFiles(item.files)}
           </table>
         </section>
+        <Dropzone onDropedFilesChange={handleFileDroped} key={dropzoneKey} />
+        {filesToUpload.length > 0 ? (
+          <p
+            style={{
+              color: 'red'
+            }}>{`The selected files were not saved yet, to confirm press the button "Save files" below`}</p>
+        ) : (
+          ''
+        )}
+        <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
+          Save files
+        </button>
       </div>
     </>
   );
 };
 
-const handleClickSaveFiles = async (itemId: number, filesToUpload: UploadItemFile[]) => {
-  await saveFiles(itemId, filesToUpload);
-  alert('files uploaded');
-  // TODO
-  // persist on file table
-  // if an error occurred on db operation, try to remove file from storage
-  // refrash edit page
-  // allow select file type before upload
-  // allow select file after before upload
-  // try to recover status from upload files
-};
-
 const EditItemPage = () => {
-  const itemId = useParam('itemId', 'number') as number;
-  const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
-
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
@@ -124,18 +151,6 @@ const EditItemPage = () => {
           <a>Back to List</a>
         </Link>
       </p>
-      <Dropzone onDropedFilesChange={(dropedFiles) => setFilesToUpload(dropedFiles as UploadItemFile[])} />
-      {filesToUpload.length > 0 ? (
-        <p
-          style={{
-            color: 'red'
-          }}>{`The selected files were not saved yet, to confirm press the button "Save files" below`}</p>
-      ) : (
-        ''
-      )}
-      <button disabled={filesToUpload.length === 0} onClick={() => handleClickSaveFiles(itemId, filesToUpload)}>
-        Save files
-      </button>
     </div>
   );
 };

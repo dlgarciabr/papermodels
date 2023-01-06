@@ -18,9 +18,10 @@ export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async 
 
   if (!item) throw new NotFoundError();
 
-  const promises = item.files.map(async (file) => {
+  const promises = item.files.map(async (file: any) => {
     const url = await getFilePath(file.id);
-    (file as any).url = url;
+    file.url = url;
+    file.item = item;
   });
 
   await Promise.all(promises);

@@ -1,1 +1,7 @@
-export type UploadItemFile = File & { storageName: string; id: string; preview: string; artifactType: FileType };
+export type UploadItemFile = File & {
+  storageName: string;
+  id: string;
+  preview: string;
+  artifactType: FileType;
+  item: Item;
+};

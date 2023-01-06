@@ -30,6 +30,10 @@ const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorag
 const saveFile = async (file: File, path: string) => {
   const fileRef = ref(getStorage(), path);
   await uploadBytes(fileRef, file);
+  // const uploadTask = storageRef.put(firstFile);
+  // uploadTask.on(‘state_changed’, function progress(snapshot) {
+  //    console.log(snapshot.totalBytesTransferred); // progress of upload
+  // });
 };
 
 const deleteFile = () => {
