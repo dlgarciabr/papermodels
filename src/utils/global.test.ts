@@ -23,7 +23,7 @@ describe('Global Util', () => {
     dom_observer.observe(document.body, { attributes: true, childList: true, characterData: true });
 
     // act
-    await downloadFile('test', 'http://127.0.0.1');
+    await downloadFile({ id: 'test', url: 'http://127.0.0.1' } as any);
 
     // assert
     expect((documentChanges[0]?.addedNodes[0] as HTMLAnchorElement).href).contains(blobUrl);
