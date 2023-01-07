@@ -7,7 +7,11 @@ const CreateItem = z.object({
   description: z.string(),
   categoryId: z.number(),
   files: z.array(
-    z.object({ id: z.string(), artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]) })
+    z.object({
+      storagePath: z.string(),
+      artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
+      index: z.number()
+    })
   )
 });
 
@@ -18,8 +22,9 @@ export default resolver.pipe(resolver.zod(CreateItem), resolver.authorize(), asy
       ...input,
       files: {
         create: input.files.map((file) => ({
-          id: file.id,
-          artifactType: file.artifactType
+          storagePath: file.storagePath,
+          artifactType: file.artifactType,
+          index: file.index
         }))
       }
     }

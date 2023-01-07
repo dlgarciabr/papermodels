@@ -1,7 +1,14 @@
 /* istanbul ignore file -- @preserve */
 // TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
-import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, uploadBytes } from 'firebase/storage';
+import {
+  getStorage as getFirebaseStorage,
+  listAll,
+  ref,
+  getDownloadURL,
+  uploadBytes,
+  deleteObject
+} from 'firebase/storage';
 import { ARTIFACTS_PATH } from '../fileStorage';
 
 const getFirebaseApp = (): FirebaseApp => {
@@ -25,7 +32,7 @@ const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
 const listAllFiles = async () => await listAll(ref(getStorage(), ARTIFACTS_PATH));
 
-const getFilePath = async (fileId: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${fileId}`));
+const getFilePath = async (path: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
 
 const saveFile = async (file: File, path: string) => {
   const fileRef = ref(getStorage(), path);
@@ -36,8 +43,15 @@ const saveFile = async (file: File, path: string) => {
   // });
 };
 
-const deleteFile = () => {
-  throw 'Not implemented';
+const deleteFile = async (path: string) => {
+  const fileRef = ref(getStorage(), `${ARTIFACTS_PATH}/${path}`);
+  return deleteObject(fileRef)
+    .then(() => {
+      // File deleted successfully
+    })
+    .catch((error) => {
+      // Uh-oh, an error occurred!
+    });
 };
 
 const firebase = {

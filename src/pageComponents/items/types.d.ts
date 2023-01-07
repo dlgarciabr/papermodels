@@ -1,5 +1,5 @@
 export type UploadItemFile = File & {
-  storageName: string;
+  storagePath: string;
   id: string;
   preview: string;
   artifactType: FileType;

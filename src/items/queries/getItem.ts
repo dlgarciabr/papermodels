@@ -2,7 +2,6 @@ import { NotFoundError } from 'blitz';
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
 import { z } from 'zod';
-import { getFilePath } from 'src/utils/fileStorage';
 
 const GetItem = z.object({
   // This accepts type of undefined, but is required at runtime
@@ -17,14 +16,6 @@ export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async 
   });
 
   if (!item) throw new NotFoundError();
-
-  const promises = item.files.map(async (file: any) => {
-    const url = await getFilePath(file.id);
-    file.url = url;
-    file.item = item;
-  });
-
-  await Promise.all(promises);
 
   return item;
 });

@@ -110,7 +110,9 @@ enum FileType {
 }
 
 model ItemFile {
-  id           String   @id
+  id           Int      @id @default(autoincrement())
+  index        Int
+  storagePath  String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   artifactType FileType

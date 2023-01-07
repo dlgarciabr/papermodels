@@ -6,7 +6,12 @@ const UpdateItem = z.object({
   id: z.number(),
   name: z.string(),
   files: z.array(
-    z.object({ id: z.string(), artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]) })
+    z.object({
+      id: z.number(),
+      storagePath: z.string(),
+      artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
+      index: z.number()
+    })
   )
 });
 
@@ -21,8 +26,8 @@ export default resolver.pipe(resolver.zod(UpdateItem), resolver.authorize(), asy
           // Appears to be a prisma bug,
           // because `|| 0` shouldn't be needed
           where: { id: file.id },
-          create: { id: file.id, artifactType: file.artifactType },
-          update: { id: file.id, artifactType: file.artifactType }
+          create: { storagePath: file.storagePath, artifactType: file.artifactType, index: file.index },
+          update: { storagePath: file.storagePath, artifactType: file.artifactType, index: file.index }
         }))
       }
     },

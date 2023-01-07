@@ -8,9 +8,12 @@ export const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 
 
 export const listAllFiles = async () => await storageProvider.listAllFiles();
 
-export const getFilePath = async (fileId: string) => await storageProvider.getFilePath(fileId);
+export const getFilePath = async (path: string) => await storageProvider.getFilePath(path);
 
-export const saveFile = async (file: UploadItemFile) =>
-  await storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.storageName}`);
+// TODO remove this commented code if new saveFile is working properly
+// export const saveFile = async (file: UploadItemFile) =>
+//   await storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.storageName}`);
 
-export const deleteFile = async () => await storageProvider.deleteFile();
+export const saveFile = async (file: File) => await storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.name}`);
+
+export const deleteFile = async (path: string) => await storageProvider.deleteFile(path);

@@ -14,15 +14,15 @@ const seed = async () => {
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
 
   const categories = [
-    {
-      name: 'Emergency services',
-      items: [
-        {
-          name: 'Hospital',
-          files: []
-        }
-      ]
-    },
+    // {
+    //   name: 'Emergency services',
+    //   items: [
+    //     {
+    //       name: 'Hospital',
+    //       files: []
+    //     }
+    //   ]
+    // },
     {
       name: 'Service buildings',
       items: [
@@ -30,15 +30,16 @@ const seed = async () => {
           name: 'Vet clinic',
           files: [
             {
-              id: '1/vet_clinic_scheme_1.jpg',
+              index: 0,
+              storagePath: '1/vet_clinic_scheme_1.jpg',
               artifactType: FileType.scheme
             }
           ]
         }
       ]
-    },
-    { name: 'Ships & boats' },
-    { name: 'Wagons' }
+    }
+    // { name: 'Ships & boats' },
+    // { name: 'Wagons' }
   ];
 
   categories.forEach(async (category) => {
@@ -50,9 +51,10 @@ const seed = async () => {
           description: item.name,
           categoryId: categoryCreated.id,
           files: {
-            create: item.files.map(({ id, artifactType }) => ({
-              id,
-              artifactType
+            create: item.files.map(({ storagePath, artifactType, index }) => ({
+              storagePath,
+              artifactType,
+              index
             }))
           }
         }
