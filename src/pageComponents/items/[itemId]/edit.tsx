@@ -89,10 +89,6 @@ export const EditItem = () => {
     setDropzoneKey(getSimpleRandomKey());
     setFilesToUpload([]);
     setSaving(false);
-    // TODO
-    // if an error occurred on db operation, try to remove file from storage
-    // allow select file after before upload
-    // try to recover status from upload files
   };
 
   const handleDeleteFile = async (file: ItemFile & { url: string; item: Item }) => {
