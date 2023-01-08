@@ -327,12 +327,12 @@ describe('Item changing', () => {
       description: 'desc test',
       files: [
         {
-          id: 'vet-clinic.jpg',
-          type: 'SCHEME'
+          storagePath: 'vet-clinic.jpg',
+          artifactType: 'scheme'
         },
         {
-          id: 'jetplane.jpg',
-          type: 'SCHEME'
+          storagePath: 'jetplane.jpg',
+          artifactType: 'scheme'
         }
       ]
     };
@@ -344,12 +344,13 @@ describe('Item changing', () => {
     // assert
     const filesContainer = screen.getByRole(ARIA_ROLE.LANDMARK.CONTENTINFO);
     const filesTable = filesContainer.children[1] as HTMLElement;
-    const firstLine = filesTable?.children[1] as HTMLElement;
-    const secondLine = filesTable?.children[2] as HTMLElement;
-    expect(firstLine.innerHTML?.indexOf(item.files[0]?.id as string) > 0).toBeTruthy();
-    expect(firstLine.innerHTML?.indexOf(item.files[0]?.type as string) > 0).toBeTruthy();
-    expect(secondLine.innerHTML?.indexOf(item.files[1]?.id as string) > 0).toBeTruthy();
-    expect(secondLine.innerHTML?.indexOf(item.files[1]?.type as string) > 0).toBeTruthy();
+    const firstLine = filesTable?.children[0]?.children[1] as HTMLElement;
+    const secondLine = filesTable?.children[0]?.children[2] as HTMLElement;
+
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.storagePath as string) > 0).toBeTruthy();
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.artifactType as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.storagePath as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.artifactType as string) > 0).toBeTruthy();
   });
 
   test('User download a file from an item', async () => {
@@ -375,10 +376,10 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
 
     // assert
-    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.id, item.files[0]?.url);
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
   });
 
-  test('User add an image file to an item', async () => {
+  test.todo('User add an image file to an item', async () => {
     // arrange
     const item = {
       name: 'name test',

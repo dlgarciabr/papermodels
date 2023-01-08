@@ -1,10 +1,13 @@
 import { expect, vi } from 'vitest';
 import { downloadFile } from './global';
+import * as fileStorage from './fileStorage';
 
 describe('Global Util', () => {
   test('downloadFile', async () => {
     // arrange
     const blobUrl = 'blob:http://127.0.0.1/550e8400-e29b-41d4-a716-446655440000';
+
+    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValueOnce('url');
 
     global.fetch = vi.fn(() =>
       Promise.resolve({
