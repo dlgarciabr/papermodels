@@ -1,12 +1,117 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { FileType } from '@prisma/client';
+import { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadItemFile } from 'src/pageComponents/items/types';
 import { getSimpleRandomKey } from 'src/utils/global';
 
-import { DropzoneProps } from './types';
+import { DropzoneProps, FileThumbnailProps } from './types';
+
+const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable }: FileThumbnailProps) => {
+  // TODO remove after defined styling method
+  const thumbInner = {
+    display: 'flex',
+    minWidth: 0,
+    overflow: 'hidden'
+  };
+
+  // TODO remove after defined styling method
+  const img = {
+    display: 'block',
+    width: 'auto',
+    height: '100%'
+  };
+
+  // TODO remove after defined styling method
+  const thumb = {
+    display: 'inline-flex',
+    borderRadius: 2,
+    border: '1px solid #eaeaea',
+    marginBottom: 8,
+    marginRight: 8,
+    width: 100,
+    height: 100,
+    padding: 4,
+    boxSizing: 'border-box'
+  };
+
+  // TODO remove after styling pattern have been defined
+  const thumbError = {
+    borderStyle: 'double',
+    borderWidth: '1px',
+    borderColor: 'red'
+  };
+
+  return (
+    <div key={file.name} style={validationEnable && !file.artifactType ? thumbError : {}}>
+      <div style={thumb as any} key={file.name}>
+        <div style={thumbInner}>
+          {file.type === 'application/pdf' ? (
+            'pdf file'
+          ) : (
+            // TODO eveluate the use of next/image here
+            // <Image
+            //   src={file.preview}
+            //   alt={file.name}
+            //   style={img}
+            //   // Revoke data uri after image is loaded
+            //   onLoad={() => {
+            //     URL.revokeObjectURL(file.preview);
+            //   }}
+            //   width={70}
+            //   height={100}
+            // />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={file.preview}
+              alt={file.name}
+              style={img}
+              // Revoke data uri after image is loaded
+              onLoad={() => {
+                URL.revokeObjectURL(file.preview);
+              }}
+            />
+          )}
+        </div>
+      </div>
+      <div>
+        <p>{file.name}</p>
+        <input
+          type='radio'
+          id={FileType.scheme}
+          name={`${file.tempId}_artifactType`}
+          value='HTML'
+          onClick={() => onClickRadioType(file.tempId, FileType.scheme)}
+          defaultChecked={file.artifactType === FileType.scheme}
+        />
+        <label htmlFor='html'>{FileType.scheme}</label>
+        <br />
+        <input
+          type='radio'
+          id={FileType.instruction}
+          name={`${file.tempId}_artifactType`}
+          value='CSS'
+          onClick={() => onClickRadioType(file.tempId, FileType.instruction)}
+          defaultChecked={file.artifactType === FileType.instruction}
+        />
+        <label htmlFor='css'>{FileType.instruction}</label>
+        <br />
+        <input
+          type='radio'
+          id={FileType.preview}
+          name={`${file.tempId}_artifactType`}
+          value='JavaScript'
+          onClick={() => onClickRadioType(file.tempId, FileType.preview)}
+          defaultChecked={file.artifactType === FileType.preview}
+        />
+        <label htmlFor='javascript'>{FileType.preview}</label>
+        <br />
+        <button onClick={() => onClickRemove(file.tempId)}>remove</button>
+      </div>
+    </div>
+  );
+};
 
 export const Dropzone = (props: DropzoneProps) => {
-  let resetObserver;
   const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
   const onDrop = (acceptedFiles) => {
     const filesToAdd = acceptedFiles.map((file) =>
@@ -76,33 +181,6 @@ export const Dropzone = (props: DropzoneProps) => {
     marginTop: 16
   };
 
-  // TODO remove after defined styling method
-  const thumb = {
-    display: 'inline-flex',
-    borderRadius: 2,
-    border: '1px solid #eaeaea',
-    marginBottom: 8,
-    marginRight: 8,
-    width: 100,
-    height: 100,
-    padding: 4,
-    boxSizing: 'border-box'
-  };
-
-  // TODO remove after defined styling method
-  const thumbInner = {
-    display: 'flex',
-    minWidth: 0,
-    overflow: 'hidden'
-  };
-
-  // TODO remove after defined styling method
-  const img = {
-    display: 'block',
-    width: 'auto',
-    height: '100%'
-  };
-
   const style = useMemo(
     () => ({
       ...baseStyle,
@@ -136,52 +214,28 @@ export const Dropzone = (props: DropzoneProps) => {
   };
 
   const removeFileFromUploadList = (tempId) => {
-    const newDropedFiles = dropedFiles.filter((file) => file.id !== tempId);
+    const newDropedFiles = dropedFiles.filter((file) => file.tempId !== tempId);
     setDropedFiles(newDropedFiles);
     if (props.onDropedFilesChange) {
       props.onDropedFilesChange(newDropedFiles);
     }
   };
 
+  const handleClickRadioType = (fileId: string, artifactType: FileType) => {
+    const files = [...dropedFiles];
+    const file = files.find((file) => file.tempId === fileId) as UploadItemFile;
+    file.artifactType = artifactType;
+    setDropedFiles(files);
+  };
+
   const thumbs = dropedFiles.map((file: UploadItemFile) => (
-    <div key={file.name}>
-      <div style={thumb as any} key={file.name}>
-        <div style={thumbInner}>
-          {file.type === 'application/pdf' ? (
-            'pdf file'
-          ) : (
-            // TODO eveluate the use of next/image here
-            // <Image
-            //   src={file.preview}
-            //   alt={file.name}
-            //   style={img}
-            //   // Revoke data uri after image is loaded
-            //   onLoad={() => {
-            //     URL.revokeObjectURL(file.preview);
-            //   }}
-            //   width={70}
-            //   height={100}
-            // />
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={file.preview}
-              alt={file.name}
-              style={img}
-              // Revoke data uri after image is loaded
-              onLoad={() => {
-                URL.revokeObjectURL(file.preview);
-              }}
-            />
-          )}
-        </div>
-      </div>
-      <div>
-        <p>{file.name}</p>
-        <a href='#' onClick={() => removeFileFromUploadList(file.id)}>
-          X
-        </a>
-      </div>
-    </div>
+    <FileThumbnail
+      key={getSimpleRandomKey()}
+      file={file}
+      onClickRadioType={handleClickRadioType}
+      onClickRemove={removeFileFromUploadList}
+      validationEnable={props.validateFiles}
+    />
   ));
 
   return (

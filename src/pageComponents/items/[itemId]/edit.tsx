@@ -1,8 +1,8 @@
-import { Suspense, useState, useContext, memo } from 'react';
+import { Suspense, useState, useContext } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useQuery, useMutation, invoke } from '@blitzjs/rpc';
+import { useQuery, useMutation } from '@blitzjs/rpc';
 import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
@@ -14,7 +14,7 @@ import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
 import { reorderFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
 import { UploadItemFile } from '../types';
-import { FileType, Item, ItemFile } from 'db';
+import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
@@ -24,31 +24,33 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
   <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
     <div>Files</div>
     <table>
-      <tr>
-        <td>Name</td>
-        <td>Type</td>
-        <td>Operation</td>
-      </tr>
-      {props.files.length === 0 ? (
+      <tbody>
         <tr>
-          <td colSpan={3}>No files found</td>
+          <td>Name</td>
+          <td>Type</td>
+          <td>Operation</td>
         </tr>
-      ) : (
-        props.files.map((file: ItemFile & { url: string; item: Item }) => (
-          <tr key={file.id}>
-            <td>{file.storagePath}</td>
-            <td>{file.artifactType}</td>
-            <td>
-              <a href='#' onClick={() => downloadFile(file)}>
-                Download
-              </a>
-              <a href='#' onClick={() => props.onClickDelete(file)}>
-                Remove
-              </a>
-            </td>
+        {props.files.length === 0 ? (
+          <tr>
+            <td colSpan={3}>No files found</td>
           </tr>
-        ))
-      )}
+        ) : (
+          props.files.map((file: ItemFile & { url: string; item: Item }) => (
+            <tr key={file.id}>
+              <td>{file.storagePath}</td>
+              <td>{file.artifactType}</td>
+              <td>
+                <a href='#' onClick={() => downloadFile(file)}>
+                  Download
+                </a>
+                <a href='#' onClick={() => props.onClickDelete(file)}>
+                  Remove
+                </a>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
     </table>
   </section>
 );
@@ -56,6 +58,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
 export const EditItem = () => {
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
+  const [isSaving, setSaving] = useState(false);
   const [filesKey, setFilesKey] = useState(getSimpleRandomKey());
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
@@ -73,16 +76,21 @@ export const EditItem = () => {
   const [deleteItemFileMutation] = useMutation(deleteItemFile);
 
   const handleClickSaveFiles = async () => {
-    filesToUpload.forEach((file) => (file.artifactType = FileType.scheme)); // TODO receive as parameter
+    setSaving(true);
+    const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
+    if (hasFileWithError) {
+      alert('Chose a type for each file to be uploaded or remove the file from list');
+      return;
+    }
     await uploadFiles(filesToUpload);
     await saveItemFiles(filesToUpload, createItemFileMutation);
     alert('files saved');
     await queryResult.refetch();
     setDropzoneKey(getSimpleRandomKey());
     setFilesToUpload([]);
+    setSaving(false);
     // TODO
     // if an error occurred on db operation, try to remove file from storage
-    // allow select file type before upload
     // allow select file after before upload
     // try to recover status from upload files
   };
@@ -141,7 +149,7 @@ export const EditItem = () => {
           }}
         />
         <Files files={item.files} onClickDelete={handleDeleteFile} key={filesKey} />
-        <Dropzone onDropedFilesChange={handleFileDroped} key={dropzoneKey} />
+        <Dropzone onDropedFilesChange={handleFileDroped} key={dropzoneKey} validateFiles={isSaving} />
         {filesToUpload.length > 0 ? (
           <p
             style={{
