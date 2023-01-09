@@ -1,7 +1,7 @@
-export type DropzoneProps = {
+export type DropzoneProps = DropzoneOptions & {
   reset?: () => void;
   onDropedFilesChange?: (dropedFiles: DropzoneFile[]) => void;
-  validateFiles: boolean;
+  validateFiles?: boolean;
 };
 
 export type FileThumbnailProps = {

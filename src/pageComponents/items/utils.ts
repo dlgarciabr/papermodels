@@ -43,6 +43,9 @@ export const reorderFilesIndexes = async (
   if (files.length === 0) {
     return [];
   }
+  if (files.length === 1 && files[0]?.index === 0) {
+    return files;
+  }
   const lockFileStorageName = `${item.id}/.lock`;
 
   await saveFile(new File([], lockFileStorageName));

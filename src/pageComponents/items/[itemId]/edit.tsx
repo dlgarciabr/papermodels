@@ -111,6 +111,19 @@ export const EditItem = () => {
     setFilesToUpload(files);
   };
 
+  const dropzoneOptions = {
+    maxFiles: 5,
+    accept: {
+      'image/png': ['.png'],
+      'image/jpeg': ['.jpeg', '.jpg'],
+      'image/svg+xml': ['.svg'],
+      'application/pdf': ['.pdf']
+    },
+    validator: () => (filesToUpload.length >= 5 ? { code: 'too-many-files', message: 'too many files' } : null),
+    onDropedFilesChange: handleFileDroped,
+    validateFiles: isSaving
+  };
+
   return (
     <>
       <Head>
@@ -145,7 +158,7 @@ export const EditItem = () => {
           }}
         />
         <Files files={item.files} onClickDelete={handleDeleteFile} key={filesKey} />
-        <Dropzone onDropedFilesChange={handleFileDroped} key={dropzoneKey} validateFiles={isSaving} />
+        <Dropzone key={dropzoneKey} {...dropzoneOptions} />
         {filesToUpload.length > 0 ? (
           <p
             style={{

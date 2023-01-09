@@ -1,145 +1,34 @@
 import { FileType } from '@prisma/client';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadItemFile } from 'src/pageComponents/items/types';
 import { getSimpleRandomKey } from 'src/utils/global';
-
-import { DropzoneProps, FileThumbnailProps } from './types';
-
-const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable }: FileThumbnailProps) => {
-  // TODO remove after defined styling method
-  const thumbInner = {
-    display: 'flex',
-    minWidth: 0,
-    overflow: 'hidden'
-  };
-
-  // TODO remove after defined styling method
-  const img = {
-    display: 'block',
-    width: 'auto',
-    height: '100%'
-  };
-
-  // TODO remove after defined styling method
-  const thumb = {
-    display: 'inline-flex',
-    borderRadius: 2,
-    border: '1px solid #eaeaea',
-    marginBottom: 8,
-    marginRight: 8,
-    width: 100,
-    height: 100,
-    padding: 4,
-    boxSizing: 'border-box'
-  };
-
-  // TODO remove after styling pattern have been defined
-  const thumbError = {
-    borderStyle: 'double',
-    borderWidth: '1px',
-    borderColor: 'red'
-  };
-
-  return (
-    <div key={file.name} style={validationEnable && !file.artifactType ? thumbError : {}}>
-      <div style={thumb as any} key={file.name}>
-        <div style={thumbInner}>
-          {file.type === 'application/pdf' ? (
-            'pdf file'
-          ) : (
-            // TODO eveluate the use of next/image here
-            // <Image
-            //   src={file.preview}
-            //   alt={file.name}
-            //   style={img}
-            //   // Revoke data uri after image is loaded
-            //   onLoad={() => {
-            //     URL.revokeObjectURL(file.preview);
-            //   }}
-            //   width={70}
-            //   height={100}
-            // />
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={file.preview}
-              alt={file.name}
-              style={img}
-              // Revoke data uri after image is loaded
-              onLoad={() => {
-                URL.revokeObjectURL(file.preview);
-              }}
-            />
-          )}
-        </div>
-      </div>
-      <div>
-        <p>{file.name}</p>
-        <input
-          type='radio'
-          id={FileType.scheme}
-          name={`${file.tempId}_artifactType`}
-          value='HTML'
-          onClick={() => onClickRadioType(file.tempId, FileType.scheme)}
-          defaultChecked={file.artifactType === FileType.scheme}
-        />
-        <label htmlFor='html'>{FileType.scheme}</label>
-        <br />
-        <input
-          type='radio'
-          id={FileType.instruction}
-          name={`${file.tempId}_artifactType`}
-          value='CSS'
-          onClick={() => onClickRadioType(file.tempId, FileType.instruction)}
-          defaultChecked={file.artifactType === FileType.instruction}
-        />
-        <label htmlFor='css'>{FileType.instruction}</label>
-        <br />
-        <input
-          type='radio'
-          id={FileType.preview}
-          name={`${file.tempId}_artifactType`}
-          value='JavaScript'
-          onClick={() => onClickRadioType(file.tempId, FileType.preview)}
-          defaultChecked={file.artifactType === FileType.preview}
-        />
-        <label htmlFor='javascript'>{FileType.preview}</label>
-        <br />
-        <button onClick={() => onClickRemove(file.tempId)}>remove</button>
-      </div>
-    </div>
-  );
-};
+import FileThumbnail from './FileThumbnail';
+import { DropzoneProps } from './types';
 
 export const Dropzone = (props: DropzoneProps) => {
   const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
-  const onDrop = (acceptedFiles) => {
-    const filesToAdd = acceptedFiles.map((file) =>
-      Object.assign(file, {
-        preview: URL.createObjectURL(file),
-        tempId: getSimpleRandomKey()
-      })
-    );
+
+  const onDrop = (acceptedFiles: UploadItemFile[]) => {
+    const filesToAdd = acceptedFiles.map((file) => {
+      if (file.type.indexOf('image') >= 0) {
+        file.preview = URL.createObjectURL(file);
+        file.tempId = getSimpleRandomKey();
+      }
+      return file;
+    });
     const newFileList = [...filesToAdd, ...dropedFiles];
     setDropedFiles(newFileList);
     if (props.onDropedFilesChange) {
       props.onDropedFilesChange(newFileList);
     }
+    props.onDrop(filesToAdd);
   };
 
-  const options = {
-    onDrop,
-    maxFiles: 5,
-    accept: {
-      'image/png': ['.png'],
-      'image/jpeg': ['.jpeg, .jpg'],
-      'image/svg+xml': ['.svg'],
-      'application/pdf': ['.pdf']
-    },
-    validator: () => (dropedFiles.length >= 5 ? { code: 'too-many-files', message: 'too many files' } : null)
-  };
-
-  const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject, fileRejections } = useDropzone(options);
+  const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject, fileRejections } = useDropzone({
+    ...props,
+    onDrop
+  });
 
   // TODO remove after defined styling method
   const baseStyle = {
@@ -192,13 +81,9 @@ export const Dropzone = (props: DropzoneProps) => {
     [isFocused, isDragAccept, isDragReject]
   );
 
-  useEffect(() => {
-    return () => dropedFiles.forEach((file) => URL.revokeObjectURL(file.preview));
-  });
-
   const renderRejections = () => {
     if (fileRejections.length > 0) {
-      return fileRejections.map((rejection, index) => {
+      return fileRejections.map((rejection) => {
         return (
           <>
             <p key={rejection.file.name}>{rejection.file.name}</p>
@@ -228,15 +113,19 @@ export const Dropzone = (props: DropzoneProps) => {
     setDropedFiles(files);
   };
 
-  const thumbs = dropedFiles.map((file: UploadItemFile) => (
-    <FileThumbnail
-      key={getSimpleRandomKey()}
-      file={file}
-      onClickRadioType={handleClickRadioType}
-      onClickRemove={removeFileFromUploadList}
-      validationEnable={props.validateFiles}
-    />
-  ));
+  const renderThumbs = useMemo(
+    () =>
+      dropedFiles.map((file: UploadItemFile) => (
+        <FileThumbnail
+          key={getSimpleRandomKey()}
+          file={file}
+          onClickRadioType={handleClickRadioType}
+          onClickRemove={removeFileFromUploadList}
+          validationEnable={props.validateFiles}
+        />
+      )),
+    [dropedFiles, props.validateFiles]
+  );
 
   return (
     <section className='container'>
@@ -245,7 +134,7 @@ export const Dropzone = (props: DropzoneProps) => {
         <p>Drag and drop some files here, or click to select files</p>
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
-      <aside style={thumbsContainer as any}>{thumbs}</aside>
+      <aside style={thumbsContainer as any}>{renderThumbs}</aside>
       {renderRejections()}
     </section>
   );

@@ -12,7 +12,8 @@ import {
   setupUseMutationOnce,
   setupUseInvokeOnce,
   modifyMockedRouter,
-  setupUseInvoke
+  setupUseInvoke,
+  fireEvent
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -379,8 +380,26 @@ describe('Item changing', () => {
     expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
   });
 
+  function mockData(files) {
+    return {
+      dataTransfer: {
+        files,
+        items: files.map((file) => ({
+          kind: 'file',
+          type: file.type,
+          getAsFile: () => file
+        })),
+        types: ['Files']
+      }
+    };
+  }
+
   test.todo('User add an image file to an item', async () => {
     // arrange
+    const file = new File([JSON.stringify({ ping: true })], 'test.png', { type: 'image/png' });
+
+    const files = mockData([file]);
+
     const item = {
       name: 'name test',
       description: 'desc test',
@@ -393,7 +412,13 @@ describe('Item changing', () => {
     expect(screen.getByText('No files found')).toBeInTheDocument();
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Add file' }));
+    const dropzoneContainer = screen.getByText('Drag and drop some files here, or click to select files')
+      .parentElement as Element;
+
+    fireEvent.dragEnter(dropzoneContainer, files);
+
+    // expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'ping.json' })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'test.png' })).toBeInTheDocument();
 
     // assert
 
