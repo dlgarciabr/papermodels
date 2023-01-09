@@ -36,8 +36,10 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
     borderColor: 'red'
   };
 
+  const hasError = validationEnable && !file.artifactType;
+
   return (
-    <div key={file.name} style={validationEnable && !file.artifactType ? thumbError : {}}>
+    <div key={file.name} className={`thumbnail ${hasError ? 'error' : ''}`} style={hasError ? thumbError : {}}>
       <div style={thumb as any} key={file.name}>
         <div style={thumbInner}>
           {file.type === 'application/pdf' ? (
@@ -74,31 +76,28 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
           type='radio'
           id={FileType.scheme}
           name={`${file.tempId}_artifactType`}
-          value='HTML'
           onClick={() => onClickRadioType(file.tempId, FileType.scheme)}
           defaultChecked={file.artifactType === FileType.scheme}
         />
-        <label htmlFor='html'>{FileType.scheme}</label>
+        <label htmlFor={FileType.scheme}>{FileType.scheme}</label>
         <br />
         <input
           type='radio'
           id={FileType.instruction}
           name={`${file.tempId}_artifactType`}
-          value='CSS'
           onClick={() => onClickRadioType(file.tempId, FileType.instruction)}
           defaultChecked={file.artifactType === FileType.instruction}
         />
-        <label htmlFor='css'>{FileType.instruction}</label>
+        <label htmlFor={FileType.instruction}>{FileType.instruction}</label>
         <br />
         <input
           type='radio'
           id={FileType.preview}
           name={`${file.tempId}_artifactType`}
-          value='JavaScript'
           onClick={() => onClickRadioType(file.tempId, FileType.preview)}
-          defaultChecked={file.artifactType === FileType.preview}
+          defaultChecked={file.preview === FileType.preview}
         />
-        <label htmlFor='javascript'>{FileType.preview}</label>
+        <label htmlFor={FileType.preview}>{FileType.preview}</label>
         <br />
         <button onClick={() => onClickRemove(file.tempId)}>remove</button>
       </div>

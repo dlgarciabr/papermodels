@@ -17,6 +17,7 @@ export const Dropzone = (props: DropzoneProps) => {
       }
       return file;
     });
+
     const newFileList = [...filesToAdd, ...dropedFiles];
     setDropedFiles(newFileList);
     if (props.onDropedFilesChange) {
