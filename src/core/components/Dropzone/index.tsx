@@ -22,7 +22,9 @@ export const Dropzone = (props: DropzoneProps) => {
     if (props.onDropedFilesChange) {
       props.onDropedFilesChange(newFileList);
     }
-    props.onDrop(filesToAdd);
+    if (props.onDrop) {
+      props.onDrop(filesToAdd);
+    }
   };
 
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject, fileRejections } = useDropzone({
