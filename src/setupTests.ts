@@ -21,6 +21,7 @@ const originalError = global.console.error;
 
 beforeAll(() => {
   mockDefaultBlitzRPC();
+  mockDefaultFileStorage();
 });
 
 beforeEach(() => {
@@ -71,6 +72,14 @@ const mockDefaultBlitzRPC = () => {
     default: { myDefaultKey: vi.fn() },
     namedExport: vi.fn(),
     invoke: vi.fn()
+  }));
+};
+
+const mockDefaultFileStorage = () => {
+  vi.mock('src/utils/fileStorage', () => ({
+    deleteFile: vi.fn(),
+    getFilePath: vi.fn(),
+    saveFile: vi.fn()
   }));
 };
 

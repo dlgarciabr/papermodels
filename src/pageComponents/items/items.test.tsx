@@ -13,14 +13,18 @@ import {
   setupUseInvokeOnce,
   modifyMockedRouter,
   setupUseInvoke,
-  fireEvent
+  setupUseQueryOnce,
+  act,
+  fireEvent,
+  mockFilesToDrop
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
-import { ISetupUsePaginatedQuery } from 'test/types';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit';
 import * as globalUtils from 'src/utils/global';
+import { deleteFile } from 'src/utils/fileStorage';
+import { FileType, Item, ItemFile } from 'db';
 
 // global arrange
 const items = [
@@ -354,15 +358,15 @@ describe('Item changing', () => {
     expect(secondLine.innerHTML?.indexOf(item.files[1]?.artifactType as string) > 0).toBeTruthy();
   });
 
-  test('User download a file from an item', async () => {
+  test('User downloads a file from an item', async () => {
     // arrange
     const item = {
       name: 'name test',
       description: 'desc test',
       files: [
         {
-          id: 'vet-clinic.jpg',
-          type: 'SCHEME',
+          storagePath: 'vet-clinic.jpg',
+          artifactType: 'SCHEME',
           url: 'http://127.0.0.1/file.png'
         }
       ]
@@ -380,61 +384,91 @@ describe('Item changing', () => {
     expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
   });
 
-  function mockData(files) {
-    return {
-      dataTransfer: {
-        files,
-        items: files.map((file) => ({
-          kind: 'file',
-          type: file.type,
-          getAsFile: () => file
-        })),
-        types: ['Files']
-      }
-    };
-  }
-
-  test.todo('User add an image file to an item', async () => {
+  test('User removes a file from an item', async () => {
     // arrange
-    const file = new File([JSON.stringify({ ping: true })], 'test.png', { type: 'image/png' });
+    window.confirm = vi.fn(() => true);
+    const fileStoragePath = 'vet-clinic.jpg';
 
-    const files = mockData([file]);
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: [
+        {
+          storagePath: fileStoragePath,
+          artifactType: 'SCHEME',
+          url: 'http://127.0.0.1/file.png'
+        }
+      ]
+    };
+    setupUseQueryOnce(item);
 
+    render(<EditItemPage />);
+
+    setupUseQueryOnce({ ...item, files: [] });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Remove' }));
+
+    // assert
+    expect(screen.queryByText(fileStoragePath)).not.toBeInTheDocument();
+  });
+
+  test('User adds a file to an item', async () => {
+    // arrange
+    // window.confirm = vi.fn(() => true);
+    global.URL.createObjectURL = vi.fn().mockResolvedValueOnce('http://127.0.0.1');
+
+    const fileName = 'vet-clinic.jpg';
+
+    const filesToBeDroped = mockFilesToDrop([
+      {
+        name: fileName,
+        mimeType: 'image/png',
+        blob: [' ']
+      }
+    ]);
+
+    // const item: Item & { files: ItemFile[] } = {
     const item = {
       name: 'name test',
       description: 'desc test',
       files: []
     };
-    setupUseQuery(item);
+
+    setupUseQuery(item, {
+      refetchResolved: {
+        ...item,
+        files: [
+          {
+            storagePath: fileName,
+            artifactType: 'SCHEME',
+            url: 'http://127.0.0.1/file.png'
+          }
+        ]
+      }
+    });
 
     render(<EditItemPage />);
 
-    expect(screen.getByText('No files found')).toBeInTheDocument();
-
     // act
+    expect(screen.queryByText(fileName)).not.toBeInTheDocument();
+
     const dropzoneContainer = screen.getByText('Drag and drop some files here, or click to select files')
       .parentElement as Element;
 
-    fireEvent.dragEnter(dropzoneContainer, files);
+    await act(() => fireEvent.drop(dropzoneContainer, filesToBeDroped));
 
-    // expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'ping.json' })).toBeInTheDocument();
-    expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'test.png' })).toBeInTheDocument();
+    await waitFor(async () => {
+      expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.RADIO, { name: FileType.instruction }));
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
 
     // assert
-
-    // const filesContainer = screen.getByRole(ARIA_ROLE.LANDMARK.CONTENTINFO);
-    // const filesTable = filesContainer.children[1] as HTMLElement;
-    // const firstLine = filesTable?.children[1] as HTMLElement;
-    // const secondLine = filesTable?.children[2] as HTMLElement;
-    // expect(firstLine.innerHTML?.indexOf(item.files[0]?.id as string) > 0).toBeTruthy();
-    // expect(firstLine.innerHTML?.indexOf(item.files[0]?.type as string) > 0).toBeTruthy();
-    // expect(secondLine.innerHTML?.indexOf(item.files[1]?.id as string) > 0).toBeTruthy();
-    // expect(secondLine.innerHTML?.indexOf(item.files[1]?.type as string) > 0).toBeTruthy();
+    expect(screen.getByText(fileName)).toBeInTheDocument();
   });
-
-  test.todo('User add a pdf file to an item', async () => {});
-
-  test.todo('User remove a file from an item', async () => {});
 
   test.todo('User delete an item');
 });

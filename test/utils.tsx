@@ -134,8 +134,26 @@ const mockUsePaginatedQuery = (collectionName: string, items: any[], hasMore: bo
   ];
 };
 
-export const setupUseQuery = (returnValue: any) => {
-  vi.mocked(useQuery).mockReturnValue([returnValue, { setQueryData: vi.fn() } as any]);
+export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: T }) => {
+  const refetch = vi.fn();
+  if (options?.refetchResolved) {
+    refetch.mockImplementation(() => {
+      vi.mocked(useQuery).mockReturnValue([
+        options?.refetchResolved,
+        {
+          setQueryData: vi.fn(),
+          refetch
+        } as any
+      ]);
+    });
+  }
+  vi.mocked(useQuery).mockReturnValue([
+    returnValue,
+    {
+      setQueryData: vi.fn(),
+      refetch
+    } as any
+  ]);
 };
 
 export const setupUseQueryOnce = (returnValue: any) => {
@@ -183,6 +201,27 @@ export const mockRouterOperation = (callback: Function) =>
     callback(url, as, options);
     return true;
   });
+
+export const mockFilesToDrop = (fileData: { name: string; mimeType: string; blob: any[] }[]) => {
+  const files = fileData.map((data) => {
+    const file = new File(data.blob, data.name, { type: data.mimeType });
+    Object.assign(file, {
+      arrayBuffer: vi.fn().mockResolvedValue(data.blob)
+    });
+    return file;
+  });
+  return {
+    dataTransfer: {
+      files,
+      items: files.map((file) => ({
+        kind: 'file',
+        type: file.type,
+        getAsFile: () => file
+      })),
+      types: ['Files']
+    }
+  };
+};
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];
