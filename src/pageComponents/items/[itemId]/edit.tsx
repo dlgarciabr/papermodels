@@ -12,48 +12,53 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
-import { reorderFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
+import { sortFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
 import { UploadItemFile } from '../types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
+import { render } from 'test/utils';
 
-const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => (
-  <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
-    <div>Files</div>
-    <table>
-      <tbody>
-        <tr>
-          <td>Name</td>
-          <td>Type</td>
-          <td>Operation</td>
-        </tr>
-        {props.files.length === 0 ? (
+const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
+  return (
+    <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
+      <div>Files</div>
+      <table>
+        <tbody>
           <tr>
-            <td colSpan={3}>No files found</td>
+            <td>Name</td>
+            <td>Type</td>
+            <td>Operation</td>
           </tr>
-        ) : (
-          props.files.map((file: ItemFile & { url: string; item: Item }) => (
-            <tr key={file.id}>
-              <td>{file.storagePath}</td>
-              <td>{file.artifactType}</td>
-              <td>
-                <a href='#' onClick={() => downloadFile(file)}>
-                  Download
-                </a>
-                <a href='#' onClick={() => props.onClickDelete(file)}>
-                  Remove
-                </a>
-              </td>
+          {props.files.length === 0 ? (
+            <tr>
+              <td colSpan={3}>No files found</td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </section>
-);
+          ) : (
+            props.files.map((file: ItemFile & { url: string; item: Item }) => {
+              return (
+                <tr key={file.id}>
+                  <td>{file.storagePath}</td>
+                  <td>{file.artifactType}</td>
+                  <td>
+                    <a href='#' onClick={() => downloadFile(file)}>
+                      Download
+                    </a>
+                    <a href='#' onClick={() => props.onClickDelete(file)}>
+                      Remove
+                    </a>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </section>
+  );
+};
 
 export const EditItem = () => {
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
@@ -70,6 +75,7 @@ export const EditItem = () => {
       staleTime: Infinity
     }
   );
+
   const [updateItemMutation] = useMutation(updateItem);
   const [updateItemFileMutation] = useMutation(updateItemFile);
   const [createItemFileMutation] = useMutation(createItemFile);
@@ -95,10 +101,9 @@ export const EditItem = () => {
     if (confirm(`are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
-      item.files = item.files.filter((itemFile) => itemFile.id !== file.id);
-      const updatedFiles = await reorderFilesIndexes(item, item.files, updateItemFileMutation);
-      item.files = updatedFiles;
-      setFilesKey(getSimpleRandomKey());
+      const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
+      await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
+      await queryResult.refetch();
       alert('file removed');
     }
   };

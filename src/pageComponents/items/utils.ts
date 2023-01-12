@@ -35,7 +35,7 @@ export const saveItemFiles = async (files: UploadItemFile[], createFileMutation:
   await Promise.all(promises);
 };
 
-export const reorderFilesIndexes = async (
+export const sortFilesIndexes = async (
   item: Item,
   files: ItemFile[],
   updateItemFileMutation: any
@@ -45,7 +45,7 @@ export const reorderFilesIndexes = async (
   }
   if (files.length === 1 && files[0]?.index === 0) {
     return files;
-  }
+  } //TODO improve index validation to suport n items on files and avoid more logic to be called
   const lockFileStorageName = `${item.id}/.lock`;
 
   await saveFile(new File([], lockFileStorageName));
@@ -58,6 +58,7 @@ export const reorderFilesIndexes = async (
       new Promise(async (resolve) => {
         const backupFileName = `${file.storagePath}_bak`;
         const url = await getFilePath(file.storagePath);
+
         const response = await fetch(url, { method: 'GET' });
         const blob = await response.blob();
 
@@ -70,12 +71,14 @@ export const reorderFilesIndexes = async (
 
         await saveFile(new File([blob], newStoragePath));
         await deleteFile(backupFileName);
+
         const updatedFile = await updateItemFileMutation({
           id: file.id,
           storagePath: newStoragePath,
           artifactType: file.artifactType,
           index
         });
+
         updatedFiles.push(updatedFile);
         resolve();
       })

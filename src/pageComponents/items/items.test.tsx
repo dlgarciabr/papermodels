@@ -16,7 +16,9 @@ import {
   setupUseQueryOnce,
   act,
   fireEvent,
-  mockFilesToDrop
+  mockFilesToDrop,
+  setupUseMutation,
+  setupUseMutationStack
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
@@ -25,6 +27,8 @@ import EditItemPage from './[itemId]/edit';
 import * as globalUtils from 'src/utils/global';
 import { deleteFile } from 'src/utils/fileStorage';
 import { FileType, Item, ItemFile } from 'db';
+import { getSimpleRandomKey } from 'src/utils/global';
+import { useQuery } from '@blitzjs/rpc';
 
 // global arrange
 const items = [
@@ -387,35 +391,90 @@ describe('Item changing', () => {
   test('User removes a file from an item', async () => {
     // arrange
     window.confirm = vi.fn(() => true);
-    const fileStoragePath = 'vet-clinic.jpg';
+    vi.mocked(global.fetch).mockResolvedValue({ blob: async () => new Blob([]) } as any);
+
+    const fileStoragePath1 = 'file1.png';
+    const fileStoragePath2 = 'file2.png';
+    const fileStoragePath3 = 'file3.png';
 
     const item = {
+      id: 1,
       name: 'name test',
       description: 'desc test',
+      categoryId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       files: [
         {
-          storagePath: fileStoragePath,
-          artifactType: 'SCHEME',
-          url: 'http://127.0.0.1/file.png'
+          id: 1,
+          index: 0,
+          storagePath: fileStoragePath1,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
+        },
+        {
+          id: 2,
+          index: 1,
+          storagePath: fileStoragePath2,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
+        },
+        {
+          id: 3,
+          index: 2,
+          storagePath: fileStoragePath3,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
         }
       ]
     };
-    setupUseQueryOnce(item);
 
-    render(<EditItemPage />);
+    setupUseQuery(item, {
+      refetchResolved: {
+        ...item,
+        files: [...item.files.filter((file) => file.id !== 2)]
+      }
+    });
 
-    setupUseQueryOnce({ ...item, files: [] });
+    setupUseMutationStack([
+      Promise.resolve({}),
+      Promise.resolve({
+        id: 1,
+        storagePath: fileStoragePath1,
+        artifactType: FileType.scheme,
+        index: 0,
+        itemId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as ItemFile)
+    ]);
+
+    const { rerender } = render(<EditItemPage />);
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Remove' }));
+    const filesTable = screen.getByText('Files').nextSibling as HTMLTableElement;
+    const removeButton = filesTable.rows[2]?.cells[2]?.children[1] as HTMLAnchorElement;
+    await userEvent.click(removeButton);
+
+    rerender(<EditItemPage />);
 
     // assert
-    expect(screen.queryByText(fileStoragePath)).not.toBeInTheDocument();
+    expect(screen.getByText(fileStoragePath1)).toBeInTheDocument();
+    expect(screen.queryByText(fileStoragePath2)).not.toBeInTheDocument();
+    expect(screen.getByText(fileStoragePath3)).toBeInTheDocument();
   });
 
   test('User adds a file to an item', async () => {
     // arrange
-    // window.confirm = vi.fn(() => true);
     global.URL.createObjectURL = vi.fn().mockResolvedValueOnce('http://127.0.0.1');
 
     const fileName = 'vet-clinic.jpg';
@@ -428,7 +487,6 @@ describe('Item changing', () => {
       }
     ]);
 
-    // const item: Item & { files: ItemFile[] } = {
     const item = {
       name: 'name test',
       description: 'desc test',

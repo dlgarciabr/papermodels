@@ -134,8 +134,8 @@ const mockUsePaginatedQuery = (collectionName: string, items: any[], hasMore: bo
   ];
 };
 
-export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: T }) => {
-  const refetch = vi.fn();
+export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: T | null }) => {
+  const refetch = vi.fn().mockImplementation(() => console.log('REFETCH NOT IMPLEMENTED'));
   if (options?.refetchResolved) {
     refetch.mockImplementation(() => {
       vi.mocked(useQuery).mockReturnValue([
@@ -156,7 +156,8 @@ export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: 
   ]);
 };
 
-export const setupUseQueryOnce = (returnValue: any) => {
+export const setupUseQueryOnce = <T,>(returnValue: T) => {
+  vi.mocked(useQuery).mockReset();
   vi.mocked(useQuery).mockReturnValueOnce([returnValue, {} as any]);
 };
 
@@ -188,12 +189,26 @@ export const setupUseInvoke = (callback: (queryFn: (...args: any) => any, params
   vi.mocked(invoke).mockImplementation(callback);
 };
 
-export const setupUseMutation = (mutation: Promise<void>) => {
+export const setupUseMutation = <T,>(mutation: Promise<T>) => {
   vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
 };
 
-export const setupUseMutationOnce = (mutation: Promise<void>) => {
+export const setupUseMutationOnce = <T,>(mutation: Promise<T>) => {
   vi.mocked(useMutation).mockReturnValueOnce([mutation as any, {} as any]);
+};
+
+export const setupUseMutationStack = (mutations: Promise<any>[]) => {
+  let mutationsStack = [...mutations];
+  const mockMutationOnce = (returnMutation) => {
+    vi.mocked(useMutation).mockImplementationOnce(async () => {
+      await mutationsStack.pop();
+      if (mutationsStack) {
+        mockMutationOnce(mutationsStack[0]);
+      }
+      return [returnMutation as any, {} as any] as any;
+    });
+  };
+  mockMutationOnce(mutationsStack[0]);
 };
 
 export const mockRouterOperation = (callback: Function) =>

@@ -20,6 +20,7 @@ const ignoredConsoleErrors = [
 const originalError = global.console.error;
 
 beforeAll(() => {
+  mockDefaultGlobal();
   mockDefaultBlitzRPC();
   mockDefaultFileStorage();
 });
@@ -77,12 +78,16 @@ const mockDefaultBlitzRPC = () => {
 
 const mockDefaultFileStorage = () => {
   vi.mock('src/utils/fileStorage', () => ({
-    deleteFile: vi.fn(),
+    deleteFile: vi.fn().mockImplementation(() => Promise.resolve()),
     getFilePath: vi.fn(),
-    saveFile: vi.fn()
+    saveFile: vi.fn().mockImplementation(() => Promise.resolve())
   }));
 };
 
 const initializeDefaultBlitzMock = () => {
   vi.mocked(useMutation).mockReturnValue([async () => {}, {} as any]);
+};
+
+const mockDefaultGlobal = () => {
+  global.fetch = vi.fn();
 };
