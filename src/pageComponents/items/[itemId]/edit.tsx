@@ -19,7 +19,7 @@ import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
-import { render } from 'test/utils';
+import getCategories from 'src/categories/queries/getCategories';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -70,6 +70,15 @@ export const EditItem = () => {
   const [item, queryResult] = useQuery(
     getItem,
     { id: itemId },
+    {
+      // This ensures the query never refreshes and overwrites the form data while the user is editing.
+      staleTime: Infinity
+    }
+  );
+
+  const [categoryResult] = useQuery(
+    getCategories,
+    { orderBy: { name: 'asc' } },
     {
       // This ensures the query never refreshes and overwrites the form data while the user is editing.
       staleTime: Infinity
@@ -145,6 +154,7 @@ export const EditItem = () => {
           //         then import and use it here
           // schema={UpdateItem}
           initialValues={item}
+          categories={categoryResult.categories}
           onSubmit={async (values) => {
             try {
               const updated = await updateItemMutation({

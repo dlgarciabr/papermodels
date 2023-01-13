@@ -1,14 +1,23 @@
 import { useContext } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Link from 'next/link';
-import { useMutation } from '@blitzjs/rpc';
+import { useMutation, useQuery } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import createItem from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
+import getCategories from 'src/categories/queries/getCategories';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
   const [createItemMutation] = useMutation(createItem);
+  const [categoryResult] = useQuery(
+    getCategories,
+    { orderBy: { name: 'asc' } },
+    {
+      // This ensures the query never refreshes and overwrites the form data while the user is editing.
+      staleTime: Infinity
+    }
+  );
 
   return (
     <Layout title={'Create New Item'}>
@@ -20,7 +29,8 @@ const NewItemPage = () => {
         //  - Tip: extract mutation's schema into a shared `validations.ts` file and
         //         then import and use it here
         // schema={CreateItem}
-        // initialValues={{}}
+        initialValues={{}}
+        categories={categoryResult.categories}
         onSubmit={async (values) => {
           try {
             const item = await createItemMutation({

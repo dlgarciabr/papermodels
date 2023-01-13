@@ -8,27 +8,26 @@ import {
   cleanup,
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
-  setupUseQuery,
+  setupUseQueryReturn,
   setupUseMutationOnce,
   setupUseInvokeOnce,
   modifyMockedRouter,
   setupUseInvoke,
-  setupUseQueryOnce,
   act,
   fireEvent,
   mockFilesToDrop,
-  setupUseMutation,
-  setupUseMutationStack
+  setupUseMutationStack,
+  setupUseQueryImplementation
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit';
 import * as globalUtils from 'src/utils/global';
-import { deleteFile } from 'src/utils/fileStorage';
 import { FileType, Item, ItemFile } from 'db';
-import { getSimpleRandomKey } from 'src/utils/global';
 import { useQuery } from '@blitzjs/rpc';
+import getItem from 'src/items/queries/getItem';
+import getCategories from 'src/categories/queries/getCategories';
 
 // global arrange
 const items = [
@@ -89,21 +88,7 @@ const items = [
   }
 ];
 
-vi.mock('src/items/queries/getItems', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/getItems';
-  return { default: resolver };
-});
-
-vi.mock('src/items/mutations/createItem', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/createItem';
-  return { default: resolver };
-});
-
-describe('Item', () => {
+describe('Item listing', () => {
   test('Open Item list with items', async () => {
     // arrange
     setupUseInvokeOnce({
@@ -120,7 +105,7 @@ describe('Item', () => {
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 
-  test('Open Category list and navigate through pages', async () => {
+  test('Open Item list and navigate through pages', async () => {
     // arrange
     const useInvokeCallback = async (_queryFn, params) => {
       switch (params.skip) {
@@ -186,6 +171,8 @@ describe('Item creating', () => {
       hasMore: false
     });
 
+    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
+
     render(<NewItemPage />, {
       router: {
         push: mockRouterOperation(() => {
@@ -202,13 +189,13 @@ describe('Item creating', () => {
     const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Description'
     });
-    const categoryTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
-      name: 'categoryId'
+    const categoryCombobox = screen.getByRole(ARIA_ROLE.WIDGET.COMBOBOX, {
+      name: 'Category'
     });
 
     await userEvent.type(nameTexfield, itemName);
     await userEvent.type(descriptionTexfield, 'description test');
-    await userEvent.type(categoryTexfield, '1');
+    await userEvent.selectOptions(categoryCombobox, '1');
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
@@ -247,6 +234,8 @@ describe('Item creating', () => {
       ],
       hasMore: false
     });
+
+    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
 
     render(<NewItemPage />, {
       router: {
@@ -288,7 +277,7 @@ describe('Item changing', () => {
 
     setupUseInvokeOnce(paginatedQueryReturnData);
 
-    setupUseQuery(initialItem);
+    setupUseQueryReturn(initialItem);
 
     render(<ItemsPage />, {
       router: {
@@ -345,7 +334,7 @@ describe('Item changing', () => {
         }
       ]
     };
-    setupUseQuery(item);
+    setupUseQueryReturn(item);
 
     // act
     render(<EditItemPage />);
@@ -375,7 +364,7 @@ describe('Item changing', () => {
         }
       ]
     };
-    setupUseQuery(item);
+    setupUseQueryReturn(item);
 
     render(<EditItemPage />);
 
@@ -438,7 +427,7 @@ describe('Item changing', () => {
       ]
     };
 
-    setupUseQuery(item, {
+    setupUseQueryReturn(item, {
       refetchResolved: {
         ...item,
         files: [...item.files.filter((file) => file.id !== 2)]
@@ -493,17 +482,31 @@ describe('Item changing', () => {
       files: []
     };
 
-    setupUseQuery(item, {
-      refetchResolved: {
-        ...item,
-        files: [
-          {
-            storagePath: fileName,
-            artifactType: 'SCHEME',
-            url: 'http://127.0.0.1/file.png'
-          }
-        ]
+    setupUseQueryImplementation((queryFn: any) => {
+      if (queryFn === getItem) {
+        const refetch = vi.fn().mockImplementation(() => {
+          vi.mocked(useQuery).mockReturnValue([
+            {
+              ...item,
+              files: [
+                {
+                  storagePath: fileName,
+                  artifactType: 'SCHEME',
+                  url: 'http://127.0.0.1/file.png'
+                }
+              ]
+            },
+            {
+              setQueryData: vi.fn(),
+              refetch
+            } as any
+          ]);
+        });
+        return [item, { refetch } as any];
+      } else if (queryFn === getCategories) {
+        return [[{ name: 'test' }], {} as any];
       }
+      return [];
     });
 
     render(<EditItemPage />);

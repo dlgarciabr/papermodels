@@ -8,10 +8,9 @@ import {
   cleanup,
   setupUseInvokeOnce,
   mockRouterOperation,
-  setupUseQuery,
+  setupUseQueryReturn,
   setupUseMutationOnce,
   modifyMockedRouter,
-  setupUseMutation,
   setupUseInvoke
 } from 'test/utils';
 import CategoriesPage from '.';
@@ -67,20 +66,6 @@ const categories = [
     name: 'Miscelaneus'
   }
 ];
-
-vi.mock('src/categories/queries/getCategories', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/getCategories';
-  return { default: resolver };
-});
-
-vi.mock('src/categories/mutations/createCategory', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/createCategory';
-  return { default: resolver };
-});
 
 describe('Listing Category', () => {
   test('Open Category list with items', async () => {
@@ -260,7 +245,7 @@ describe('Category changing', () => {
       hasMore: false
     });
 
-    setupUseQuery({ name: categoryName, description: categoryDescription });
+    setupUseQueryReturn({ name: categoryName, description: categoryDescription });
 
     render(<CategoriesPage />, {
       router: {
@@ -339,7 +324,7 @@ describe('Category changing', () => {
     // const updateCategoryMutation = vi.fn().mockRejectedValueOnce({});
     // setupUseMutationOnce(updateCategoryMutation as any);
 
-    setupUseQuery({ name: categoryName, description: categoryDescription });
+    setupUseQueryReturn({ name: categoryName, description: categoryDescription });
 
     render(<CategoriesPage />, {
       router: {

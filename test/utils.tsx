@@ -134,7 +134,7 @@ const mockUsePaginatedQuery = (collectionName: string, items: any[], hasMore: bo
   ];
 };
 
-export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: T | null }) => {
+export const setupUseQueryReturn = <T,>(returnValue: T, options?: { refetchResolved?: T | null }) => {
   const refetch = vi.fn().mockImplementation(() => console.log('REFETCH NOT IMPLEMENTED'));
   if (options?.refetchResolved) {
     refetch.mockImplementation(() => {
@@ -156,9 +156,13 @@ export const setupUseQuery = <T,>(returnValue: T, options?: { refetchResolved?: 
   ]);
 };
 
-export const setupUseQueryOnce = <T,>(returnValue: T) => {
+export const setupUseQueryReturnOnce = <T,>(returnValue: T) => {
   vi.mocked(useQuery).mockReset();
   vi.mocked(useQuery).mockReturnValueOnce([returnValue, {} as any]);
+};
+
+export const setupUseQueryImplementation = <T,>(implementation: (queryFn: T) => any[]) => {
+  vi.mocked(useQuery).mockImplementation(implementation as any);
 };
 
 export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
