@@ -15,7 +15,7 @@ export function ItemForm<S extends z.ZodType<any, any>>(props: FormProps<S> & { 
       <LabeledTextField name='name' label='Name' placeholder='Name' />
       <LabeledTextField name='description' label='Description' placeholder='Description' />
       <LabeledSelect
-        name='category'
+        name='categoryId'
         label='Category'
         placeholder='Chose one...'
         items={selectCategoryItems}
