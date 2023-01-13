@@ -8,14 +8,26 @@ import {
   cleanup,
   setupUsePaginatedQueryOnce,
   mockRouterOperation,
-  setupUseQuery,
-  setupUseMutationOnce
+  setupUseQueryReturn,
+  setupUseMutationOnce,
+  setupUseInvokeOnce,
+  modifyMockedRouter,
+  setupUseInvoke,
+  act,
+  fireEvent,
+  mockFilesToDrop,
+  setupUseMutationStack,
+  setupUseQueryImplementation
 } from 'test/utils';
 import ItemsPage from '.';
 import NewItemPage from './new';
-import { ISetupUsePaginatedQuery } from 'test/types';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit';
+import * as globalUtils from 'src/utils/global';
+import { FileType, Item, ItemFile } from 'db';
+import { useQuery } from '@blitzjs/rpc';
+import getItem from 'src/items/queries/getItem';
+import getCategories from 'src/categories/queries/getCategories';
 
 // global arrange
 const items = [
@@ -23,112 +35,123 @@ const items = [
     id: 1,
     name: 'B-17',
     decription: 'Flying fortress'
-  }
-];
-
-const categories = [
-  {
-    id: 1,
-    name: 'Airplanes'
   },
   {
     id: 2,
-    name: 'Cars'
+    name: 'B-18',
+    decription: 'Flying fortress'
   },
   {
     id: 3,
-    name: 'Houses'
+    name: 'B-19',
+    decription: 'Flying fortress'
   },
   {
     id: 4,
-    name: 'Animals'
+    name: 'B-20',
+    decription: 'Flying fortress'
   },
   {
     id: 5,
-    name: 'Trains'
+    name: 'B-21',
+    decription: 'Flying fortress'
   },
   {
     id: 6,
-    name: 'Emergency places'
+    name: 'B-22',
+    decription: 'Flying fortress'
   },
   {
     id: 7,
-    name: 'Boats&Ships'
+    name: 'B-23',
+    decription: 'Flying fortress'
   },
   {
     id: 8,
-    name: 'Stores'
+    name: 'B-24',
+    decription: 'Flying fortress'
   },
   {
     id: 9,
-    name: 'Service building'
+    name: 'B-25',
+    decription: 'Flying fortress'
   },
   {
     id: 10,
-    name: 'Plants'
+    name: 'B-26',
+    decription: 'Flying fortress'
   },
   {
     id: 11,
-    name: 'Miscelaneus'
+    name: 'B-27',
+    decription: 'Flying fortress'
   }
 ];
 
-vi.mock('src/items/queries/getItems', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/getItems';
-  return { default: resolver };
-});
-
-vi.mock('src/items/mutations/createItem', () => {
-  const resolver = vi.fn() as any;
-  resolver._resolverType = 'query';
-  resolver._routePath = '/api/rpc/createItem';
-  return { default: resolver };
-});
-
-const globalUsePaginatedQueryParams: ISetupUsePaginatedQuery = {
-  collectionName: 'items',
-  items: items.slice(0, 10),
-  hasMore: true
-};
-
-describe('Item', () => {
-  test('Open Item list with items', () => {
+describe('Item listing', () => {
+  test('Open Item list with items', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(0, 10),
+      hasMore: true
+    });
 
     // act
     render(<ItemsPage />);
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 
   test('Open Item list and navigate through pages', async () => {
     // arrange
-    setupUsePaginatedQueryOnce(globalUsePaginatedQueryParams);
+    const useInvokeCallback = async (_queryFn, params) => {
+      switch (params.skip) {
+        case 0:
+          return {
+            items: items.slice(0, 10),
+            hasMore: true
+          };
+        case 10:
+          return {
+            items: items.slice(10),
+            hasMore: false
+          };
+        default:
+          return {
+            items: [],
+            hasMore: false
+          };
+      }
+    };
 
-    const { rerender } = render(<ItemsPage />, {
+    setupUseInvoke(useInvokeCallback);
+
+    let { rerender } = render(<ItemsPage />, {
       router: {
-        push: mockRouterOperation(() => rerender(<ItemsPage />))
+        push: mockRouterOperation((url) => {
+          modifyMockedRouter(url);
+          rerender(<ItemsPage />);
+        }),
+        query: { page: '0' }
       }
     });
 
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
-
-    setupUsePaginatedQueryOnce({
-      ...globalUsePaginatedQueryParams,
-      items: items.slice(10),
-      hasMore: false
-    });
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
+
+    // assert
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
   });
 });
 
@@ -137,7 +160,7 @@ describe('Item creating', () => {
     // arrange
     const itemName = 'name test';
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
       collectionName: 'items',
       items: [
         {
@@ -147,6 +170,8 @@ describe('Item creating', () => {
       ],
       hasMore: false
     });
+
+    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
 
     render(<NewItemPage />, {
       router: {
@@ -164,13 +189,13 @@ describe('Item creating', () => {
     const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Description'
     });
-    const categoryTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
-      name: 'categoryId'
+    const categoryCombobox = screen.getByRole(ARIA_ROLE.WIDGET.COMBOBOX, {
+      name: 'Category'
     });
 
     await userEvent.type(nameTexfield, itemName);
     await userEvent.type(descriptionTexfield, 'description test');
-    await userEvent.type(categoryTexfield, '1');
+    await userEvent.selectOptions(categoryCombobox, '1');
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
@@ -210,6 +235,8 @@ describe('Item creating', () => {
       hasMore: false
     });
 
+    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
+
     render(<NewItemPage />, {
       router: {
         push: mockRouterOperation(() => {
@@ -230,24 +257,27 @@ describe('Item creating', () => {
 describe('Item changing', () => {
   test('User edit an existing item', async () => {
     // arrange
-    const itemName = 'name test';
-    const itemDescription = 'desc test';
+    const initialItem = {
+      name: 'name test',
+      description: 'desc test',
+      files: []
+    };
 
-    const itemNewName = 'new name test';
-    const itemNewDescription = 'new desc test';
+    const modifiedItem = {
+      name: 'new name test',
+      description: 'new desc test',
+      files: []
+    };
 
-    setupUsePaginatedQueryOnce({
+    const paginatedQueryReturnData = {
       collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemName
-        }
-      ],
+      items: [initialItem],
       hasMore: false
-    });
+    };
 
-    setupUseQuery({ name: itemName, description: itemDescription });
+    setupUseInvokeOnce(paginatedQueryReturnData);
+
+    setupUseQueryReturn(initialItem);
 
     render(<ItemsPage />, {
       router: {
@@ -259,7 +289,7 @@ describe('Item changing', () => {
     });
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+    await userEvent.click(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
 
     const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Name'
@@ -268,30 +298,274 @@ describe('Item changing', () => {
       name: 'Description'
     });
 
-    expect((nameTexfield as HTMLInputElement).value).toBe(itemName);
-    expect((descriptionTexfield as HTMLInputElement).value).toBe(itemDescription);
+    expect((nameTexfield as HTMLInputElement).value).toBe(initialItem.name);
+    expect((descriptionTexfield as HTMLInputElement).value).toBe(initialItem.description);
 
-    await userEvent.type(nameTexfield, itemNewName);
-    await userEvent.type(descriptionTexfield, itemNewDescription);
+    await userEvent.type(nameTexfield, modifiedItem.name);
+    await userEvent.type(descriptionTexfield, modifiedItem.description);
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Update Item' }));
 
-    setupUsePaginatedQueryOnce({
+    setupUseInvokeOnce({
+      ...paginatedQueryReturnData,
+      items: [modifiedItem]
+    });
+    cleanup();
+    render(<ItemsPage />);
+
+    // assert
+    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
+  });
+
+  test('User list all files of an item', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: [
+        {
+          storagePath: 'vet-clinic.jpg',
+          artifactType: 'scheme'
+        },
+        {
+          storagePath: 'jetplane.jpg',
+          artifactType: 'scheme'
+        }
+      ]
+    };
+    setupUseQueryReturn(item);
+
+    // act
+    render(<EditItemPage />);
+
+    // assert
+    const filesContainer = screen.getByRole(ARIA_ROLE.LANDMARK.CONTENTINFO);
+    const filesTable = filesContainer.children[1] as HTMLElement;
+    const firstLine = filesTable?.children[0]?.children[1] as HTMLElement;
+    const secondLine = filesTable?.children[0]?.children[2] as HTMLElement;
+
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.storagePath as string) > 0).toBeTruthy();
+    expect(firstLine.innerHTML?.indexOf(item.files[0]?.artifactType as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.storagePath as string) > 0).toBeTruthy();
+    expect(secondLine.innerHTML?.indexOf(item.files[1]?.artifactType as string) > 0).toBeTruthy();
+  });
+
+  test('User downloads a file from an item', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: [
+        {
+          storagePath: 'vet-clinic.jpg',
+          artifactType: 'SCHEME',
+          url: 'http://127.0.0.1/file.png'
+        }
+      ]
+    };
+    setupUseQueryReturn(item);
+
+    render(<EditItemPage />);
+
+    const downloadFile = vi.spyOn(globalUtils, 'downloadFile').mockImplementationOnce((() => {}) as any);
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
+
+    // assert
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
+  });
+
+  test('User removes a file from an item', async () => {
+    // arrange
+    window.confirm = vi.fn(() => true);
+    vi.mocked(global.fetch).mockResolvedValue({ blob: async () => new Blob([]) } as any);
+
+    const fileStoragePath1 = 'file1.png';
+    const fileStoragePath2 = 'file2.png';
+    const fileStoragePath3 = 'file3.png';
+
+    const item = {
+      id: 1,
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      files: [
+        {
+          id: 1,
+          index: 0,
+          storagePath: fileStoragePath1,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
+        },
+        {
+          id: 2,
+          index: 1,
+          storagePath: fileStoragePath2,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
+        },
+        {
+          id: 3,
+          index: 2,
+          storagePath: fileStoragePath3,
+          artifactType: FileType.scheme,
+          url: 'http://127.0.0.1/file.png',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          itemId: 1
+        }
+      ]
+    };
+
+    setupUseQueryReturn(item, {
+      refetchResolved: {
+        ...item,
+        files: [...item.files.filter((file) => file.id !== 2)]
+      }
+    });
+
+    setupUseMutationStack([
+      Promise.resolve({}),
+      Promise.resolve({
+        id: 1,
+        storagePath: fileStoragePath1,
+        artifactType: FileType.scheme,
+        index: 0,
+        itemId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as ItemFile)
+    ]);
+
+    const { rerender } = render(<EditItemPage />);
+
+    // act
+    const filesTable = screen.getByText('Files').nextSibling as HTMLTableElement;
+    const removeButton = filesTable.rows[2]?.cells[2]?.children[1] as HTMLAnchorElement;
+    await userEvent.click(removeButton);
+
+    rerender(<EditItemPage />);
+
+    // assert
+    expect(screen.getByText(fileStoragePath1)).toBeInTheDocument();
+    expect(screen.queryByText(fileStoragePath2)).not.toBeInTheDocument();
+    expect(screen.getByText(fileStoragePath3)).toBeInTheDocument();
+  });
+
+  test('User adds a file to an item', async () => {
+    // arrange
+    global.URL.createObjectURL = vi.fn().mockResolvedValueOnce('http://127.0.0.1');
+
+    const fileName = 'vet-clinic.jpg';
+
+    const filesToBeDroped = mockFilesToDrop([
+      {
+        name: fileName,
+        mimeType: 'image/png',
+        blob: [' ']
+      }
+    ]);
+
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      files: []
+    };
+
+    setupUseQueryImplementation((queryFn: any) => {
+      if (queryFn === getItem) {
+        const refetch = vi.fn().mockImplementation(() => {
+          vi.mocked(useQuery).mockReturnValue([
+            {
+              ...item,
+              files: [
+                {
+                  storagePath: fileName,
+                  artifactType: 'SCHEME',
+                  url: 'http://127.0.0.1/file.png'
+                }
+              ]
+            },
+            {
+              setQueryData: vi.fn(),
+              refetch
+            } as any
+          ]);
+        });
+        return [item, { refetch } as any];
+      } else if (queryFn === getCategories) {
+        return [[{ name: 'test' }], {} as any];
+      }
+      return [];
+    });
+
+    render(<EditItemPage />);
+
+    // act
+    expect(screen.queryByText(fileName)).not.toBeInTheDocument();
+
+    const dropzoneContainer = screen.getByText('Drag and drop some files here, or click to select files')
+      .parentElement as Element;
+
+    await act(() => fireEvent.drop(dropzoneContainer, filesToBeDroped));
+
+    await waitFor(async () => {
+      expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.RADIO, { name: FileType.instruction }));
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
+
+    // assert
+    expect(screen.getByText(fileName)).toBeInTheDocument();
+  });
+
+  test.todo('User delete an item');
+});
+
+describe('Item removing', () => {
+  test('User delete an item', async () => {
+    // arrange
+    const itemName = 'name test item';
+
+    setupUseInvokeOnce({
       collectionName: 'items',
       items: [
         {
           id: 1,
-          name: itemNewName
+          name: itemName
         }
       ],
       hasMore: false
     });
-    cleanup();
+
+    window.confirm = vi.fn(() => true);
+
     render(<ItemsPage />);
+
+    expect(await screen.findByText(itemName)).toBeInTheDocument();
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: [],
+      hasMore: false
+    });
+
+    // act
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Delete' }));
+
     // assert
-
-    expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-
-    expect(screen.getByText(itemNewName)).toBeInTheDocument();
+    expect(screen.queryByText(itemName)).not.toBeInTheDocument();
   });
 });

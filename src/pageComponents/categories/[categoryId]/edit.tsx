@@ -31,7 +31,6 @@ export const EditCategory = () => {
 
       <div>
         <h1>Edit Category {category.id}</h1>
-        <pre>{JSON.stringify(category, null, 2)}</pre>
 
         <CategoryForm
           submitText='Update Category'
@@ -70,7 +69,7 @@ const EditCategoryPage = () => {
 
       <p>
         <Link href={Routes.CategoriesPage()}>
-          <a>Categories</a>
+          <a>Back to list</a>
         </Link>
       </p>
     </div>

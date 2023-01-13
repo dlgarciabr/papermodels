@@ -35,7 +35,6 @@ export const Edit__ModelName__ = () => {
 
       <div>
         <h1>Edit __ModelName__ {__modelName__.id}</h1>
-        <pre>{JSON.stringify(__modelName__, null, 2)}</pre>
 
         <__ModelName__Form
           submitText='Update __ModelName__'
@@ -83,7 +82,7 @@ const Edit__ModelName__Page = () => {
           </Link>
           <else>
             <Link href={Routes.__ModelNames__Page()}>
-              <a>__ModelNames__</a>
+              <a>Back to list</a>
             </Link>
           </else>
         </if>

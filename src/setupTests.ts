@@ -20,7 +20,10 @@ const ignoredConsoleErrors = [
 const originalError = global.console.error;
 
 beforeAll(() => {
+  mockDefaultGlobal();
   mockDefaultBlitzRPC();
+  mockDefaultFileStorage();
+  mockDefaultAllQueries();
 });
 
 beforeEach(() => {
@@ -69,10 +72,61 @@ const mockDefaultBlitzRPC = () => {
       authorize: vi.fn()
     },
     default: { myDefaultKey: vi.fn() },
-    namedExport: vi.fn()
+    namedExport: vi.fn(),
+    invoke: vi.fn()
+  }));
+};
+
+const mockDefaultFileStorage = () => {
+  vi.mock('src/utils/fileStorage', () => ({
+    deleteFile: vi.fn().mockImplementation(() => Promise.resolve()),
+    getFilePath: vi.fn(),
+    saveFile: vi.fn().mockImplementation(() => Promise.resolve())
   }));
 };
 
 const initializeDefaultBlitzMock = () => {
   vi.mocked(useMutation).mockReturnValue([async () => {}, {} as any]);
+};
+
+const mockDefaultGlobal = () => {
+  global.fetch = vi.fn();
+};
+
+// TODO implement a code generation for the lines below if MSW will be not used
+const mockDefaultAllQueries = () => {
+  vi.mock('src/items/queries/getItems', () => {
+    const resolver = vi.fn() as any;
+    resolver._resolverType = 'query';
+    resolver._routePath = '/api/rpc/getItems';
+    return { default: resolver };
+  });
+
+  vi.mock('src/items/queries/getItem', () => {
+    const resolver = vi.fn() as any;
+    resolver._resolverType = 'query';
+    resolver._routePath = '/api/rpc/getItem';
+    return { default: resolver };
+  });
+
+  vi.mock('src/items/mutations/createItem', () => {
+    const resolver = vi.fn() as any;
+    resolver._resolverType = 'query';
+    resolver._routePath = '/api/rpc/createItem';
+    return { default: resolver };
+  });
+
+  vi.mock('src/categories/mutations/createCategory', () => {
+    const resolver = vi.fn() as any;
+    resolver._resolverType = 'query';
+    resolver._routePath = '/api/rpc/createCategory';
+    return { default: resolver };
+  });
+
+  vi.mock('src/categories/queries/getCategories', () => {
+    const resolver = vi.fn() as any;
+    resolver._resolverType = 'query';
+    resolver._routePath = '/api/rpc/getCategories';
+    return { default: resolver };
+  });
 };

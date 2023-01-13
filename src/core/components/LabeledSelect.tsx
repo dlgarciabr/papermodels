@@ -3,18 +3,15 @@
 import { forwardRef, PropsWithoutRef } from 'react';
 import { useField, useFormikContext, ErrorMessage } from 'formik';
 
-export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElements['input']> {
-  /** Field name. */
+export interface LabeledSelectProps extends PropsWithoutRef<JSX.IntrinsicElements['select']> {
   name: string;
-  /** Field label. */
   label: string;
-  /** Field type. Doesn't include radio buttons and checkboxes */
-  type?: 'text' | 'password' | 'email' | 'number';
   outerProps?: PropsWithoutRef<JSX.IntrinsicElements['div']>;
+  items: { value: any; label: string }[];
 }
 
-export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldProps>(
-  ({ name, label, outerProps, ...props }, ref) => {
+export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
+  ({ name, label, items, outerProps, placeholder, ...props }, ref) => {
     const [input] = useField(name);
     const { isSubmitting } = useFormikContext();
 
@@ -22,7 +19,14 @@ export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldPro
       <div {...outerProps}>
         <label>
           {label}
-          <input {...input} disabled={isSubmitting} {...props} ref={ref} />
+          <select {...input} disabled={isSubmitting} {...props} ref={ref}>
+            <option>{placeholder}</option>
+            {items.map((item) => (
+              <option key={Math.random().toString(36).substring(2, 15)} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <ErrorMessage name={name}>
@@ -40,12 +44,11 @@ export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldPro
             align-items: start;
             font-size: 1rem;
           }
-          input {
+          select {
             font-size: 1rem;
             padding: 0.25rem 0.5rem;
             border-radius: 3px;
             border: 1px solid purple;
-            appearance: none;
             margin-top: 0.5rem;
           }
         `}</style>
@@ -54,4 +57,4 @@ export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldPro
   }
 );
 
-export default LabeledTextField;
+export default LabeledSelect;
