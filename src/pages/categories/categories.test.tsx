@@ -13,11 +13,10 @@ import {
   modifyMockedRouter,
   setupUseInvoke
 } from 'test/utils';
-import CategoriesPage from '.';
-import NewCategoryPage from './new';
-import { ISetupUsePaginatedQuery } from 'test/types';
+import CategoriesPage from './index.page';
+import NewCategoryPage from './new.page';
 import { ARIA_ROLE } from 'test/ariaRoles';
-import EditCategoryPage from './[categoryId]/edit';
+import EditCategoryPage from './[categoryId]/edit.page';
 
 // global arrange
 const categories = [

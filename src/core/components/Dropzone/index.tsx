@@ -1,7 +1,7 @@
 import { FileType } from '@prisma/client';
 import { useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadItemFile } from 'src/pageComponents/items/types';
+import { UploadItemFile } from 'src/pages/items/types';
 import { getSimpleRandomKey } from 'src/utils/global';
 import FileThumbnail from './FileThumbnail';
 import { DropzoneProps } from './types';
