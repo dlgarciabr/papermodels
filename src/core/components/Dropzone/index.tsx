@@ -11,9 +11,9 @@ export const Dropzone = (props: DropzoneProps) => {
 
   const onDrop = (acceptedFiles: UploadItemFile[]) => {
     const filesToAdd = acceptedFiles.map((file) => {
+      file.tempId = getSimpleRandomKey();
       if (file.type.indexOf('image') >= 0) {
         file.preview = URL.createObjectURL(file);
-        file.tempId = getSimpleRandomKey();
       }
       return file;
     });
@@ -127,6 +127,7 @@ export const Dropzone = (props: DropzoneProps) => {
           validationEnable={props.validateFiles}
         />
       )),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [dropedFiles, props.validateFiles]
   );
 
