@@ -98,13 +98,18 @@ export const EditItem = () => {
       alert('Chose a type for each file to be uploaded or remove the file from list');
       return;
     }
-    await uploadFiles(filesToUpload);
-    await saveItemFiles(filesToUpload, createItemFileMutation);
-    alert('files saved');
-    await queryResult.refetch();
-    setDropzoneKey(getSimpleRandomKey());
-    setFilesToUpload([]);
-    setSaving(false);
+    try {
+      await uploadFiles(filesToUpload);
+      await saveItemFiles(filesToUpload, createItemFileMutation);
+      alert('files saved');
+      await queryResult.refetch();
+      setDropzoneKey(getSimpleRandomKey());
+      setFilesToUpload([]);
+      setSaving(false);
+    } catch (error) {
+      setSaving(false);
+      throw error;
+    }
   };
 
   const handleDeleteFile = async (file: ItemFile & { url: string; item: Item }) => {
