@@ -10,11 +10,11 @@ const ignoredConsoleErrors = [
   {
     message: 'Warning: Received `%s` for a non-boolean attribute `%s`.',
     params: ['true', 'global']
-  },
-  {
-    message:
-      'Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value'
   }
+  // {
+  //   message:
+  //     'Warning: A component is changing an uncontrolled input to be controlled. This is likely caused by the value changing from undefined to a defined value'
+  // }
 ];
 
 const originalError = global.console.error;
