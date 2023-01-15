@@ -188,6 +188,10 @@ export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
   );
 };
 
+export const setupUseInvokeImplementation = <T,>(implementation: (queryFn: T) => any[]) => {
+  vi.mocked(invoke).mockImplementation(implementation as any);
+};
+
 export const setupUseInvoke = (callback: (queryFn: (...args: any) => any, params: unknown) => Promise<any>) => {
   vi.mocked(invoke).mockClear();
   vi.mocked(invoke).mockImplementation(callback);

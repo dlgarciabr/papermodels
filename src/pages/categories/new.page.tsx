@@ -20,7 +20,7 @@ const NewCategoryPage = () => {
         //  - Tip: extract mutation's schema into a shared `validations.ts` file and
         //         then import and use it here
         // schema={CreateCategory}
-        // initialValues={{}}
+        initialValues={{}}
         onSubmit={async (values) => {
           try {
             await createCategoryMutation(values);

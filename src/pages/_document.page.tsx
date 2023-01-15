@@ -1,6 +1,6 @@
 /* istanbul ignore file -- @preserve */
 // TODO remove ignore and improve coverage
-import Document, { Html, Main, NextScript, Head } from "next/document";
+import Document, { Html, Main, NextScript, Head } from 'next/document';
 
 class MyDocument extends Document {
   // Only uncomment if you need to customize this behaviour
@@ -10,7 +10,7 @@ class MyDocument extends Document {
   // }
   render() {
     return (
-      <Html lang="en">
+      <Html lang='en'>
         <Head />
         <body>
           <Main />

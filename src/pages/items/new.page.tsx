@@ -1,23 +1,27 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Link from 'next/link';
-import { useMutation, useQuery } from '@blitzjs/rpc';
+import { invoke, useMutation } from '@blitzjs/rpc';
+
 import Layout from 'src/core/layouts/Layout';
 import createItem from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
+import { Category } from 'db';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
   const [createItemMutation] = useMutation(createItem);
-  const [categoryResult] = useQuery(
-    getCategories,
-    { orderBy: { name: 'asc' } },
-    {
-      // This ensures the query never refreshes and overwrites the form data while the user is editing.
-      staleTime: Infinity
-    }
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const loadCategories = async () => {
+    const { categories } = await invoke(getCategories, {
+      orderBy: { id: 'asc' }
+    });
+    setCategories(categories);
+  };
+
+  useEffect(() => void loadCategories(), []);
 
   return (
     <Layout title={'Create New Item'}>
@@ -30,10 +34,10 @@ const NewItemPage = () => {
         //         then import and use it here
         // schema={CreateItem}
         initialValues={{}}
-        categories={categoryResult.categories}
+        categories={categories}
         onSubmit={async (values) => {
           try {
-            const item = await createItemMutation({
+            await createItemMutation({
               ...values,
               categoryId: new Number(values.categoryId),
               files: []

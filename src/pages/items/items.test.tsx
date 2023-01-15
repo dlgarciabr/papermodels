@@ -17,17 +17,21 @@ import {
   fireEvent,
   mockFilesToDrop,
   setupUseMutationStack,
-  setupUseQueryImplementation
+  setupUseQueryImplementation,
+  setupUseInvokeImplementation,
+  setupUseMutation
 } from 'test/utils';
-import ItemsPage from '.';
-import NewItemPage from './new';
+import ItemsPage from './index.page';
+import NewItemPage from './new.page';
 import { ARIA_ROLE } from 'test/ariaRoles';
-import EditItemPage from './[itemId]/edit';
+import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
 import { FileType, Item, ItemFile } from 'db';
 import { useQuery } from '@blitzjs/rpc';
 import getItem from 'src/items/queries/getItem';
 import getCategories from 'src/categories/queries/getCategories';
+import getItems from 'src/items/queries/getItems';
+import { typeToFlattenedError, ZodError, ZodFormattedError, ZodIssue } from 'zod';
 
 // global arrange
 const items = [
@@ -159,19 +163,22 @@ describe('Item creating', () => {
   test('User create a new item', async () => {
     // arrange
     const itemName = 'name test';
+    const categoryTestName = 'category test';
 
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemName
-        }
-      ],
-      hasMore: false
+    setupUseInvokeImplementation((queryFn: any): any => {
+      if (queryFn === getItems) {
+        return {
+          items: [{ id: 1, name: itemName }]
+        };
+      } else if (queryFn === getCategories) {
+        return {
+          categories: [{ id: 1, name: categoryTestName }]
+        };
+      }
+      return {};
     });
 
-    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
+    // setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
 
     render(<NewItemPage />, {
       router: {
@@ -211,31 +218,21 @@ describe('Item creating', () => {
 
   test('User receives an error trying to create an incomplete new item', async () => {
     // arrange
-    const itemName = 'name test';
+    const createItemMutation = vi.fn().mockRejectedValueOnce('ZodError');
+    setupUseMutation(createItemMutation as any);
 
-    const error = {
-      code: 'invalid_type',
-      expected: 'string',
-      received: 'undefined',
-      path: ['name'],
-      message: 'Required'
-    };
-
-    const createItemMutation = vi.fn().mockRejectedValueOnce(error);
-    setupUseMutationOnce(createItemMutation as any);
-
-    setupUsePaginatedQueryOnce({
-      collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemName
-        }
-      ],
-      hasMore: false
+    setupUseInvokeImplementation((queryFn: any): any => {
+      if (queryFn === getItems) {
+        return {
+          items: []
+        };
+      } else if (queryFn === getCategories) {
+        return {
+          categories: [{ id: 1, name: 'categ' }]
+        };
+      }
+      return {};
     });
-
-    setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
 
     render(<NewItemPage />, {
       router: {
@@ -250,7 +247,8 @@ describe('Item creating', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Item' })).toBeInTheDocument();
+    expect(screen.getByText('ZodError')).toBeInTheDocument();
+    expect(screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create Item' })).not.toBeInTheDocument();
   });
 });
 
