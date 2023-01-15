@@ -66,24 +66,6 @@ model Token {
 //   RESET_PASSWORD
 // }
 
-model Question {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  text      String
-  choices   Choice[]
-}
-
-model Choice {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  text       String
-  votes      Int      @default(0)
-  question   Question @relation(fields: [questionId], references: [id])
-  questionId Int
-}
-
 model Category {
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
@@ -99,7 +81,7 @@ model Item {
   updatedAt   DateTime   @updatedAt
   name        String
   description String
-  category    Category   @relation(fields: [categoryId], references: [id])
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId  Int
   files       ItemFile[]
 }
@@ -117,6 +99,6 @@ model ItemFile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   artifactType FileType
-  item         Item     @relation(fields: [itemId], references: [id])
+  item         Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId       Int
 }

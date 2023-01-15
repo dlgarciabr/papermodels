@@ -32,7 +32,7 @@ export function Form<S extends z.ZodType<any, any>>({
   const [formError, setFormError] = useState<string | null>(null);
   return (
     <Formik
-      initialValues={initialValues || {}}
+      initialValues={initialValues}
       validate={validateZodSchema(schema)}
       onSubmit={async (values, { setErrors }) => {
         const { FORM_ERROR, ...otherErrors } = (await onSubmit(values)) || {};

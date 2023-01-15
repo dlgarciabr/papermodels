@@ -7,7 +7,7 @@ export interface LabeledSelectProps extends PropsWithoutRef<JSX.IntrinsicElement
   name: string;
   label: string;
   outerProps?: PropsWithoutRef<JSX.IntrinsicElements['div']>;
-  items: { value: any; label: string }[];
+  items: { value: string | number; label: string }[];
 }
 
 export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
@@ -20,7 +20,7 @@ export const LabeledSelect = forwardRef<HTMLSelectElement, LabeledSelectProps>(
         <label>
           {label}
           <select {...input} disabled={isSubmitting} {...props} ref={ref}>
-            <option>{placeholder}</option>
+            <option value={-1}>{placeholder}</option>
             {items.map((item) => (
               <option key={Math.random().toString(36).substring(2, 15)} value={item.value}>
                 {item.label}

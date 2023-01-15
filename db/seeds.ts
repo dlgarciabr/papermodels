@@ -39,8 +39,15 @@ const seed = async () => {
         }
       ]
     },
-    { name: 'Ships & boats' },
-    { name: 'Wagons' }
+    { name: 'Boats & Ships' },
+    { name: 'Wagons' },
+    { name: 'Aircrafts' },
+    { name: 'Automobiles' },
+    { name: 'Houses & residential apartments' },
+    { name: 'Animals' },
+    { name: 'Stores' },
+    { name: 'Plants & trees' },
+    { name: 'Miscelaneus' }
   ];
 
   const categoryCreated = await db.category.create({

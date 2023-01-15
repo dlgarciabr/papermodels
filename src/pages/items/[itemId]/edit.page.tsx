@@ -20,6 +20,7 @@ import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
+import { UpdateItemValidation } from 'src/items/validations';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -64,7 +65,7 @@ export const EditItem = () => {
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const [isSaving, setSaving] = useState(false);
-  const [filesKey, setFilesKey] = useState(getSimpleRandomKey());
+  // const [filesKey, setFilesKey] = useState(getSimpleRandomKey());
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
   const [item, queryResult] = useQuery(
@@ -152,14 +153,12 @@ export const EditItem = () => {
           // TODO use a zod schema for form validation
           //  - Tip: extract mutation's schema into a shared `validations.ts` file and
           //         then import and use it here
-          // schema={UpdateItem}
-          initialValues={item}
+          schema={UpdateItemValidation}
+          initialValues={{ ...item, categoryId: item.categoryId.toString() }}
           categories={categoryResult.categories}
           onSubmit={async (values) => {
             try {
               const updated = await updateItemMutation({
-                id: item.id,
-                files: [] as ItemFile[],
                 ...values
               });
               await queryResult.setQueryData(updated as Item & { files: ItemFile[] });
@@ -172,7 +171,7 @@ export const EditItem = () => {
             }
           }}
         />
-        <Files files={item.files} onClickDelete={handleDeleteFile} key={filesKey} />
+        <Files files={item.files} onClickDelete={handleDeleteFile} /* key={filesKey} */ />
         <Dropzone key={dropzoneKey} {...dropzoneOptions} />
         {filesToUpload.length > 0 ? (
           <p

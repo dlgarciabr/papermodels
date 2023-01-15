@@ -168,7 +168,7 @@ describe('Item creating', () => {
     setupUseInvokeImplementation((queryFn: any): any => {
       if (queryFn === getItems) {
         return {
-          items: [{ id: 1, name: itemName }]
+          items: [{ id: 1, name: itemName, categoryId: 1 }]
         };
       } else if (queryFn === getCategories) {
         return {
@@ -177,8 +177,6 @@ describe('Item creating', () => {
       }
       return {};
     });
-
-    // setupUseQueryReturn({ categories: [{ id: 1, name: 'test' }] });
 
     render(<NewItemPage />, {
       router: {
@@ -202,7 +200,7 @@ describe('Item creating', () => {
 
     await userEvent.type(nameTexfield, itemName);
     await userEvent.type(descriptionTexfield, 'description test');
-    await userEvent.selectOptions(categoryCombobox, '1');
+    fireEvent.change(categoryCombobox, { target: { value: '1' } });
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
@@ -218,9 +216,6 @@ describe('Item creating', () => {
 
   test('User receives an error trying to create an incomplete new item', async () => {
     // arrange
-    const createItemMutation = vi.fn().mockRejectedValueOnce('ZodError');
-    setupUseMutation(createItemMutation as any);
-
     setupUseInvokeImplementation((queryFn: any): any => {
       if (queryFn === getItems) {
         return {
@@ -247,7 +242,7 @@ describe('Item creating', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
     // assert
-    expect(screen.getByText('ZodError')).toBeInTheDocument();
+    expect(screen.getByText('String must contain at least 5 character(s)')).toBeInTheDocument();
     expect(screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create Item' })).not.toBeInTheDocument();
   });
 });
@@ -258,12 +253,14 @@ describe('Item changing', () => {
     const initialItem = {
       name: 'name test',
       description: 'desc test',
+      categoryId: 1,
       files: []
     };
 
     const modifiedItem = {
       name: 'new name test',
       description: 'new desc test',
+      categoryId: 1,
       files: []
     };
 
@@ -321,6 +318,7 @@ describe('Item changing', () => {
     const item = {
       name: 'name test',
       description: 'desc test',
+      categoryId: 1,
       files: [
         {
           storagePath: 'vet-clinic.jpg',
@@ -354,6 +352,7 @@ describe('Item changing', () => {
     const item = {
       name: 'name test',
       description: 'desc test',
+      categoryId: 1,
       files: [
         {
           storagePath: 'vet-clinic.jpg',
@@ -477,6 +476,7 @@ describe('Item changing', () => {
     const item = {
       name: 'name test',
       description: 'desc test',
+      categoryId: 1,
       files: []
     };
 
