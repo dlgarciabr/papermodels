@@ -127,6 +127,7 @@ export const Dropzone = (props: DropzoneProps) => {
           validationEnable={props.validateFiles}
         />
       )),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [dropedFiles, props.validateFiles]
   );
 
