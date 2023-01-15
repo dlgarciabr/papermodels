@@ -1,9 +1,10 @@
 import { Item, ItemFile } from 'db';
+import { UploadResult } from 'firebase/storage';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
 import { UploadItemFile } from './types';
 
-export const uploadFiles = async (files: UploadItemFile[]) => {
-  const promises: Promise<void>[] = [];
+export const uploadFiles = (files: UploadItemFile[]) => {
+  const promises: Promise<UploadResult>[] = [];
   files.forEach(async (file) => {
     const index = ++file.item.files.length;
     const name = file.item.name.replaceAll(' ', '_').toLowerCase();
@@ -16,7 +17,7 @@ export const uploadFiles = async (files: UploadItemFile[]) => {
 
     promises.push(saveFile(temporaryFile));
   });
-  await Promise.all(promises);
+  return Promise.all(promises);
 };
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
