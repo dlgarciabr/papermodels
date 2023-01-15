@@ -1,26 +1,14 @@
 import { resolver } from '@blitzjs/rpc';
-import db, { FileType } from 'db';
-import { z } from 'zod';
+import db from 'db';
+import { UpdateItemValidation } from '../validations';
 
-const UpdateItem = z.object({
-  id: z.number(),
-  name: z.string(),
-  files: z.array(
-    z.object({
-      id: z.number(),
-      storagePath: z.string(),
-      artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
-      index: z.number()
-    })
-  )
-});
-
-export default resolver.pipe(resolver.zod(UpdateItem), resolver.authorize(), async ({ id, ...data }) => {
+export default resolver.pipe(resolver.zod(UpdateItemValidation), resolver.authorize(), async ({ id, ...data }) => {
   // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const item = await db.item.update({
     where: { id },
     data: {
       ...data,
+      categoryId: parseInt(data.categoryId),
       files: {
         upsert: data.files.map((file) => ({
           // Appears to be a prisma bug,

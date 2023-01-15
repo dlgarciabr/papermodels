@@ -183,30 +183,6 @@ describe('Category creating', () => {
 
   test('User receives an error trying to create an incomplete new category', async () => {
     // arrange
-    const categoryName = 'name test';
-
-    const error = {
-      code: 'invalid_type',
-      expected: 'string',
-      received: 'undefined',
-      path: ['name'],
-      message: 'Required'
-    };
-
-    const createCategoryMutation = vi.fn().mockRejectedValueOnce(error) as any;
-    setupUseMutationOnce(createCategoryMutation);
-
-    setupUseInvokeOnce({
-      collectionName: 'categories',
-      items: [
-        {
-          id: 1,
-          name: categoryName
-        }
-      ],
-      hasMore: false
-    });
-
     render(<NewCategoryPage />, {
       router: {
         push: mockRouterOperation(() => {
@@ -220,7 +196,43 @@ describe('Category creating', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Category' }));
 
     // assert
+    expect(screen.getByText('String must contain at least 5 character(s)')).toBeInTheDocument();
     expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Category' })).toBeInTheDocument();
+  });
+
+  test('User receives an error trying to create an existing category', async () => {
+    // arrange
+    const categoryName = 'name test';
+
+    const error = 'Prisma error';
+
+    const createCategoryMutation = vi.fn().mockRejectedValueOnce(error) as any;
+    setupUseMutationOnce(createCategoryMutation);
+
+    render(<NewCategoryPage />, {
+      router: {
+        push: mockRouterOperation(() => {
+          cleanup();
+          render(<CategoriesPage />);
+        })
+      }
+    });
+
+    // act
+    const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Name'
+    });
+    const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Description'
+    });
+    await userEvent.type(nameTexfield, categoryName);
+    await userEvent.type(descriptionTexfield, 'description test');
+
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Category' }));
+
+    // assert
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Category' })).toBeInTheDocument();
+    expect(screen.getByText(error)).toBeInTheDocument();
   });
 });
 

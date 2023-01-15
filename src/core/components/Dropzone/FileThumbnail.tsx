@@ -95,7 +95,7 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
           id={FileType.preview}
           name={`${file.tempId}_artifactType`}
           onClick={() => onClickRadioType(file.tempId, FileType.preview)}
-          defaultChecked={file.preview === FileType.preview}
+          defaultChecked={file.artifactType === FileType.preview}
         />
         <label htmlFor={FileType.preview}>{FileType.preview}</label>
         <br />

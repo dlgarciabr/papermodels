@@ -8,6 +8,7 @@ import createItem from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
 import { Category } from 'db';
+import { CreateItemValidation } from 'src/items/validations';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
@@ -29,17 +30,13 @@ const NewItemPage = () => {
 
       <ItemForm
         submitText='Create Item'
-        // TODO use a zod schema for form validation
-        //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-        //         then import and use it here
-        // schema={CreateItem}
-        initialValues={{}}
+        schema={CreateItemValidation}
+        initialValues={{ categoryId: '-1', description: '', name: '', files: [] }}
         categories={categories}
         onSubmit={async (values) => {
           try {
             await createItemMutation({
               ...values,
-              categoryId: new Number(values.categoryId),
               files: []
             });
             await router.push(Routes.ItemsPage());
