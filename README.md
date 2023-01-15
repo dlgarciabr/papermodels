@@ -50,6 +50,10 @@ Blitz comes with a powerful CLI that is designed to make development easy and fa
   start     Start a production server
   export    Export your Blitz app as a static application
   prisma    Run prisma commands
+  * blitz prisma studio
+  * blitz db seed
+  * blitz prisma migrate dev    Upgrade your database
+  * blitz prisma generate       Generate client files according to schema.prisma
   generate  Generate new files for your Blitz project
   console   Run the Blitz console REPL
   install   Install a recipe

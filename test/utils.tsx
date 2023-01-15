@@ -3,9 +3,9 @@ import { render as defaultRender } from '@testing-library/react';
 import { renderHook as defaultRenderHook } from '@testing-library/react-hooks';
 import { NextRouter } from 'next/router';
 import { BlitzProvider, RouterContext } from '@blitzjs/next';
-import { usePaginatedQuery, useQuery } from '@blitzjs/rpc';
+import { useMutation, usePaginatedQuery, useQuery, invoke } from '@blitzjs/rpc';
 import { QueryClient } from '@tanstack/react-query';
-import { ISetupUsePaginatedQuery } from './types';
+import { ISetupUseInvoke, ISetupUsePaginatedQuery } from './types';
 
 export * from '@testing-library/react';
 
@@ -43,8 +43,8 @@ export const getMockedRouter = (): NextRouter => mockedRouter;
  * @param router
  * @returns
  */
-export const modifyMockedRouter = (router: Partial<NextRouter>): NextRouter => {
-  return { ...mockedRouter, ...router };
+export const modifyMockedRouter = (router: Partial<NextRouter>) => {
+  mockedRouter = { ...mockedRouter, ...router };
 };
 
 // --------------------------------------------------------------------------------
@@ -134,12 +134,35 @@ const mockUsePaginatedQuery = (collectionName: string, items: any[], hasMore: bo
   ];
 };
 
-export const setupUseQuery = (returnValue: any) => {
-  vi.mocked(useQuery).mockReturnValue([returnValue, { setQueryData: vi.fn() } as any]);
+export const setupUseQueryReturn = <T,>(returnValue: T, options?: { refetchResolved?: T | null }) => {
+  const refetch = vi.fn().mockImplementation(() => console.log('REFETCH NOT IMPLEMENTED'));
+  if (options?.refetchResolved) {
+    refetch.mockImplementation(() => {
+      vi.mocked(useQuery).mockReturnValue([
+        options?.refetchResolved,
+        {
+          setQueryData: vi.fn(),
+          refetch
+        } as any
+      ]);
+    });
+  }
+  vi.mocked(useQuery).mockReturnValue([
+    returnValue,
+    {
+      setQueryData: vi.fn(),
+      refetch
+    } as any
+  ]);
 };
 
-export const setupUseQueryOnce = (returnValue: any) => {
+export const setupUseQueryReturnOnce = <T,>(returnValue: T) => {
+  vi.mocked(useQuery).mockReset();
   vi.mocked(useQuery).mockReturnValueOnce([returnValue, {} as any]);
+};
+
+export const setupUseQueryImplementation = <T,>(implementation: (queryFn: T) => any[]) => {
+  vi.mocked(useQuery).mockImplementation(implementation as any);
 };
 
 export const setupUsePaginatedQuery = (params: ISetupUsePaginatedQuery) => {
@@ -155,11 +178,73 @@ export const setupUsePaginatedQueryOnce = (params: ISetupUsePaginatedQuery) => {
   );
 };
 
+export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
+  vi.mocked(invoke).mockClear();
+  vi.mocked(invoke).mockReturnValueOnce(
+    Promise.resolve({
+      [params.collectionName]: params.items,
+      hasMore: params.hasMore
+    })
+  );
+};
+
+export const setupUseInvokeImplementation = <T,>(implementation: (queryFn: T) => any[]) => {
+  vi.mocked(invoke).mockImplementation(implementation as any);
+};
+
+export const setupUseInvoke = (callback: (queryFn: (...args: any) => any, params: unknown) => Promise<any>) => {
+  vi.mocked(invoke).mockClear();
+  vi.mocked(invoke).mockImplementation(callback);
+};
+
+export const setupUseMutation = <T,>(mutation: Promise<T>) => {
+  vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
+};
+
+export const setupUseMutationOnce = <T,>(mutation: Promise<T>) => {
+  vi.mocked(useMutation).mockReturnValueOnce([mutation as any, {} as any]);
+};
+
+export const setupUseMutationStack = (mutations: Promise<any>[]) => {
+  let mutationsStack = [...mutations];
+  const mockMutationOnce = (returnMutation) => {
+    vi.mocked(useMutation).mockImplementationOnce(async () => {
+      await mutationsStack.pop();
+      if (mutationsStack) {
+        mockMutationOnce(mutationsStack[0]);
+      }
+      return [returnMutation as any, {} as any] as any;
+    });
+  };
+  mockMutationOnce(mutationsStack[0]);
+};
+
 export const mockRouterOperation = (callback: Function) =>
   vi.fn(async (url: any, as?: any, options?: any) => {
-    callback();
+    callback(url, as, options);
     return true;
   });
+
+export const mockFilesToDrop = (fileData: { name: string; mimeType: string; blob: any[] }[]) => {
+  const files = fileData.map((data) => {
+    const file = new File(data.blob, data.name, { type: data.mimeType });
+    Object.assign(file, {
+      arrayBuffer: vi.fn().mockResolvedValue(data.blob)
+    });
+    return file;
+  });
+  return {
+    dataTransfer: {
+      files,
+      items: files.map((file) => ({
+        kind: 'file',
+        type: file.type,
+        getAsFile: () => file
+      })),
+      types: ['Files']
+    }
+  };
+};
 
 type DefaultParams = Parameters<typeof defaultRender>;
 type RenderUI = DefaultParams[0];

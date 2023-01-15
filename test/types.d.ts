@@ -3,3 +3,5 @@ export interface ISetupUsePaginatedQuery {
   items: any[];
   hasMore: boolean;
 }
+
+export interface ISetupUseInvoke extends ISetupUsePaginatedQuery {}
