@@ -10,7 +10,6 @@ const UpdateItem = z.object({
 });
 
 export default resolver.pipe(resolver.zod(UpdateItem), resolver.authorize(), async ({ id, ...data }) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const item = await db.itemFile.update({
     where: { id },
     data: { ...data }
