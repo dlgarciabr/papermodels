@@ -218,9 +218,6 @@ describe('Item creating', () => {
 
   test('User receives an error trying to create an incomplete new item', async () => {
     // arrange
-    const createItemMutation = vi.fn().mockRejectedValueOnce('ZodError');
-    setupUseMutation(createItemMutation as any);
-
     setupUseInvokeImplementation((queryFn: any): any => {
       if (queryFn === getItems) {
         return {
@@ -247,7 +244,7 @@ describe('Item creating', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
     // assert
-    expect(screen.getByText('ZodError')).toBeInTheDocument();
+    expect(screen.getByText('String must contain at least 5 character(s)')).toBeInTheDocument();
     expect(screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create Item' })).not.toBeInTheDocument();
   });
 });
