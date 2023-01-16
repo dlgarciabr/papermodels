@@ -151,15 +151,16 @@ export const EditItem = () => {
       </Head>
 
       <div>
-        <h1>Edit Item {item.id}</h1>
+        <h1>Edit Item {item.name}</h1>
 
         <ItemForm
           submitText='Update Item'
-          // TODO use a zod schema for form validation
-          //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-          //         then import and use it here
           schema={UpdateItemValidation}
-          initialValues={{ ...item, categoryId: item.categoryId.toString() }}
+          initialValues={{
+            ...item,
+            categoryId: item.categoryId.toString(),
+            assemblyTime: parseFloat(item.assemblyTime.toString())
+          }}
           categories={categoryResult.categories}
           onSubmit={async (values) => {
             try {

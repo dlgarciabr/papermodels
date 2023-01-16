@@ -76,14 +76,20 @@ model Category {
 }
 
 model Item {
-  id          Int        @id @default(autoincrement())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  name        String
-  description String
-  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId  Int
-  files       ItemFile[]
+  id              Int        @id @default(autoincrement())
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  name            String
+  description     String
+  category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId      Int
+  files           ItemFile[]
+  dificulty       Int
+  assemblyTime    number
+  author          String?
+  authorLink      String?
+  licenseType     String?
+  licenseTypeLink String?
 }
 
 enum FileType {
