@@ -1,6 +1,6 @@
 // import db from "./index"
 
-import db, { Category, FileType } from 'db';
+import db, { FileType } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.

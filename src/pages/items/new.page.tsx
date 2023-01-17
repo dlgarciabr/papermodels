@@ -17,7 +17,7 @@ const NewItemPage = () => {
 
   const loadCategories = async () => {
     const { categories } = await invoke(getCategories, {
-      orderBy: { id: 'asc' }
+      orderBy: { name: 'asc' }
     });
     setCategories(categories);
   };

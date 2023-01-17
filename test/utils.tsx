@@ -201,7 +201,7 @@ export const setupUseMutation = <T,>(mutation: Promise<T>) => {
   vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
 };
 
-export const setupUseMutationImplementation = <T,>(implementation: any) => {
+export const setupUseMutationImplementation = (implementation: any) => {
   vi.mocked(useMutation).mockImplementation(implementation);
 };
 

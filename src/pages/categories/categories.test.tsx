@@ -311,7 +311,6 @@ describe('Category changing', () => {
     const categoryDescription = 'desc test';
 
     const categoryNewName = ' ';
-    const categoryNewDescription = ' ';
 
     setupUseInvokeOnce({
       collectionName: 'categories',
