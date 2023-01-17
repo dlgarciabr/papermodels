@@ -1,7 +1,7 @@
 import { Item, ItemFile } from 'db';
 import { UploadResult } from 'firebase/storage';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
-import { UploadItemFile } from './types';
+import { UploadItemFile } from '../../items/types';
 
 export const uploadFiles = (files: UploadItemFile[]) => {
   const promises: Promise<UploadResult>[] = [];

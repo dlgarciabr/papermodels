@@ -1,4 +1,4 @@
-import { FileType } from 'src/pages/items/types';
+import { FileType } from 'db';
 import { z } from 'zod';
 
 const basicValidation = {
@@ -13,12 +13,14 @@ const basicValidation = {
   licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
 };
 
+const zFileTypeEnum = z.enum([FileType.scheme, FileType.instruction, FileType.preview]);
+
 export const CreateItemValidation = z.object({
   ...basicValidation,
   files: z.array(
     z.object({
       storagePath: z.string(),
-      artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
+      artifactType: zFileTypeEnum,
       index: z.number()
     })
   )
@@ -31,7 +33,7 @@ export const UpdateItemValidation = z.object({
     z.object({
       id: z.number(),
       storagePath: z.string(),
-      artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
+      artifactType: zFileTypeEnum,
       index: z.number()
     })
   )

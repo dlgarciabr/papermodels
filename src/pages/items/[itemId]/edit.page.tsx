@@ -13,7 +13,7 @@ import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this wi
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
 import { sortFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
-import { UploadItemFile } from '../types';
+import { UploadItemFile } from '../../../items/types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
