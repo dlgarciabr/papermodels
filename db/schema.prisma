@@ -85,7 +85,7 @@ model Item {
   categoryId      Int
   files           ItemFile[]
   dificulty       Int
-  assemblyTime    number
+  assemblyTime    Decimal
   author          String?
   authorLink      String?
   licenseType     String?
