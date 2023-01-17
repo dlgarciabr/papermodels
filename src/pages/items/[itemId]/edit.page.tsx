@@ -159,7 +159,11 @@ export const EditItem = () => {
           initialValues={{
             ...item,
             categoryId: item.categoryId.toString(),
-            assemblyTime: parseFloat(item.assemblyTime.toString())
+            assemblyTime: parseFloat(item.assemblyTime.toString()),
+            author: item.author || '',
+            authorLink: item.authorLink || '',
+            licenseType: item.licenseType || '',
+            licenseTypeLink: item.licenseTypeLink || ''
           }}
           categories={categoryResult.categories}
           onSubmit={async (values) => {
