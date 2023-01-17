@@ -1,24 +1,22 @@
 import { Item, ItemFile } from 'db';
-import { UploadResult } from 'firebase/storage';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
 import { UploadItemFile } from '../../items/types';
 
-export const uploadFiles = (files: UploadItemFile[]) => {
-  const promises: Promise<UploadResult>[] = [];
-  files.forEach(async (file) => {
-    const index = ++file.item.files.length;
-    const name = file.item.name.replaceAll(' ', '_').toLowerCase();
-    const extension = file.name.split('.')[1];
-    const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;
-    file.storagePath = storagePath;
+export const uploadFiles = (files: UploadItemFile[]) =>
+  Promise.all(
+    files.map(async (file) => {
+      const index = ++file.item.files.length;
+      const name = file.item.name.replaceAll(' ', '_').toLowerCase();
+      const extension = file.name.split('.')[1];
+      const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;
+      file.storagePath = storagePath;
 
-    const bytes = await file.arrayBuffer();
-    const temporaryFile = new File([bytes], storagePath);
+      const bytes = await file.arrayBuffer();
+      const temporaryFile = new File([bytes], storagePath);
 
-    promises.push(saveFile(temporaryFile));
-  });
-  return Promise.all(promises);
-};
+      await saveFile(temporaryFile);
+    })
+  );
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
   const promises: Promise<void>[] = [];

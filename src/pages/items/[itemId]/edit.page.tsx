@@ -107,8 +107,9 @@ export const EditItem = () => {
       setFilesToUpload([]);
       setSaving(false);
     } catch (error) {
+      // TODO show a friendly message to the user
       setSaving(false);
-      throw error;
+      throw new Error(error);
     }
   };
 
