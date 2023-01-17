@@ -1,4 +1,4 @@
-import { FileType } from '@prisma/client';
+import { FileType } from 'db';
 // export const FileType = {
 //   instruction: 'instruction',
 //   scheme: 'scheme',
