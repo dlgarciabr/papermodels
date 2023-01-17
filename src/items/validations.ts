@@ -1,6 +1,5 @@
 import { FileType } from 'db';
 import { z } from 'zod';
-// import { FileType } from './types';
 
 const basicValidation = {
   name: z.string().min(5, 'Field required and must contain at least 5 characters').max(30),
