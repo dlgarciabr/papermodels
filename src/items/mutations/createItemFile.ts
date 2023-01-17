@@ -10,7 +10,6 @@ const CreateItemFile = z.object({
 });
 
 export default resolver.pipe(resolver.zod(CreateItemFile), resolver.authorize(), async (input) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const item = await db.itemFile.create({
     data: {
       storagePath: input.storagePath,
