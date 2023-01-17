@@ -38,6 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+      - name: Install Blitz
+        run: npm install -g blitz
       - name: Generate Prisma client
         run: blitz prisma generate
       - name: Run tests
