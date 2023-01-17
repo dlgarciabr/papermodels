@@ -19,7 +19,8 @@ import {
   setupUseMutationStack,
   setupUseQueryImplementation,
   setupUseInvokeImplementation,
-  setupUseMutation
+  setupUseMutation,
+  setupUseMutationImplementation
 } from 'test/utils';
 import ItemsPage from './index.page';
 import NewItemPage from './new.page';
@@ -162,13 +163,29 @@ describe('Item listing', () => {
 describe('Item creating', () => {
   test('User create a new item', async () => {
     // arrange
-    const itemName = 'name test';
     const categoryTestName = 'category test';
+
+    const item = {
+      name: 'name test',
+      categoryId: '1',
+      description: 'description test',
+      dificulty: 1,
+      assemblyTime: 0.5,
+      files: [],
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: ''
+    };
+
+    const createItemMutation = vi.fn();
+
+    setupUseMutationImplementation(() => [createItemMutation as any, {} as any]);
 
     setupUseInvokeImplementation((queryFn: any): any => {
       if (queryFn === getItems) {
         return {
-          items: [{ id: 1, name: itemName, categoryId: 1 }]
+          items: [item]
         };
       } else if (queryFn === getCategories) {
         return {
@@ -194,24 +211,34 @@ describe('Item creating', () => {
     const descriptionTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Description'
     });
+    const dificultyTexfield = screen.getByRole(ARIA_ROLE.WIDGET.SPINBUTTON, {
+      name: 'Dificulty'
+    });
+    const assemblyTimeTexfield = screen.getByRole(ARIA_ROLE.WIDGET.SPINBUTTON, {
+      name: 'Assembly time'
+    });
     const categoryCombobox = screen.getByRole(ARIA_ROLE.WIDGET.COMBOBOX, {
       name: 'Category'
     });
 
-    await userEvent.type(nameTexfield, itemName);
-    await userEvent.type(descriptionTexfield, 'description test');
-    fireEvent.change(categoryCombobox, { target: { value: '1' } });
+    await userEvent.type(nameTexfield, item.name);
+    await userEvent.type(descriptionTexfield, item.description);
+    await userEvent.type(dificultyTexfield, item.dificulty.toString());
+    await userEvent.type(assemblyTimeTexfield, item.assemblyTime.toString());
+    fireEvent.change(categoryCombobox, { target: { value: item.categoryId } });
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
     // assert
+    expect(createItemMutation).toHaveBeenNthCalledWith(1, item);
+
     await waitFor(() =>
       expect(screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create New Item' })).not.toBeInTheDocument()
     );
 
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
 
-    expect(screen.getByText(itemName)).toBeInTheDocument();
+    expect(screen.getByText(item.name)).toBeInTheDocument();
   });
 
   test('User receives an error trying to create an incomplete new item', async () => {
@@ -242,7 +269,7 @@ describe('Item creating', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Create Item' }));
 
     // assert
-    expect(screen.getByText('String must contain at least 5 character(s)')).toBeInTheDocument();
+    expect(screen.getByText('Field required and must contain at least 5 characters')).toBeInTheDocument();
     expect(screen.queryByRole(ARIA_ROLE.STRUCTURE.HEADING, { name: 'Create Item' })).not.toBeInTheDocument();
   });
 });
@@ -254,7 +281,13 @@ describe('Item changing', () => {
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
-      files: []
+      files: [],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: ''
     };
 
     const modifiedItem = {
@@ -328,7 +361,13 @@ describe('Item changing', () => {
           storagePath: 'jetplane.jpg',
           artifactType: 'scheme'
         }
-      ]
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: ''
     };
     setupUseQueryReturn(item);
 
@@ -359,7 +398,13 @@ describe('Item changing', () => {
           artifactType: 'SCHEME',
           url: 'http://127.0.0.1/file.png'
         }
-      ]
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: ''
     };
     setupUseQueryReturn(item);
 
@@ -388,8 +433,12 @@ describe('Item changing', () => {
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: '',
       files: [
         {
           id: 1,
@@ -477,7 +526,13 @@ describe('Item changing', () => {
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
-      files: []
+      files: [],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: '',
+      authorLink: '',
+      licenseType: '',
+      licenseTypeLink: ''
     };
 
     setupUseQueryImplementation((queryFn: any) => {

@@ -31,7 +31,18 @@ const NewItemPage = () => {
       <ItemForm
         submitText='Create Item'
         schema={CreateItemValidation}
-        initialValues={{ categoryId: '-1', description: '', name: '', files: [] }}
+        initialValues={{
+          categoryId: '-1',
+          description: '',
+          name: '',
+          files: [],
+          assemblyTime: 0,
+          dificulty: 0,
+          author: '',
+          authorLink: '',
+          licenseType: '',
+          licenseTypeLink: ''
+        }}
         categories={categories}
         onSubmit={async (values) => {
           try {

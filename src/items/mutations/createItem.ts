@@ -3,7 +3,6 @@ import db from 'db';
 import { CreateItemValidation } from '../validations';
 
 export default resolver.pipe(resolver.zod(CreateItemValidation), resolver.authorize(), async (input) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const item = await db.item.create({
     data: {
       ...input,
