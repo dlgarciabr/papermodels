@@ -8,6 +8,7 @@ import { toast, ToastOptions } from 'react-toastify';
 // } from "react-icons/fa";
 import { ToastType } from './types.d';
 
+// TODO clean it if is not in use
 // const displayIcon = (type) => {
 //   switch (type) {
 //     case ToastType.SUCCESS:
