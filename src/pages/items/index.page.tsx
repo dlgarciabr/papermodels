@@ -7,6 +7,8 @@ import Layout from 'src/core/layouts/Layout';
 import getItems from 'src/items/queries/getItems';
 import deleteItem from 'src/items/mutations/deleteItem';
 import { Item } from '@prisma/client';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -54,6 +56,7 @@ export const ItemsList = () => {
                 /* istanbul ignore else -- @preserve */
                 if (window.confirm('This item will be deleted')) {
                   await deleteItemMutation({ id: item.id });
+                  showToast(ToastType.SUCCESS, 'Item successfully removed!');
                   void loadItems();
                 }
               }}

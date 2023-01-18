@@ -9,6 +9,6 @@ export const listAllFiles = async () => await storageProvider.listAllFiles();
 
 export const getFilePath = async (path: string) => await storageProvider.getFilePath(path);
 
-export const saveFile = async (file: File) => await storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.name}`);
+export const saveFile = (file: File) => storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.name}`);
 
 export const deleteFile = async (path: string) => await storageProvider.deleteFile(path);

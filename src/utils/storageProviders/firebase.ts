@@ -6,8 +6,8 @@ import {
   listAll,
   ref,
   getDownloadURL,
-  uploadBytes,
-  deleteObject
+  deleteObject,
+  uploadBytes
 } from 'firebase/storage';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { ARTIFACTS_PATH } from '../fileStorage';
@@ -47,6 +47,7 @@ const getFilePath = async (path: string) => await getDownloadURL(ref(getStorage(
 
 const saveFile = (file: File, path: string) => {
   const fileRef = ref(getStorage(), path);
+  // return Promise.reject('forced error saving');
   return uploadBytes(fileRef, file);
   // const uploadTask = storageRef.put(firstFile);
   // uploadTask.on(‘state_changed’, function progress(snapshot) {

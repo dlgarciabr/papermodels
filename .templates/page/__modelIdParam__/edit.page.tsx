@@ -10,6 +10,8 @@ import Layout from 'src/core/layouts/Layout';
 import get__ModelName__ from 'src/__modelNamesPath__/queries/get__ModelName__';
 import update__ModelName__ from 'src/__modelNamesPath__/mutations/update__ModelName__';
 import { __ModelName__Form, FORM_ERROR } from 'src/__modelNamesPath__/components/__ModelName__Form';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 export const Edit__ModelName__ = () => {
   const router = useRouter();
@@ -49,6 +51,7 @@ export const Edit__ModelName__ = () => {
                 id: __modelName__.id,
                 ...values
               });
+              showToast(ToastType.SUCCESS, '__ModelName__ successfully updated!');
               await setQueryData(updated);
               await router.push(Routes.__ModelNames__Page());
             } catch (error: any) {

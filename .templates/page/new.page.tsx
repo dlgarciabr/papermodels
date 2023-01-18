@@ -11,6 +11,8 @@ if (process.env.parentModel) {
 import Layout from 'src/core/layouts/Layout';
 import create__ModelName__ from 'src/__modelNamesPath__/mutations/create__ModelName__';
 import { __ModelName__Form, FORM_ERROR } from 'src/__modelNamesPath__/components/__ModelName__Form';
+import { ToastType } from 'src/core/components/Toast/types.d';
+import { showToast } from 'src/core/components/Toast';
 
 const New__ModelName__Page = () => {
   const router = useContext(RouterContext);
@@ -35,6 +37,7 @@ const New__ModelName__Page = () => {
             await create__ModelName__Mutation(
               process.env.parentModel ? { ...values, __parentModelId__: __parentModelId__! } : values
             );
+            showToast(ToastType.SUCCESS, '__ModelName__ successfully created!');
             await router.push(
               process.env.parentModel
                 ? Routes.__ModelNames__Page({ __parentModelId__: __parentModelId__! })
