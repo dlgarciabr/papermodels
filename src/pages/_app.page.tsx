@@ -4,8 +4,10 @@ import { ErrorFallbackProps, ErrorComponent, ErrorBoundary, AppProps } from '@bl
 import { AuthenticationError, AuthorizationError } from 'blitz';
 import React from 'react';
 import { withBlitz } from 'src/blitz-client';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
-function RootErrorFallback({ error }: ErrorFallbackProps) {
+const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
   if (error instanceof AuthenticationError) {
     return <div>Error: You are not authenticated</div>;
   } else if (error instanceof AuthorizationError) {
@@ -13,11 +15,24 @@ function RootErrorFallback({ error }: ErrorFallbackProps) {
   } else {
     return <ErrorComponent statusCode={(error as any)?.statusCode || 400} title={error.message || error.name} />;
   }
-}
+};
 
-function MyApp({ Component, pageProps }: AppProps) {
+const MyApp = ({ Component, pageProps }: AppProps) => {
   const getLayout = Component.getLayout || ((page) => page);
-  return <ErrorBoundary FallbackComponent={RootErrorFallback}>{getLayout(<Component {...pageProps} />)}</ErrorBoundary>;
-}
+  return (
+    <>
+      <ErrorBoundary FallbackComponent={RootErrorFallback}>{getLayout(<Component {...pageProps} />)}</ErrorBoundary>
+      <ToastContainer
+        position='top-right'
+        autoClose={8000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        draggable={false}
+        closeOnClick
+        pauseOnHover
+      />
+    </>
+  );
+};
 
 export default withBlitz(MyApp);

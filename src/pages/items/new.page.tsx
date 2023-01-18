@@ -9,6 +9,8 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
 import { Category } from 'db';
 import { CreateItemValidation } from 'src/items/validations';
+import { ToastType } from 'src/core/components/Toast/types.d';
+import { showToast } from 'src/core/components/Toast';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
@@ -50,6 +52,7 @@ const NewItemPage = () => {
               ...values,
               files: []
             });
+            showToast(ToastType.SUCCESS, 'Item successfully created!');
             await router.push(Routes.ItemsPage());
           } catch (error: any) {
             console.error(error);

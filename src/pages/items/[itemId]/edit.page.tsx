@@ -21,6 +21,8 @@ import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
 import { UpdateItemValidation } from 'src/items/validations';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -65,7 +67,6 @@ export const EditItem = () => {
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const [isSaving, setSaving] = useState(false);
-  // const [filesKey, setFilesKey] = useState(getSimpleRandomKey());
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
   const [item, queryResult] = useQuery(
@@ -76,7 +77,6 @@ export const EditItem = () => {
       staleTime: Infinity
     }
   );
-
   const [categoryResult] = useQuery(
     getCategories,
     { orderBy: { name: 'asc' } },
@@ -101,15 +101,14 @@ export const EditItem = () => {
     try {
       await uploadFiles(filesToUpload);
       await saveItemFiles(filesToUpload, createItemFileMutation);
-      alert('files saved');
+      showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
       setSaving(false);
     } catch (error) {
-      // TODO show a friendly message to the user
+      showToast(ToastType.ERROR, error);
       setSaving(false);
-      throw new Error(error);
     }
   };
 
@@ -120,7 +119,7 @@ export const EditItem = () => {
       const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
       await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
       await queryResult.refetch();
-      alert('file removed');
+      showToast(ToastType.SUCCESS, 'file removed');
     }
   };
 
@@ -172,6 +171,7 @@ export const EditItem = () => {
               const updated = await updateItemMutation({
                 ...values
               });
+              showToast(ToastType.SUCCESS, 'Item successfully updated!');
               await queryResult.setQueryData(updated as Item & { files: ItemFile[] });
               await router.push(Routes.ItemsPage());
             } catch (error: any) {

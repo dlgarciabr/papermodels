@@ -1,7 +1,14 @@
 /* istanbul ignore file -- @preserve */
 // TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
-import { getStorage as getFirebaseStorage, listAll, ref, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  getStorage as getFirebaseStorage,
+  listAll,
+  ref,
+  getDownloadURL,
+  deleteObject,
+  uploadBytes
+} from 'firebase/storage';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { ARTIFACTS_PATH } from '../fileStorage';
 
@@ -39,10 +46,9 @@ const listAllFiles = async () => await listAll(ref(getStorage(), ARTIFACTS_PATH)
 const getFilePath = async (path: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
 
 const saveFile = (file: File, path: string) => {
-  // eslint-disable-next-line unused-imports/no-unused-vars
   const fileRef = ref(getStorage(), path);
-  // return uploadBytes(fileRef, file);
-  return Promise.reject('forced error saving');
+  // return Promise.reject('forced error saving');
+  return uploadBytes(fileRef, file);
   // const uploadTask = storageRef.put(firstFile);
   // uploadTask.on(‘state_changed’, function progress(snapshot) {
   //    console.log(snapshot.totalBytesTransferred); // progress of upload
