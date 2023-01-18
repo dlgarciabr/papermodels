@@ -22,15 +22,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <ErrorBoundary FallbackComponent={RootErrorFallback}>{getLayout(<Component {...pageProps} />)}</ErrorBoundary>
-      <ToastContainer
-        position='top-right'
-        autoClose={8000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        draggable={false}
-        closeOnClick
-        pauseOnHover
-      />
+      <ToastContainer />
     </>
   );
 };
