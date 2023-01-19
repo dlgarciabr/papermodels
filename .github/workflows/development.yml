@@ -44,9 +44,6 @@ jobs:
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
       - name: Start DB Keep alive serverless function
         uses: fjogeleit/http-request-action@v1
-        env:
-          DEPLOY_URL: ${{secrets.VERCEL_URL}}
         with:
-          #url: "https://$VERCEL_URL/api/dbKeepAlive"
-          url: ${{secrets.VERCEL_URL}}
+          url: 'https://papermodels.vercel.app/api/dbKeepAlive'
           method: 'GET'
