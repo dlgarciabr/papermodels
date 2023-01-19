@@ -2,7 +2,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import https from 'https';
 
 const pingDB = () => {
-  https.get('https://webhook.site/1167836f-8474-4b11-9604-add5273e67a1');
+  try {
+    https.get('https://webhook.site/1167836f-8474-4b11-9604-add5273e67a1');
+  } catch (error) {
+    console.error(error);
+  }
   setTimeout(() => pingDB(), 60000);
 };
 
