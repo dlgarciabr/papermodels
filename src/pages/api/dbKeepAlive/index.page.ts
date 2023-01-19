@@ -6,10 +6,10 @@ const pingDB = async () =>
     https
       .get('https://webhook.site/1167836f-8474-4b11-9604-add5273e67a1', (_res) => {
         resolve();
-        //setTimeout(() => pingDB(), 60000);
+        setTimeout(() => pingDB(), 60000);
       })
       .on('error', (_err) => {
-        //setTimeout(() => pingDB(), 60000);
+        setTimeout(() => pingDB(), 60000);
         resolve();
       });
   });
