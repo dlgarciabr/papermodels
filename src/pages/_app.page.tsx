@@ -20,7 +20,7 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
 const dbKeepAlive = async () => {
   if (typeof location !== 'undefined') {
     await fetch(`${location.href}api/dbKeepAlive`);
-    setTimeout(() => dbKeepAlive(), 60000);
+    setTimeout(() => dbKeepAlive(), 180000);
   }
 };
 
