@@ -48,8 +48,8 @@ jobs:
       - name: Start DB Keep alive serverless function
         uses: fjogeleit/http-request-action@v1
         env:
-          DEPLOY_URL: ${{VERCEL_URL}}
+          DEPLOY_URL: $VERCEL_URL
         with:
           #url: "https://$VERCEL_URL/api/dbKeepAlive"
-          url: ${{VERCEL_URL}}
+          url: $VERCEL_URL
           method: 'GET'
