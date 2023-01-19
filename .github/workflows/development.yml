@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add mask
-        run: echo "::add-mask::ep-twilight-surf-816861.us-east-2.aws.neon.tech:5432"
+        run: echo "::add-mask::${{secrets.TEST_DATABASE_URL}}"
       - uses: actions/checkout@v2
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
