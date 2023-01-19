@@ -30,7 +30,7 @@ jobs:
       - name: Run tests
         run: npm run test:coverage
   Deploy-Preview:
-    # needs: QA
+    needs: QA
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
