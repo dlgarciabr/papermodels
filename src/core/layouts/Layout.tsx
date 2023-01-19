@@ -1,6 +1,6 @@
-import Head from "next/head";
-import React, { FC } from "react";
-import { BlitzLayout } from "@blitzjs/next";
+import Head from 'next/head';
+import React from 'react';
+import { BlitzLayout } from '@blitzjs/next';
 
 const Layout: BlitzLayout<{
   title?: string;
@@ -10,8 +10,8 @@ const Layout: BlitzLayout<{
   return (
     <>
       <Head>
-        <title>{title || "papermodels"}</title>
-        <link rel="icon" href="/favicon.ico" />
+        <title>{title || 'papermodels'}</title>
+        <link rel='icon' href='/favicon.ico' />
       </Head>
 
       {children}

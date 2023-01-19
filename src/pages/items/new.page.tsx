@@ -9,6 +9,8 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
 import { Category } from 'db';
 import { CreateItemValidation } from 'src/items/validations';
+import { ToastType } from 'src/core/components/Toast/types.d';
+import { showToast } from 'src/core/components/Toast';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
@@ -17,7 +19,7 @@ const NewItemPage = () => {
 
   const loadCategories = async () => {
     const { categories } = await invoke(getCategories, {
-      orderBy: { id: 'asc' }
+      orderBy: { name: 'asc' }
     });
     setCategories(categories);
   };
@@ -31,7 +33,18 @@ const NewItemPage = () => {
       <ItemForm
         submitText='Create Item'
         schema={CreateItemValidation}
-        initialValues={{ categoryId: '-1', description: '', name: '', files: [] }}
+        initialValues={{
+          categoryId: '-1',
+          description: '',
+          name: '',
+          files: [],
+          assemblyTime: 0,
+          dificulty: 0,
+          author: '',
+          authorLink: '',
+          licenseType: '',
+          licenseTypeLink: ''
+        }}
         categories={categories}
         onSubmit={async (values) => {
           try {
@@ -39,6 +52,7 @@ const NewItemPage = () => {
               ...values,
               files: []
             });
+            showToast(ToastType.SUCCESS, 'Item successfully created!');
             await router.push(Routes.ItemsPage());
           } catch (error: any) {
             console.error(error);

@@ -6,6 +6,7 @@ import { BlitzProvider, RouterContext } from '@blitzjs/next';
 import { useMutation, usePaginatedQuery, useQuery, invoke } from '@blitzjs/rpc';
 import { QueryClient } from '@tanstack/react-query';
 import { ISetupUseInvoke, ISetupUsePaginatedQuery } from './types';
+import { ToastContainer } from 'react-toastify';
 
 export * from '@testing-library/react';
 
@@ -77,9 +78,12 @@ export function render(ui: RenderUI, { wrapper, router, dehydratedState, ...opti
     useRouter.mockImplementation(() => mockedRouter);
     wrapper = ({ children }: { children: React.ReactNode }) => {
       return (
-        <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
-          <RouterContext.Provider value={mockedRouter}>{children}</RouterContext.Provider>
-        </BlitzProvider>
+        <>
+          <ToastContainer />
+          <BlitzProvider dehydratedState={dehydratedState} client={queryClient}>
+            <RouterContext.Provider value={mockedRouter}>{children}</RouterContext.Provider>
+          </BlitzProvider>
+        </>
       );
     };
   }
@@ -199,6 +203,10 @@ export const setupUseInvoke = (callback: (queryFn: (...args: any) => any, params
 
 export const setupUseMutation = <T,>(mutation: Promise<T>) => {
   vi.mocked(useMutation).mockReturnValue([mutation as any, {} as any]);
+};
+
+export const setupUseMutationImplementation = (implementation: any) => {
+  vi.mocked(useMutation).mockImplementation(implementation);
 };
 
 export const setupUseMutationOnce = <T,>(mutation: Promise<T>) => {

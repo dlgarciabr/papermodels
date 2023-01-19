@@ -16,6 +16,5 @@ if (process.env.parentModel) {
 export default resolver.pipe(resolver.zod(Create__ModelName__), resolver.authorize(), async (input) => {
   // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const __modelName__ = await db.__modelName__.create({ data: input });
-
   return __modelName__;
 });

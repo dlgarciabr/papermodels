@@ -6,9 +6,7 @@ env:
   VERCEL_ORG_ID: 0pVxKCNNmR0k7ccH7AtUU0XT
   VERCEL_PROJECT_ID: prj_ZlPjR3kxAR1cl2uxasUAfEkvFADu
   DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events for the master and develop branches
   push:
     branches: [develop]
   pull_request:
@@ -16,28 +14,19 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 jobs:
   QA:
     runs-on: ubuntu-latest
-
-    # strategy:
-    #   matrix:
-    #     node-version: [16.3]
-
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      # with:
-      #   fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
-      # Runs a single command using the runners shell
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
-        # with:
-        #   node-version: ${{ matrix.node-version }}
-
       - name: Install dependencies
         run: npm ci
+      - name: Install Blitz
+        run: npm install -g blitz
+      - name: Generate Prisma client
+        run: blitz prisma generate
       - name: Run tests
         run: npm run test:coverage
   Deploy-Preview:

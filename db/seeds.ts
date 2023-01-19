@@ -1,6 +1,6 @@
 // import db from "./index"
 
-import db, { Category, FileType } from 'db';
+import db, { FileType } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -18,6 +18,9 @@ const seed = async () => {
     items: [
       {
         name: 'Vet clinic',
+        description: 'Vet clinic',
+        dificulty: 1,
+        assemblyTime: 0.5,
         files: [
           {
             index: 0,
@@ -35,6 +38,9 @@ const seed = async () => {
       items: [
         {
           name: 'Hospital',
+          description: 'Hospital',
+          dificulty: 1,
+          assemblyTime: 1,
           files: []
         }
       ]
@@ -44,7 +50,7 @@ const seed = async () => {
     { name: 'Aircrafts' },
     { name: 'Automobiles' },
     { name: 'Houses & residential apartments' },
-    { name: 'Animals' },
+    { name: 'Realistic Animals' },
     { name: 'Stores' },
     { name: 'Plants & trees' },
     { name: 'Miscelaneus' }
@@ -61,8 +67,10 @@ const seed = async () => {
     await db.item.create({
       data: {
         name: item.name,
-        description: item.name,
+        description: item.description,
         categoryId: categoryCreated.id,
+        dificulty: item.dificulty,
+        assemblyTime: item.assemblyTime,
         files: {
           create: item.files.map(({ storagePath, artifactType, index }) => ({
             storagePath,
@@ -80,8 +88,10 @@ const seed = async () => {
       await db.item.create({
         data: {
           name: item.name,
-          description: item.name,
+          description: item.description,
           categoryId: categoryCreated.id,
+          dificulty: item.dificulty,
+          assemblyTime: item.assemblyTime,
           files: {
             create: item.files.map(({ storagePath, artifactType, index }) => ({
               storagePath,

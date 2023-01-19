@@ -1,4 +1,4 @@
-import { Suspense, useContext, useState, useEffect, ReactNode } from 'react';
+import { Suspense, useContext, useState, useEffect } from 'react';
 import { RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';

@@ -13,7 +13,7 @@ import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this wi
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
 import { sortFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
-import { UploadItemFile } from '../types';
+import { UploadItemFile } from '../../../items/types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
@@ -21,6 +21,8 @@ import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
 import { UpdateItemValidation } from 'src/items/validations';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -65,7 +67,6 @@ export const EditItem = () => {
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const [isSaving, setSaving] = useState(false);
-  // const [filesKey, setFilesKey] = useState(getSimpleRandomKey());
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
   const [item, queryResult] = useQuery(
@@ -76,7 +77,6 @@ export const EditItem = () => {
       staleTime: Infinity
     }
   );
-
   const [categoryResult] = useQuery(
     getCategories,
     { orderBy: { name: 'asc' } },
@@ -101,14 +101,14 @@ export const EditItem = () => {
     try {
       await uploadFiles(filesToUpload);
       await saveItemFiles(filesToUpload, createItemFileMutation);
-      alert('files saved');
+      showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
       setSaving(false);
     } catch (error) {
+      showToast(ToastType.ERROR, error);
       setSaving(false);
-      throw error;
     }
   };
 
@@ -119,7 +119,7 @@ export const EditItem = () => {
       const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
       await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
       await queryResult.refetch();
-      alert('file removed');
+      showToast(ToastType.SUCCESS, 'file removed');
     }
   };
 
@@ -151,21 +151,27 @@ export const EditItem = () => {
       </Head>
 
       <div>
-        <h1>Edit Item {item.id}</h1>
+        <h1>Edit Item {item.name}</h1>
 
         <ItemForm
           submitText='Update Item'
-          // TODO use a zod schema for form validation
-          //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-          //         then import and use it here
           schema={UpdateItemValidation}
-          initialValues={{ ...item, categoryId: item.categoryId.toString() }}
+          initialValues={{
+            ...item,
+            categoryId: item.categoryId.toString(),
+            assemblyTime: parseFloat(item.assemblyTime.toString()),
+            author: item.author || '',
+            authorLink: item.authorLink || '',
+            licenseType: item.licenseType || '',
+            licenseTypeLink: item.licenseTypeLink || ''
+          }}
           categories={categoryResult.categories}
           onSubmit={async (values) => {
             try {
               const updated = await updateItemMutation({
                 ...values
               });
+              showToast(ToastType.SUCCESS, 'Item successfully updated!');
               await queryResult.setQueryData(updated as Item & { files: ItemFile[] });
               await router.push(Routes.ItemsPage());
             } catch (error: any) {
