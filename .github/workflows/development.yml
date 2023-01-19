@@ -30,6 +30,8 @@ jobs:
     needs: QA
     runs-on: ubuntu-latest
     steps:
+      - name: Add mask
+        run: echo "::add-mask::${{ secrets.HIDE_TEST_DB_URL }}"
       - uses: actions/checkout@v2
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
