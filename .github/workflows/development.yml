@@ -57,3 +57,8 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Start DB Keep alive serverless function
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{VERCEL_URL}}/api/dbKeepAlive'
+          method: 'GET'
