@@ -10,6 +10,8 @@ jobs:
   Production-Deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Add mask
+        run: echo "::add-mask::${{ secrets.HIDE_PROD_DB_URL }}"
       - uses: actions/checkout@v2
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
