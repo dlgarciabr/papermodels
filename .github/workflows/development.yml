@@ -15,20 +15,20 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
-  # QA:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v2
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - name: Install Blitz
-  #       run: npm install -g blitz
-  #     - name: Generate Prisma client
-  #       run: blitz prisma generate
-  #     - name: Run tests
-  #       run: npm run test:coverage
+  QA:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Blitz
+        run: npm install -g blitz
+      - name: Generate Prisma client
+        run: blitz prisma generate
+      - name: Run tests
+        run: npm run test:coverage
   Deploy-Preview:
     # needs: QA
     runs-on: ubuntu-latest
@@ -42,8 +42,3 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Start DB Keep alive serverless function
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://papermodels.vercel.app/api/dbKeepAlive'
-          method: 'GET'
