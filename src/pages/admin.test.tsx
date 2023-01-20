@@ -1,7 +1,7 @@
 import { expect, vi } from 'vitest';
 
 import { render, screen } from 'test/utils';
-import Home from './index.page';
+import Home from './admin.page';
 
 test('renders blitz documentation link', () => {
   // arrange
