@@ -1,5 +1,5 @@
 import Layout from 'src/core/layouts/Layout';
-import { BlitzPage } from '@blitzjs/next';
+import { BlitzPage, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
@@ -16,38 +16,39 @@ import {
   Button
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import { useHandleSearch } from './index.hooks';
+import { Item } from 'db';
 
 const theme = createTheme();
 
-const SearchCard = () => {
+const SearchCard = ({ item }: { item: Item }) => {
   return (
-    <Card sx={{ maxWidth: 345 }} raised>
-      <CardMedia sx={{ height: 140 }} image='/contemplative-reptile.jpg' title='green iguana' />
+    <Card raised className='search-card'>
+      <CardMedia image='/contemplative-reptile.jpg' title='green iguana' />
       <CardContent>
         <Typography gutterBottom variant='h5' component='div'>
-          Lizard
+          {item.name}
         </Typography>
         <Typography variant='body2' color='text.secondary'>
-          Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents
-          except Antarctica
+          {item.description}
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size='small'>Share</Button>
-        <Button size='small'>Learn More</Button>
+        <Button size='small'>See more</Button>
       </CardActions>
     </Card>
   );
 };
 
 const Home: BlitzPage = () => {
+  const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
-  const [items, setItems] = useState([]);
-  const [searchExpression, setSearchExpression] = useState<string>('');
+  const page = Number(router.query.page) || 0;
+  const [items, setItems] = useState<Item[]>([]);
+  const [expression, setExpression] = useState<string>('');
   const handleSearch = useHandleSearch(setItems);
 
   useEffect(() => {
@@ -59,12 +60,17 @@ const Home: BlitzPage = () => {
   }, [items]);
 
   useEffect(() => {
-    setMarginTopProp({ marginTop: calculateMarginTop() });
-  }, []);
+    const queryExpression = String(router.query.expression);
+    if (queryExpression) {
+      setExpression(queryExpression);
+      setInitialSearchFieldMarginTop();
+    } else {
+      setMarginTopProp({ marginTop: calculateMarginTop() });
+    }
+  }, [router.query.expression]);
 
   const cleanSearch = () => {
-    setSearchExpression('');
-    setInitialSearchFieldMarginTop();
+    setExpression('');
     setItems([]);
   };
 
@@ -95,8 +101,8 @@ const Home: BlitzPage = () => {
                   name='searchModel'
                   autoFocus
                   hidden={true}
-                  value={searchExpression}
-                  onChange={(event) => setSearchExpression(event.target.value)}
+                  value={expression}
+                  onChange={(event) => setExpression(event.target.value)}
                   // onKeyDown={event => { if (event.key === '13') { console.log(event.key); handleSearch(); } }}
                   inputProps={
                     {
@@ -115,16 +121,16 @@ const Home: BlitzPage = () => {
                 />
               </Grid>
               <Grid item xs={1}>
-                <Button onClick={handleSearch} variant='contained' size='large'>
+                <Button onClick={() => handleSearch(expression, page)} variant='contained' size='large'>
                   <MdSearch />
                 </Button>
               </Grid>
             </Grid>
           </Grid>
           <Grid container justifyContent='center' spacing={3}>
-            {items.map((_item) => (
+            {items.map((item) => (
               <Grid item key={getSimpleRandomKey()}>
-                <SearchCard />
+                <SearchCard item={item} />
               </Grid>
             ))}
           </Grid>

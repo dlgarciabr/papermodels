@@ -18,7 +18,7 @@ const seed = async () => {
     items: [
       {
         name: 'Vet clinic',
-        description: 'Vet clinic',
+        description: 'A tiny and nice vet clinic building',
         dificulty: 1,
         assemblyTime: 0.5,
         files: [
@@ -38,7 +38,7 @@ const seed = async () => {
       items: [
         {
           name: 'Hospital',
-          description: 'Hospital',
+          description: 'A big and cool hospital',
           dificulty: 1,
           assemblyTime: 1,
           files: []
