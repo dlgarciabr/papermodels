@@ -20,7 +20,6 @@ const Home: BlitzPage = () => {
     <Layout title='Home'>
       <Head>
         <title>Papermodels</title>
-        <meta name='viewport' content='initial-scale=1, width=device-width' />
       </Head>
       <ThemeProvider theme={theme}>
         <Container component='main'>
@@ -39,14 +38,14 @@ const Home: BlitzPage = () => {
                 margin='normal'
                 fullWidth
                 label='Search on Papermodels'
-                name='email'
+                name='searchModel'
                 autoFocus
                 hidden={true}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position='end'>
                       <IconButton
-                        aria-label='toggle password visibility'
+                        aria-label='search icon'
                         // onClick={handleClickShowPassword}
                         // onMouseDown={handleMouseDownPassword}
                       >
