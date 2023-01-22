@@ -64,9 +64,8 @@ const Home: BlitzPage = () => {
   }, [items]);
 
   useEffect(() => {
-    const queryExpression = String(router.query.expression);
-    if (queryExpression) {
-      setExpression(queryExpression);
+    if (router.query.expression) {
+      setExpression(String(router.query.expression));
       setInitialSearchFieldMarginTop();
     } else {
       setMarginTopProp({ marginTop: calculateMarginTop() });
