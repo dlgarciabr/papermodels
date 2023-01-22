@@ -116,12 +116,12 @@ const Home: BlitzPage = () => {
                   hidden={true}
                   value={expression}
                   onChange={(event) => setExpression(event.target.value)}
-                  // onKeyDown={event => { if (event.key === '13') { console.log(event.key); handleSearch(); } }}
-                  inputProps={
-                    {
-                      // onKeyDown: event => { if (event.key === '13') { console.log(event.key); handleSearch(); } }
+                  onKeyPress={(ev) => {
+                    if (ev.key === 'Enter') {
+                      void search(expression, page);
+                      ev.preventDefault();
                     }
-                  }
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position='end'>
