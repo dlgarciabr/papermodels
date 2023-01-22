@@ -13,3 +13,7 @@ body {
 .MuiCard-root.search-card > .MuiCardMedia-root {
   height: 140px;
 }
+
+.MuiCardContent-root {
+  height: 60px;
+}

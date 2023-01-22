@@ -36,7 +36,7 @@ const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
         <Typography gutterBottom variant='h5' component='div'>
           {item.name}
         </Typography>
-        <Typography variant='body2' color='text.secondary'>
+        <Typography variant='body2' color='text.secondary' noWrap>
           {item.description}
         </Typography>
       </CardContent>
