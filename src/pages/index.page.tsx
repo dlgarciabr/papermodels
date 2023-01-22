@@ -55,30 +55,35 @@ const Home: BlitzPage = () => {
   const [expression, setExpression] = useState<string>('');
   const search = useSearch(setItems);
 
-  useEffect(() => {
+  const adjustSearchFieldMarginTop = () => {
     if (items.length === 0) {
-      setInitialSearchFieldMarginTop();
+      setMarginTopProp({ marginTop: calculateMarginTop() });
     } else {
       setMarginTopProp({ marginTop: '0px' });
     }
+  };
+
+  useEffect(() => {
+    adjustSearchFieldMarginTop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   useEffect(() => {
-    if (router.query.expression) {
-      setExpression(String(router.query.expression));
-      setInitialSearchFieldMarginTop();
-    } else {
-      setMarginTopProp({ marginTop: calculateMarginTop() });
+    if (router.query.expression && router.query.expression !== expression) {
+      const newExpression = String(router.query.expression);
+      setExpression(newExpression);
+      void search(newExpression, page);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.expression]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cleanSearch = () => {
     setExpression('');
     setItems([]);
-  };
-
-  const setInitialSearchFieldMarginTop = () => {
-    setMarginTopProp({ marginTop: calculateMarginTop() });
   };
 
   const renderCards = useMemo(
