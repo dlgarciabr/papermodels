@@ -16,18 +16,22 @@ import {
   Button
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
-import { useHandleSearch } from './index.hooks';
-import { Item } from 'db';
+import { Item, ItemFile } from 'db';
+import { useSearch } from './index.hooks';
 
 const theme = createTheme();
 
-const SearchCard = ({ item }: { item: Item }) => {
+const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
+  let thumbnailUrl = 'empty';
+  if (item.files.length > 0) {
+    thumbnailUrl = item.files[0]?.storagePath as string;
+  }
   return (
     <Card raised className='search-card'>
-      <CardMedia image='/contemplative-reptile.jpg' title='green iguana' />
+      <CardMedia image={thumbnailUrl} title='green iguana' />
       <CardContent>
         <Typography gutterBottom variant='h5' component='div'>
           {item.name}
@@ -49,7 +53,7 @@ const Home: BlitzPage = () => {
   const page = Number(router.query.page) || 0;
   const [items, setItems] = useState<Item[]>([]);
   const [expression, setExpression] = useState<string>('');
-  const handleSearch = useHandleSearch(setItems);
+  const search = useSearch(setItems);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -77,6 +81,16 @@ const Home: BlitzPage = () => {
   const setInitialSearchFieldMarginTop = () => {
     setMarginTopProp({ marginTop: calculateMarginTop() });
   };
+
+  const renderCards = useMemo(
+    () =>
+      items.map((item) => (
+        <Grid item key={getSimpleRandomKey()}>
+          <SearchCard item={item as Item & { files: ItemFile[] }} />
+        </Grid>
+      )),
+    [items]
+  );
 
   return (
     <Layout title='Home'>
@@ -121,18 +135,14 @@ const Home: BlitzPage = () => {
                 />
               </Grid>
               <Grid item xs={1}>
-                <Button onClick={() => handleSearch(expression, page)} variant='contained' size='large'>
+                <Button onClick={() => search(expression, page)} variant='contained' size='large'>
                   <MdSearch />
                 </Button>
               </Grid>
             </Grid>
           </Grid>
           <Grid container justifyContent='center' spacing={3}>
-            {items.map((item) => (
-              <Grid item key={getSimpleRandomKey()}>
-                <SearchCard item={item} />
-              </Grid>
-            ))}
+            {renderCards}
           </Grid>
         </Container>
       </ThemeProvider>

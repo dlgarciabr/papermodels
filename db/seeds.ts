@@ -26,6 +26,11 @@ const seed = async () => {
             index: 0,
             storagePath: '1/vet_clinic_scheme_1.jpg',
             artifactType: FileType.scheme
+          },
+          {
+            index: 0,
+            storagePath: '1/vet_clinic_thumbnail_2.png',
+            artifactType: FileType.thumbnail
           }
         ]
       }
