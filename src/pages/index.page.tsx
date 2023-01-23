@@ -13,7 +13,8 @@ import {
   CardContent,
   Typography,
   CardActions,
-  Button
+  Button,
+  Pagination
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { useContext, useEffect, useMemo, useState } from 'react';
@@ -47,16 +48,29 @@ const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
   );
 };
 
+interface IData {
+  expression: string;
+  items: Item[];
+  currentPage: number;
+  pages: number;
+}
+
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
-  const page = Number(router.query.page) || 0;
-  const [items, setItems] = useState<Item[]>([]);
-  const [expression, setExpression] = useState<string>('');
-  const search = useSearch(setItems);
+  const search = useSearch();
+
+  const initialData = {
+    expression: '',
+    items: [],
+    pages: 0,
+    currentPage: Number(router.query.page) || 1
+  };
+
+  const [data, setData] = useState<IData>({ ...initialData });
 
   const adjustSearchFieldMarginTop = () => {
-    if (items.length === 0) {
+    if (data.items.length === 0) {
       setMarginTopProp({ marginTop: calculateMarginTop() });
     } else {
       setMarginTopProp({ marginTop: '0px' });
@@ -66,13 +80,12 @@ const Home: BlitzPage = () => {
   useEffect(() => {
     adjustSearchFieldMarginTop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items]);
+  }, [data.items]);
 
   useEffect(() => {
-    if (router.query.expression && router.query.expression !== expression) {
-      const newExpression = String(router.query.expression);
-      setExpression(newExpression);
-      void search(newExpression, page);
+    if (router.query.expression && router.query.expression !== data.expression) {
+      const expression = String(router.query.expression);
+      setData({ ...data, expression });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.expression]);
@@ -82,18 +95,29 @@ const Home: BlitzPage = () => {
   }, []);
 
   const cleanSearch = () => {
-    setExpression('');
-    setItems([]);
+    setData({ ...initialData });
+    void router.push({});
+  };
+
+  const handleSearch = async (expression: string, page: number) => {
+    const { items, count } = await search(expression, page - 1);
+    const pages = Math.ceil(count / 9);
+    setData({
+      items,
+      pages,
+      expression,
+      currentPage: page
+    });
   };
 
   const renderCards = useMemo(
     () =>
-      items.map((item) => (
+      data.items.map((item) => (
         <Grid item key={getSimpleRandomKey()}>
           <SearchCard item={item as Item & { files: ItemFile[] }} />
         </Grid>
       )),
-    [items]
+    [data.items]
   );
 
   return (
@@ -119,11 +143,11 @@ const Home: BlitzPage = () => {
                   name='searchModel'
                   autoFocus
                   hidden={true}
-                  value={expression}
-                  onChange={(event) => setExpression(event.target.value)}
+                  value={data.expression}
+                  onChange={(event) => setData({ ...data, expression: event.target.value })}
                   onKeyPress={(ev) => {
                     if (ev.key === 'Enter') {
-                      void search(expression, page);
+                      void handleSearch(data.expression, 1);
                       ev.preventDefault();
                     }
                   }}
@@ -139,7 +163,7 @@ const Home: BlitzPage = () => {
                 />
               </Grid>
               <Grid item xs={1}>
-                <Button onClick={() => search(expression, page)} variant='contained' size='large'>
+                <Button onClick={() => handleSearch(data.expression, 1)} variant='contained' size='large'>
                   <MdSearch />
                 </Button>
               </Grid>
@@ -147,6 +171,18 @@ const Home: BlitzPage = () => {
           </Grid>
           <Grid container justifyContent='center' spacing={3}>
             {renderCards}
+          </Grid>
+          <Grid container justifyContent='center' spacing={3} hidden={data.pages === 0}>
+            <Grid item xs={12}>
+              <Pagination
+                count={data.pages}
+                page={data.currentPage}
+                onChange={(_event, page) => handleSearch(data.expression, page)}
+              />
+            </Grid>
+            <Grid item>
+              <Typography>Total: {data.pages}</Typography>
+            </Grid>
           </Grid>
         </Container>
       </ThemeProvider>
