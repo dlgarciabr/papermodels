@@ -99,6 +99,26 @@ describe('Index page tests', () => {
     expect((searchInput as HTMLInputElement).value).toBe('');
   });
 
+  test.todo('renders a SearchCard component for each item in the data.items array', () => {
+    // arrange
+    // const items = [
+    //   { name: 'Item 1', description: 'Description 1' },
+    //   { name: 'Item 2', description: 'Description 2' }
+    // ];
+    // // vi.spyOn()
+    // vi.mock('src/pages/index.hooks', () => ({
+    //   useSearch: () => ({ items, count: 2 })
+    // }));
+    // // vi.mock(useSearch).mockReturnValue({ items, count: 2 });
+    // render(<Home />);
+    // const searchCards = screen.getAllByTestId('search-card');
+    // expect(searchCards.length).toBe(2);
+    // expect(screen.getByText('Item 1')).toBeInTheDocument();
+    // expect(screen.getByText('Description 1')).toBeInTheDocument();
+    // expect(screen.getByText('Item 2')).toBeInTheDocument();
+    // expect(screen.getByText('Description 2')).toBeInTheDocument();
+  });
+
   test.todo('User search for a model and see no results');
 
   test.todo('User search for a specific model and navigate to see the chosen model');
