@@ -127,61 +127,64 @@ const Home: BlitzPage = () => {
       </Head>
       <ThemeProvider theme={theme}>
         <Container component='main'>
-          <Grid container justifyContent='center'>
-            <Grid item>Papermodels</Grid>
-          </Grid>
-          <Grid
-            container
-            justifyContent='center'
-            style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
-            <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
-              <Grid item xs={11}>
-                <TextField
-                  margin='normal'
-                  fullWidth
-                  label='Search on Papermodels'
-                  name='searchModel'
-                  autoFocus
-                  hidden={true}
-                  value={data.expression}
-                  onChange={(event) => setData({ ...data, expression: event.target.value })}
-                  onKeyPress={(ev) => {
-                    if (ev.key === 'Enter') {
-                      void handleSearch(data.expression, 1);
-                      ev.preventDefault();
-                    }
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        <IconButton aria-label='clean icon' onClick={cleanSearch}>
-                          <MdClose />
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
+          <Grid container spacing={3}>
+            <Grid item container justifyContent='center'>
+              <Grid item>Papermodels</Grid>
+            </Grid>
+            <Grid
+              item
+              container
+              justifyContent='center'
+              style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
+              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
+                <Grid item xs={11}>
+                  <TextField
+                    margin='normal'
+                    fullWidth
+                    label='Search on Papermodels'
+                    name='searchModel'
+                    autoFocus
+                    hidden={true}
+                    value={data.expression}
+                    onChange={(event) => setData({ ...data, expression: event.target.value })}
+                    onKeyPress={(ev) => {
+                      if (ev.key === 'Enter') {
+                        void handleSearch(data.expression, 1);
+                        ev.preventDefault();
+                      }
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton aria-label='clean icon' onClick={cleanSearch}>
+                            <MdClose />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={1}>
+                  <Button onClick={() => handleSearch(data.expression, 1)} variant='contained' size='large'>
+                    <MdSearch />
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item container justifyContent='center' spacing={3}>
+              {renderCards}
+            </Grid>
+            <Grid item container justifyContent='center' spacing={3} className={data.pages === 0 ? 'hidden' : ''}>
+              <Grid item container xs={12} justifyContent='center'>
+                <Pagination
+                  count={data.pages}
+                  page={data.currentPage}
+                  onChange={(_event, page) => handleSearch(data.expression, page)}
                 />
               </Grid>
-              <Grid item xs={1}>
-                <Button onClick={() => handleSearch(data.expression, 1)} variant='contained' size='large'>
-                  <MdSearch />
-                </Button>
+              <Grid item container xs={12} justifyContent='center'>
+                <Typography>Total pages: {data.pages}</Typography>
               </Grid>
-            </Grid>
-          </Grid>
-          <Grid container justifyContent='center' spacing={3}>
-            {renderCards}
-          </Grid>
-          <Grid container justifyContent='center' spacing={3} hidden={data.pages === 0}>
-            <Grid item xs={12}>
-              <Pagination
-                count={data.pages}
-                page={data.currentPage}
-                onChange={(_event, page) => handleSearch(data.expression, page)}
-              />
-            </Grid>
-            <Grid item>
-              <Typography>Total: {data.pages}</Typography>
             </Grid>
           </Grid>
         </Container>

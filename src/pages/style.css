@@ -17,3 +17,7 @@ body {
 .MuiCardContent-root {
   height: 60px;
 }
+
+.hidden {
+  display: none;
+}
