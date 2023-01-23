@@ -156,7 +156,7 @@ const Home: BlitzPage = () => {
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position='end'>
-                          <IconButton aria-label='clean icon' onClick={cleanSearch}>
+                          <IconButton onClick={cleanSearch} title='Clean'>
                             <MdClose />
                           </IconButton>
                         </InputAdornment>
@@ -166,7 +166,7 @@ const Home: BlitzPage = () => {
                 </Grid>
                 <Grid item xs={1}>
                   <Button onClick={() => handleSearch(data.expression, 1)} variant='contained' size='large'>
-                    <MdSearch />
+                    <MdSearch title='Search' />
                   </Button>
                 </Grid>
               </Grid>

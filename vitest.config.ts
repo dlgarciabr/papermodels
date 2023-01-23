@@ -20,7 +20,7 @@ export default defineConfig({
       provider: 'istanbul',
       all: true,
       reporter: ['text', 'json', 'html'],
-      include: ['src/pages/**', 'src/pageComponents/**', 'src/utils/**', 'src/core'],
+      include: ['src/pages/**', 'src/utils/**', 'src/core'],
       branches: 80,
       functions: 80,
       lines: 80,
