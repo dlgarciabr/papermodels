@@ -94,8 +94,9 @@ model Item {
 
 enum FileType {
   instruction
-  scheme
   preview
+  scheme
+  thumbnail
 }
 
 model ItemFile {

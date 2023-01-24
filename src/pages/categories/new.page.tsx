@@ -41,6 +41,6 @@ const NewCategoryPage = () => {
   );
 };
 
-NewCategoryPage.authenticate = true;
+NewCategoryPage.authenticate = { redirectTo: '/admin' };
 
 export default NewCategoryPage;

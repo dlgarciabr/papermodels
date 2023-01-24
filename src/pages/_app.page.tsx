@@ -6,6 +6,11 @@ import React from 'react';
 import { withBlitz } from 'src/blitz-client';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import './style.css';
 
 const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
   if (error instanceof AuthenticationError) {
@@ -20,7 +25,7 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
 const dbKeepAlive = async () => {
   if (typeof location !== 'undefined') {
     try {
-      await fetch(`${location.href}api/dbKeepAlive`);
+      await fetch(`${location.origin}/api/dbKeepAlive`);
     } finally {
       setTimeout(() => dbKeepAlive(), 180000);
     }

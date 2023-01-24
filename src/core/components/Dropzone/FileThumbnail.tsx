@@ -1,4 +1,6 @@
-import { FileType } from '@prisma/client';
+import { FileType } from 'db';
+import { Fragment } from 'react';
+import { getSimpleRandomKey } from 'src/utils/global';
 import { FileThumbnailProps } from './types';
 
 const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable }: FileThumbnailProps) => {
@@ -72,7 +74,21 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
       </div>
       <div>
         <p>{file.name}</p>
-        <input
+        {Object.keys(FileType).map((fileKey) => (
+          <Fragment key={getSimpleRandomKey()}>
+            <input
+              type='radio'
+              id={fileKey}
+              name={`${file.tempId}_artifactType`}
+              onClick={() => onClickRadioType(file.tempId, fileKey)}
+              defaultChecked={file.artifactType === fileKey}
+            />
+            <label htmlFor={fileKey}>{fileKey}</label>
+            <br />
+          </Fragment>
+        ))}
+
+        {/* <input
           type='radio'
           id={FileType.scheme}
           name={`${file.tempId}_artifactType`}
@@ -98,7 +114,7 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
           defaultChecked={file.artifactType === FileType.preview}
         />
         <label htmlFor={FileType.preview}>{FileType.preview}</label>
-        <br />
+        <br /> */}
         <button onClick={() => onClickRemove(file.tempId)}>remove</button>
       </div>
     </div>

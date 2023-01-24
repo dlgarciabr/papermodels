@@ -72,6 +72,6 @@ const NewItemPage = () => {
   );
 };
 
-NewItemPage.authenticate = true;
+NewItemPage.authenticate = { redirectTo: '/admin' };
 
 export default NewItemPage;

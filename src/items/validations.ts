@@ -13,7 +13,7 @@ const basicValidation = {
   licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
 };
 
-const zFileTypeEnum = z.enum([FileType.scheme, FileType.instruction, FileType.preview]);
+const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
 
 export const CreateItemValidation = z.object({
   ...basicValidation,

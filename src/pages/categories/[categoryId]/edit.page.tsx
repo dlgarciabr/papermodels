@@ -76,7 +76,7 @@ const EditCategoryPage = () => {
   );
 };
 
-EditCategoryPage.authenticate = true;
+EditCategoryPage.authenticate = { redirectTo: '/admin' };
 EditCategoryPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default EditCategoryPage;

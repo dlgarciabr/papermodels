@@ -64,7 +64,7 @@ const ShowCategoryPage = () => {
   );
 };
 
-ShowCategoryPage.authenticate = true;
+ShowCategoryPage.authenticate = { redirectTo: '/admin' };
 ShowCategoryPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default ShowCategoryPage;

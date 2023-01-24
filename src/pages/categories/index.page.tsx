@@ -25,7 +25,7 @@ export const CategoriesList = () => {
 
   const loadCategories = async () => {
     const { categories, hasMore } = await invoke(getCategories, {
-      orderBy: { id: 'asc' },
+      orderBy: { name: 'asc' },
       skip: ITEMS_PER_PAGE * page,
       take: ITEMS_PER_PAGE
     });
@@ -94,5 +94,7 @@ const CategoriesPage = () => {
     </Layout>
   );
 };
+
+CategoriesPage.authenticate = { redirectTo: '/admin' };
 
 export default CategoriesPage;

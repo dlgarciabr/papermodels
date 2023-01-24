@@ -1,0 +1,23 @@
+body {
+  background-image: url('/background.png');
+}
+
+.MuiOutlinedInput-input {
+  background-color: white;
+}
+
+.MuiCard-root.search-card {
+  width: 300px;
+}
+
+.MuiCard-root.search-card > .MuiCardMedia-root {
+  height: 140px;
+}
+
+.MuiCardContent-root {
+  height: 60px;
+}
+
+.hidden {
+  display: none;
+}

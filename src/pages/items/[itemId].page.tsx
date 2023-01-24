@@ -64,7 +64,7 @@ const ShowItemPage = () => {
   );
 };
 
-ShowItemPage.authenticate = true;
+ShowItemPage.authenticate = { redirectTo: '/admin' };
 ShowItemPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default ShowItemPage;

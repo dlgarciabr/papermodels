@@ -215,7 +215,7 @@ const EditItemPage = () => {
   );
 };
 
-EditItemPage.authenticate = true;
+EditItemPage.authenticate = { redirectTo: '/admin' };
 EditItemPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default EditItemPage;

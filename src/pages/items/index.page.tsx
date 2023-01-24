@@ -26,7 +26,7 @@ export const ItemsList = () => {
 
   const loadItems = async () => {
     const { items, hasMore } = await invoke(getItems, {
-      orderBy: { id: 'asc' },
+      orderBy: { name: 'asc' },
       skip: ITEMS_PER_PAGE * page,
       take: ITEMS_PER_PAGE
     });
@@ -97,5 +97,7 @@ const ItemsPage = () => {
     </Layout>
   );
 };
+
+ItemsPage.authenticate = { redirectTo: '/admin' };
 
 export default ItemsPage;

@@ -18,7 +18,7 @@ const seed = async () => {
     items: [
       {
         name: 'Vet clinic',
-        description: 'Vet clinic',
+        description: 'A tiny and nice vet clinic building',
         dificulty: 1,
         assemblyTime: 0.5,
         files: [
@@ -26,6 +26,11 @@ const seed = async () => {
             index: 0,
             storagePath: '1/vet_clinic_scheme_1.jpg',
             artifactType: FileType.scheme
+          },
+          {
+            index: 0,
+            storagePath: '1/vet_clinic_thumbnail_2.png',
+            artifactType: FileType.thumbnail
           }
         ]
       }
@@ -38,22 +43,128 @@ const seed = async () => {
       items: [
         {
           name: 'Hospital',
-          description: 'Hospital',
+          description: 'A big and cool hospital, perfect to play with kids. It contains some doctors',
           dificulty: 1,
           assemblyTime: 1,
           files: []
         }
       ]
     },
-    { name: 'Boats & Ships' },
-    { name: 'Wagons' },
-    { name: 'Aircrafts' },
-    { name: 'Automobiles' },
-    { name: 'Houses & residential apartments' },
-    { name: 'Realistic Animals' },
-    { name: 'Stores' },
-    { name: 'Plants & trees' },
-    { name: 'Miscelaneus' }
+    {
+      name: 'Boats & Ships',
+      items: [
+        {
+          name: 'Speedboat',
+          description: 'A fast racing speed boat',
+          dificulty: 2,
+          assemblyTime: 3,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Wagons',
+      items: [
+        {
+          name: 'Oporto Metro',
+          description: 'A two wagon metro of Oporto city',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Aircrafts',
+      items: [
+        {
+          name: 'F-14 Tomcat',
+          description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Automobiles',
+      items: [
+        {
+          name: 'Class A',
+          description: 'No more to say',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Houses & residential apartments',
+      items: [
+        {
+          name: 'Farm House',
+          description: 'A nice farm house',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Realistic Animals',
+      items: [
+        {
+          name: 'Jaguar',
+          description: '',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Stores',
+      items: [
+        {
+          name: 'Pharmacy',
+          description: '',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        },
+        {
+          name: 'Market',
+          description: '',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Plants & trees',
+      items: [
+        {
+          name: 'Oak',
+          description: '',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    },
+    {
+      name: 'Miscelaneus',
+      items: [
+        {
+          name: 'Origami bird',
+          description: '',
+          dificulty: 1,
+          assemblyTime: 1,
+          files: []
+        }
+      ]
+    }
   ];
 
   const categoryCreated = await db.category.create({
