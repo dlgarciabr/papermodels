@@ -44,9 +44,7 @@ export const ItemsList = () => {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            <Link href={Routes.ShowItemPage({ itemId: item.id })}>
-              <a>{item.name}</a>
-            </Link>
+            <a>{item.name}</a>
             <a href='#' onClick={() => goToEditPage(item.id)}>
               &nbsp;edit
             </a>

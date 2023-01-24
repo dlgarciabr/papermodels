@@ -6,6 +6,10 @@ body {
   background-color: white;
 }
 
+.MuiPaper-root {
+  cursor: pointer;
+}
+
 .MuiCard-root.search-card {
   width: 300px;
 }

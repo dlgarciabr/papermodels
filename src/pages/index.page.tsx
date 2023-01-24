@@ -1,5 +1,5 @@
 import Layout from 'src/core/layouts/Layout';
-import { BlitzPage, RouterContext } from '@blitzjs/next';
+import { BlitzPage, RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
@@ -22,6 +22,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import { Item, ItemFile } from 'db';
 import { useSearch } from './index.hooks';
+import Link from 'next/link';
 
 const theme = createTheme();
 
@@ -31,20 +32,22 @@ const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
     thumbnailUrl = item.files[0]?.storagePath as string;
   }
   return (
-    <Card raised className='search-card'>
-      <CardMedia image={thumbnailUrl} title='green iguana' />
-      <CardContent>
-        <Typography gutterBottom variant='h5' component='div'>
-          {item.name}
-        </Typography>
-        <Typography variant='body2' color='text.secondary' noWrap>
-          {item.description}
-        </Typography>
-      </CardContent>
-      <CardActions>
-        <Button size='small'>See more</Button>
-      </CardActions>
-    </Card>
+    <Link href={Routes.ShowItemPage({ itemId: item.id })}>
+      <Card raised className='search-card'>
+        <CardMedia image={thumbnailUrl} title='green iguana' />
+        <CardContent>
+          <Typography gutterBottom variant='h5' component='div'>
+            {item.name}
+          </Typography>
+          <Typography variant='body2' color='text.secondary' noWrap>
+            {item.description}
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Button size='small'>See more</Button>
+        </CardActions>
+      </Card>
+    </Link>
   );
 };
 

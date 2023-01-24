@@ -43,9 +43,7 @@ export const CategoriesList = () => {
       <ul>
         {categories.map((category) => (
           <li key={category.id}>
-            <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
-              <a>{category.name}</a>
-            </Link>
+            <a>{category.name}</a>
             <a href='#' onClick={() => goToEditPage(category.id)}>
               &nbsp;edit
             </a>

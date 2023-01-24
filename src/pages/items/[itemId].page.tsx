@@ -1,62 +1,38 @@
-/* istanbul ignore file -- @preserve */
-// TODO remove this file after resolution of the issue [https://github.com/dlgarciabr/papermodels/issues/22]
-import { Suspense } from 'react';
-import { Routes } from '@blitzjs/next';
+import { Suspense, useContext } from 'react';
+import { RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useQuery, useMutation } from '@blitzjs/rpc';
+import { useQuery } from '@blitzjs/rpc';
 import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
-import getItem from 'src/items/queries/getItem';
-import deleteItem from 'src/items/mutations/deleteItem';
+import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 
 export const Item = () => {
-  const router = useRouter();
   const itemId = useParam('itemId', 'number');
-  const [deleteItemMutation] = useMutation(deleteItem);
-  const [item] = useQuery(getItem, { id: itemId });
+  const [item] = useQuery(getItemAnonymous, { id: itemId });
 
   return (
     <>
       <Head>
         <title>Item {item.id}</title>
       </Head>
-
       <div>
         <h1>Item {item.id}</h1>
         <pre>{JSON.stringify(item, null, 2)}</pre>
-
-        <Link href={Routes.EditItemPage({ itemId: item.id })}>
-          <a>Edit</a>
-        </Link>
-
-        <button
-          type='button'
-          onClick={async () => {
-            if (window.confirm('This will be deleted')) {
-              await deleteItemMutation({ id: item.id });
-              await router.push(Routes.ItemsPage());
-            }
-          }}
-          style={{ marginLeft: '0.5rem' }}>
-          Delete
-        </button>
       </div>
     </>
   );
 };
 
 const ShowItemPage = () => {
+  const router = useContext(RouterContext);
   return (
     <div>
       <p>
-        <Link href={Routes.ItemsPage()}>
-          <a>Items</a>
-        </Link>
+        <a href='#' onClick={() => router.back()}>
+          <a>Home</a>
+        </a>
       </p>
-
       <Suspense fallback={<div>Loading...</div>}>
         <Item />
       </Suspense>
@@ -64,7 +40,6 @@ const ShowItemPage = () => {
   );
 };
 
-ShowItemPage.authenticate = { redirectTo: '/admin' };
 ShowItemPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default ShowItemPage;

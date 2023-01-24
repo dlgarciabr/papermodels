@@ -91,9 +91,7 @@ export const __ModelNames__List = () => {
                   <a>{__modelName__.name}</a>
                 </Link>
                 <else>
-                  <Link href={Routes.Show__ModelName__Page({ __modelId__: __modelName__.id })}>
-                    <a>{__modelName__.name}</a>
-                  </Link>
+                  <a>{__modelName__.name}</a>
                   <a href='#' onClick={() => goToEditPage(__modelId__.id)}>
                     &nbsp;edit
                   </a>
