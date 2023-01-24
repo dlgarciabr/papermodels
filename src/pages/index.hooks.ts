@@ -1,25 +1,17 @@
 import { RouterContext } from '@blitzjs/next';
 import { invoke } from '@blitzjs/rpc';
-import { FileType, Item, ItemFile } from 'db';
+import { Item, ItemFile } from 'db';
 import { useContext } from 'react';
-import getItems from 'src/items/queries/getItems';
+import getItemsAnonymous from 'src/items/queries/getItemsAnonymous';
 import { getFilePath } from 'src/utils/fileStorage';
 
 const useSearch = () => {
   const router = useContext(RouterContext);
   return (expression: string, page: number): Promise<{ items: Item[]; count: number }> =>
     new Promise(async (resolve) => {
-      console.log('useSearch');
-      const { items, count } = await invoke(getItems, {
+      const { items, count } = await invoke(getItemsAnonymous, {
         where: {
           name: { contains: expression }
-        },
-        include: {
-          files: {
-            where: {
-              artifactType: { equals: FileType.thumbnail }
-            }
-          }
         },
         orderBy: { name: 'asc' },
         skip: 9 * page,
