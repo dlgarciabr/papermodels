@@ -98,4 +98,6 @@ const ItemsPage = () => {
   );
 };
 
+ItemsPage.authenticate = { redirectTo: '/admin' };
+
 export default ItemsPage;

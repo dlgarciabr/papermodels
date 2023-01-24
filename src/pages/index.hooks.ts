@@ -9,6 +9,7 @@ const useSearch = () => {
   const router = useContext(RouterContext);
   return (expression: string, page: number): Promise<{ items: Item[]; count: number }> =>
     new Promise(async (resolve) => {
+      console.log('useSearch');
       const { items, count } = await invoke(getItems, {
         where: {
           name: { contains: expression }

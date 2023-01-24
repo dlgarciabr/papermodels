@@ -95,4 +95,6 @@ const CategoriesPage = () => {
   );
 };
 
+CategoriesPage.authenticate = { redirectTo: '/admin' };
+
 export default CategoriesPage;
