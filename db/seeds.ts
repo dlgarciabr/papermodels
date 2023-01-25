@@ -21,6 +21,8 @@ const seed = async () => {
         description: 'A tiny and nice vet clinic building',
         dificulty: 1,
         assemblyTime: 0.5,
+        licenseType: 'MIT',
+        licenseTypeLink: 'https://opensource.org/licenses/MIT',
         files: [
           {
             index: 0,
@@ -46,6 +48,7 @@ const seed = async () => {
           description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
           dificulty: 1,
           assemblyTime: 1,
+          licenseType: 'MIT',
           files: []
         }
       ]
@@ -58,6 +61,7 @@ const seed = async () => {
           description: 'A fast racing speed boat',
           dificulty: 2,
           assemblyTime: 3,
+          licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: []
         }
       ]
@@ -177,11 +181,8 @@ const seed = async () => {
   serviceBuildingCategory.items?.forEach(async (item) => {
     await db.item.create({
       data: {
-        name: item.name,
-        description: item.description,
+        ...item,
         categoryId: categoryCreated.id,
-        dificulty: item.dificulty,
-        assemblyTime: item.assemblyTime,
         files: {
           create: item.files.map(({ storagePath, artifactType, index }) => ({
             storagePath,
@@ -198,11 +199,8 @@ const seed = async () => {
     category.items?.forEach(async (item) => {
       await db.item.create({
         data: {
-          name: item.name,
-          description: item.description,
+          ...item,
           categoryId: categoryCreated.id,
-          dificulty: item.dificulty,
-          assemblyTime: item.assemblyTime,
           files: {
             create: item.files.map(({ storagePath, artifactType, index }) => ({
               storagePath,

@@ -10,66 +10,66 @@ import { Button, Container, Grid, Paper, Typography } from '@mui/material';
 import { Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
 
-const renderLicense = (licenseType?: string, licenseTypeLink?: string) => {
-  const firstLine = () => <td>License</td>;
-  let secondLine = (): string | JSX.Element => '';
-  if (licenseType && licenseTypeLink) {
-    secondLine = () => (
-      <td>
-        <a href={licenseTypeLink}>{licenseType}</a>
-      </td>
-    );
-  } else if (licenseType && !licenseTypeLink) {
-    secondLine = () => <td>{licenseType}</td>;
-  } else if (!licenseType && licenseTypeLink) {
-    secondLine = () => (
-      <td>
-        <a href={licenseTypeLink}>{licenseTypeLink}</a>
-      </td>
-    );
-  }
-  if (secondLine()) {
-    return (
+const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
+  const renderLicenseContent = () => {
+    if (licenseType && licenseTypeLink) {
+      return (
+        <a href={licenseTypeLink} target='blank'>
+          {licenseType}
+        </a>
+      );
+    } else if (licenseType && !licenseTypeLink) {
+      return licenseType;
+    } else if (!licenseType && licenseTypeLink) {
+      return (
+        <a href={licenseTypeLink} target='blank'>
+          {licenseTypeLink}
+        </a>
+      );
+    }
+  };
+
+  return (
+    (licenseType || licenseTypeLink) && (
       <tr>
-        {firstLine()}
-        <td>
-          <a href={licenseTypeLink}>{licenseType}</a>
-        </td>
+        <td>License</td>
+        <td>{renderLicenseContent()}</td>
       </tr>
-    );
-  } else {
-    return '';
-  }
+    )
+  );
 };
 
 const DetailsTable = ({ item }: { item: IItem & { files: IItemFile[] } }) => {
   return (
     <table>
-      {item.author ? (
+      <thead>
         <tr>
-          <td>Author</td>
-          <td>{item.author}</td>
+          <td colSpan={2}>info</td>
         </tr>
-      ) : (
-        ''
-      )}
-      {item.authorLink ? (
+      </thead>
+      <tbody>
+        {item.author && (
+          <tr>
+            <td>Author</td>
+            <td>{item.author}</td>
+          </tr>
+        )}
+        {item.authorLink && (
+          <tr>
+            <td>Author URL</td>
+            <td>{item.authorLink}</td>
+          </tr>
+        )}
         <tr>
-          <td>Author URL</td>
-          <td>{item.authorLink}</td>
+          <td>Dificulty</td>
+          <td>{item.dificulty}</td>
         </tr>
-      ) : (
-        ''
-      )}
-      <tr>
-        <td>Dificulty</td>
-        <td>{item.dificulty}</td>
-      </tr>
-      <tr>
-        <td>Approx. assembly time</td>
-        <td>{Number(item.assemblyTime)}</td>
-      </tr>
-      {renderLicense()}
+        <tr>
+          <td>Approx. assembly time</td>
+          <td>{Number(item.assemblyTime)}</td>
+        </tr>
+        {renderLicenseRow(item.licenseType, item.licenseTypeLink)}
+      </tbody>
     </table>
   );
 };
@@ -99,7 +99,7 @@ export const Item = () => {
                 <Typography variant='h6' component='div'>
                   {item.name}
                 </Typography>
-                <Typography variant='subtitle1'>{item.description}</Typography>
+                {item.description && <Typography variant='subtitle1'>{item.description}</Typography>}
               </Grid>
               <Grid item xs={12}>
                 <Paper className='item-download' elevation={0}>
@@ -139,7 +139,7 @@ const ShowItemPage = () => {
     <div>
       <p>
         <a href='#' onClick={() => router.back()}>
-          <a>Home</a>
+          Home
         </a>
       </p>
       <Suspense fallback={<div>Loading...</div>}>
