@@ -25,3 +25,9 @@ body {
 .hidden {
   display: none;
 }
+
+.MuiPaper-root.item-download {
+  background-color: rgb(223, 223, 223);
+  text-align: center;
+  height: 180px;
+}

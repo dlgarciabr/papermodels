@@ -43,7 +43,7 @@ const seed = async () => {
       items: [
         {
           name: 'Hospital',
-          description: 'A big and cool hospital, perfect to play with kids. It contains some doctors',
+          description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
           dificulty: 1,
           assemblyTime: 1,
           files: []
@@ -90,8 +90,8 @@ const seed = async () => {
       name: 'Automobiles',
       items: [
         {
-          name: 'Class A',
-          description: 'No more to say',
+          name: 'Mercedes Class A',
+          description: 'The small solution of a city car presented by Mercedes',
           dificulty: 1,
           assemblyTime: 1,
           files: []
