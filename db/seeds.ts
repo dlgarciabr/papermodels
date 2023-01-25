@@ -13,33 +13,32 @@ const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
 
-  const serviceBuildingCategory = {
-    name: 'Service buildings',
-    items: [
-      {
-        name: 'Vet clinic',
-        description: 'A tiny and nice vet clinic building',
-        dificulty: 1,
-        assemblyTime: 0.5,
-        licenseType: 'MIT',
-        licenseTypeLink: 'https://opensource.org/licenses/MIT',
-        files: [
-          {
-            index: 0,
-            storagePath: '1/vet_clinic_scheme_1.jpg',
-            artifactType: FileType.scheme
-          },
-          {
-            index: 0,
-            storagePath: '1/vet_clinic_thumbnail_2.png',
-            artifactType: FileType.thumbnail
-          }
-        ]
-      }
-    ]
-  };
-
   const categories = [
+    {
+      name: 'Service buildings',
+      items: [
+        {
+          name: 'Vet clinic',
+          description: 'A tiny and nice vet clinic building',
+          dificulty: 1,
+          assemblyTime: 0.5,
+          licenseType: 'MIT',
+          licenseTypeLink: 'https://opensource.org/licenses/MIT',
+          files: [
+            {
+              index: 0,
+              storagePath: '1/vet_clinic_scheme_1.jpg',
+              artifactType: FileType.scheme
+            },
+            {
+              index: 0,
+              storagePath: '1/vet_clinic_thumbnail_2.png',
+              artifactType: FileType.thumbnail
+            }
+          ]
+        }
+      ]
+    },
     {
       name: 'Emergency services',
       items: [
@@ -49,7 +48,13 @@ const seed = async () => {
           dificulty: 1,
           assemblyTime: 1,
           licenseType: 'MIT',
-          files: []
+          files: [
+            {
+              index: 0,
+              storagePath: '2/hospital_preview_1.jpg',
+              artifactType: FileType.preview
+            }
+          ]
         }
       ]
     },
@@ -171,18 +176,12 @@ const seed = async () => {
     }
   ];
 
-  const categoryCreated = await db.category.create({
-    data: {
-      name: serviceBuildingCategory.name,
-      description: serviceBuildingCategory.name
-    }
-  });
-
-  serviceBuildingCategory.items?.forEach(async (item) => {
+  const category1 = await db.category.create({ data: { name: categories[0]!.name, description: categories[0]!.name } });
+  categories[0]!.items?.forEach(async (item) => {
     await db.item.create({
       data: {
         ...item,
-        categoryId: categoryCreated.id,
+        categoryId: category1.id,
         files: {
           create: item.files.map(({ storagePath, artifactType, index }) => ({
             storagePath,
@@ -194,7 +193,24 @@ const seed = async () => {
     });
   });
 
-  categories.forEach(async (category) => {
+  const category2 = await db.category.create({ data: { name: categories[1]!.name, description: categories[1]!.name } });
+  categories[1]!.items?.forEach(async (item) => {
+    await db.item.create({
+      data: {
+        ...item,
+        categoryId: category2.id,
+        files: {
+          create: item.files.map(({ storagePath, artifactType, index }) => ({
+            storagePath,
+            artifactType,
+            index
+          }))
+        }
+      }
+    });
+  });
+
+  categories.slice(2).forEach(async (category) => {
     const categoryCreated = await db.category.create({ data: { name: category.name, description: category.name } });
     category.items?.forEach(async (item) => {
       await db.item.create({

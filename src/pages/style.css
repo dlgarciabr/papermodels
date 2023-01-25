@@ -6,12 +6,9 @@ body {
   background-color: white;
 }
 
-.MuiPaper-root {
-  cursor: pointer;
-}
-
 .MuiCard-root.search-card {
   width: 300px;
+  cursor: pointer;
 }
 
 .MuiCard-root.search-card > .MuiCardMedia-root {

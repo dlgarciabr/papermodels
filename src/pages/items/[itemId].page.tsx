@@ -1,4 +1,5 @@
-import { Suspense, useContext } from 'react';
+/* eslint-disable @next/next/no-img-element */
+import { Suspense, useContext, useEffect, useState } from 'react';
 import { RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import { useQuery } from '@blitzjs/rpc';
@@ -6,9 +7,12 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { Button, Container, Grid, Paper, Typography } from '@mui/material';
-import { Item as IItem, ItemFile as IItemFile } from 'db';
+import { Button, CircularProgress, Container, Grid, Paper, Typography } from '@mui/material';
+import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
+import { IImageData } from './types';
+import { getSimpleRandomKey } from 'src/utils/global';
+import { getFilePath } from 'src/utils/fileStorage';
 
 const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
   const renderLicenseContent = () => {
@@ -77,6 +81,38 @@ const DetailsTable = ({ item }: { item: IItem & { files: IItemFile[] } }) => {
 export const Item = () => {
   const itemId = useParam('itemId', 'number');
   const [item] = useQuery(getItemAnonymous, { id: itemId });
+  const [imageData, setImageData] = useState<IImageData>({
+    loading: true
+  });
+  // TODO if item is null redirect to home
+
+  useEffect(() => {
+    void (async () => {
+      const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+      if (!imageData.url && previewFiles.length >= 1) {
+        const file = item.files[0];
+
+        const filePath = await getFilePath(file!.storagePath);
+
+        const response = await fetch(filePath, { method: 'GET' });
+        const blob = await response.blob();
+        const urlCreator = window.URL || window.webkitURL;
+
+        var imageUrl = urlCreator.createObjectURL(blob);
+        setImageData({
+          loading: false,
+          url: imageUrl,
+          name: file!.storagePath
+        });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const renderThumbs = () =>
+    item.files.map((file) => {
+      return <div key={getSimpleRandomKey()}>{file.storagePath}</div>;
+    });
 
   return (
     <>
@@ -85,13 +121,16 @@ export const Item = () => {
       </Head>
       <Container component='main'>
         <Grid container>
-          <Grid container item>
+          <Grid container item spacing={1}>
             <Grid item container xs={6}>
               <Grid item xs={12}>
-                full image
+                <Paper variant='outlined' elevation={0}>
+                  {imageData.loading && <CircularProgress />}
+                  <img className={imageData.loading ? '.hidden' : ''} src={imageData.url} alt={imageData.name} />
+                </Paper>
               </Grid>
               <Grid item xs={12}>
-                small images
+                {renderThumbs()}
               </Grid>
             </Grid>
             <Grid item container xs={6} spacing={2}>
