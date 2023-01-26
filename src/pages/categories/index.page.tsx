@@ -43,7 +43,7 @@ export const CategoriesList = () => {
       <ul>
         {categories.map((category) => (
           <li key={category.id}>
-            <a>{category.name}</a>
+            {category.name}
             <a href='#' onClick={() => goToEditPage(category.id)}>
               &nbsp;edit
             </a>

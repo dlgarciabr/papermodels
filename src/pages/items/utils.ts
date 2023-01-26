@@ -2,6 +2,18 @@ import { Item, ItemFile } from 'db';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
 import { UploadItemFile } from '../../items/types';
 
+// const pocThumbnailCreation = (blob) => {
+//   loadImage(
+//     blob,
+//     function (img, data) {
+//       console.log('Original image head: ', data.imageHead)
+//       console.log('Exif data: ', data.exif) // requires exif extension
+//       console.log('IPTC data: ', data.iptc) // requires iptc extension
+//     },
+//     { meta: true }
+//   )
+// }
+
 export const uploadFiles = (files: UploadItemFile[]) =>
   Promise.all(
     files.map(async (file) => {
@@ -11,10 +23,10 @@ export const uploadFiles = (files: UploadItemFile[]) =>
       const extension = file.name.split('.')[1];
       const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;
       file.storagePath = storagePath;
-
+      // pocThumbnailCreation(file.arrayBuffer())
+      // throw 'fakeError'
       const bytes = await file.arrayBuffer();
       const temporaryFile = new File([bytes], storagePath);
-
       await saveFile(temporaryFile);
     })
   );

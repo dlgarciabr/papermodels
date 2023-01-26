@@ -103,7 +103,7 @@ describe('Item listing', () => {
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
 
   test('Open Item list and navigate through pages', async () => {
@@ -140,19 +140,19 @@ describe('Item listing', () => {
       }
     });
 
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[10]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
 });
 
