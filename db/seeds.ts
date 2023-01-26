@@ -1,5 +1,4 @@
-// import db from "./index"
-
+import { Decimal } from '@prisma/client/runtime';
 import db, { FileType } from 'db';
 
 /*
@@ -21,7 +20,7 @@ const seed = async () => {
           name: 'Vet clinic',
           description: 'A tiny and nice vet clinic building',
           dificulty: 1,
-          assemblyTime: 0.5,
+          assemblyTime: new Decimal(0.5),
           licenseType: 'MIT',
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: [
@@ -46,7 +45,7 @@ const seed = async () => {
           name: 'Hospital',
           description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           licenseType: 'MIT',
           files: [
             {
@@ -66,7 +65,7 @@ const seed = async () => {
           description:
             'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
           dificulty: 5,
-          assemblyTime: 12,
+          assemblyTime: new Decimal(12),
           files: [
             {
               index: 0,
@@ -94,7 +93,7 @@ const seed = async () => {
           name: 'Speedboat',
           description: 'A fast racing speed boat',
           dificulty: 2,
-          assemblyTime: 3,
+          assemblyTime: new Decimal(3),
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: []
         }
@@ -107,7 +106,7 @@ const seed = async () => {
           name: 'Oporto Metro',
           description: 'A two wagon metro of Oporto city',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -119,7 +118,7 @@ const seed = async () => {
           name: 'F-14 Tomcat',
           description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -131,7 +130,7 @@ const seed = async () => {
           name: 'Mercedes Class A',
           description: 'The small solution of a city car presented by Mercedes',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -143,7 +142,7 @@ const seed = async () => {
           name: 'Farm House',
           description: 'A nice farm house',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -155,7 +154,7 @@ const seed = async () => {
           name: 'Jaguar',
           description: '',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -167,14 +166,14 @@ const seed = async () => {
           name: 'Pharmacy',
           description: '',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         },
         {
           name: 'Market',
           description: '',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -186,7 +185,7 @@ const seed = async () => {
           name: 'Oak',
           description: '',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
@@ -198,82 +197,31 @@ const seed = async () => {
           name: 'Origami bird',
           description: '',
           dificulty: 1,
-          assemblyTime: 1,
+          assemblyTime: new Decimal(1),
           files: []
         }
       ]
     }
   ];
 
-  const category1 = await db.category.create({ data: { name: categories[0]!.name, description: categories[0]!.name } });
-  categories[0]!.items?.forEach(async (item) => {
-    await db.item.create({
+  for await (const { name, items } of categories) {
+    await db.category.create({
       data: {
-        ...item,
-        categoryId: category1.id,
-        files: {
-          create: item.files.map(({ storagePath, artifactType, index }) => ({
-            storagePath,
-            artifactType,
-            index
+        name,
+        description: name,
+        items: {
+          create: items.map((item) => ({
+            ...item,
+            files: {
+              create: item.files.map((file) => ({
+                ...file
+              }))
+            }
           }))
         }
       }
     });
-  });
-
-  const category2 = await db.category.create({ data: { name: categories[1]!.name, description: categories[1]!.name } });
-  categories[1]!.items?.forEach(async (item) => {
-    await db.item.create({
-      data: {
-        ...item,
-        categoryId: category2.id,
-        files: {
-          create: item.files.map(({ storagePath, artifactType, index }) => ({
-            storagePath,
-            artifactType,
-            index
-          }))
-        }
-      }
-    });
-  });
-
-  const category3 = await db.category.create({ data: { name: categories[2]!.name, description: categories[2]!.name } });
-  categories[2]!.items?.forEach(async (item) => {
-    await db.item.create({
-      data: {
-        ...item,
-        categoryId: category3.id,
-        files: {
-          create: item.files.map(({ storagePath, artifactType, index }) => ({
-            storagePath,
-            artifactType,
-            index
-          }))
-        }
-      }
-    });
-  });
-
-  categories.slice(3).forEach(async (category) => {
-    const categoryCreated = await db.category.create({ data: { name: category.name, description: category.name } });
-    category.items?.forEach(async (item) => {
-      await db.item.create({
-        data: {
-          ...item,
-          categoryId: categoryCreated.id,
-          files: {
-            create: item.files.map(({ storagePath, artifactType, index }) => ({
-              storagePath,
-              artifactType,
-              index
-            }))
-          }
-        }
-      });
-    });
-  });
+  }
 };
 
 export default seed;

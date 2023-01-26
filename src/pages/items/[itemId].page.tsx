@@ -110,11 +110,11 @@ export const Item = () => {
   }, []);
 
   const renderThumbs = () =>
-    item.files.map((_file) => {
+    item.files.map((file) => {
       return (
         <Grid xs={3} item key={getSimpleRandomKey()}>
           <Paper variant='outlined' elevation={0}>
-            image
+            {file.storagePath}
           </Paper>
         </Grid>
       );

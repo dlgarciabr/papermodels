@@ -26,7 +26,7 @@ export const ItemsList = () => {
 
   const loadItems = async () => {
     const { items, hasMore } = await invoke(getItems, {
-      orderBy: { name: 'asc' },
+      orderBy: { id: 'asc' },
       skip: ITEMS_PER_PAGE * page,
       take: ITEMS_PER_PAGE
     });
