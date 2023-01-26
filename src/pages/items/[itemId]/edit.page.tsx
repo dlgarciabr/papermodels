@@ -95,6 +95,7 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
+      //TODO replace by a modal
       alert('Chose a type for each file to be uploaded or remove the file from list');
       return;
     }

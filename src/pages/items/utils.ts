@@ -6,6 +6,7 @@ export const uploadFiles = (files: UploadItemFile[]) =>
   Promise.all(
     files.map(async (file) => {
       const index = ++file.item.files.length;
+      //TODO replace all special caracters of the name
       const name = file.item.name.replaceAll(' ', '_').toLowerCase();
       const extension = file.name.split('.')[1];
       const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;

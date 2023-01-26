@@ -59,6 +59,35 @@ const seed = async () => {
       ]
     },
     {
+      name: 'Architecture',
+      items: [
+        {
+          name: 'Alcázar of Segovia',
+          description:
+            'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
+          dificulty: 5,
+          assemblyTime: 12,
+          files: [
+            {
+              index: 0,
+              storagePath: '3/alcazar_of_segovia_preview_1.jpg',
+              artifactType: FileType.preview
+            },
+            {
+              index: 1,
+              storagePath: '3/alcazar_of_segovia_preview_2.jpg',
+              artifactType: FileType.preview
+            },
+            {
+              index: 2,
+              storagePath: '3/alcazar_of_segovia_preview_3.jpg',
+              artifactType: FileType.preview
+            }
+          ]
+        }
+      ]
+    },
+    {
       name: 'Boats & Ships',
       items: [
         {
@@ -210,7 +239,24 @@ const seed = async () => {
     });
   });
 
-  categories.slice(2).forEach(async (category) => {
+  const category3 = await db.category.create({ data: { name: categories[2]!.name, description: categories[2]!.name } });
+  categories[2]!.items?.forEach(async (item) => {
+    await db.item.create({
+      data: {
+        ...item,
+        categoryId: category3.id,
+        files: {
+          create: item.files.map(({ storagePath, artifactType, index }) => ({
+            storagePath,
+            artifactType,
+            index
+          }))
+        }
+      }
+    });
+  });
+
+  categories.slice(3).forEach(async (category) => {
     const categoryCreated = await db.category.create({ data: { name: category.name, description: category.name } });
     category.items?.forEach(async (item) => {
       await db.item.create({

@@ -90,7 +90,7 @@ export const Item = () => {
     void (async () => {
       const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
       if (!imageData.url && previewFiles.length >= 1) {
-        const file = item.files[0];
+        const file = previewFiles[0];
 
         const filePath = await getFilePath(file!.storagePath);
 
@@ -110,8 +110,14 @@ export const Item = () => {
   }, []);
 
   const renderThumbs = () =>
-    item.files.map((file) => {
-      return <div key={getSimpleRandomKey()}>{file.storagePath}</div>;
+    item.files.map((_file) => {
+      return (
+        <Grid xs={3} item key={getSimpleRandomKey()}>
+          <Paper variant='outlined' elevation={0}>
+            image
+          </Paper>
+        </Grid>
+      );
     });
 
   return (
@@ -124,12 +130,16 @@ export const Item = () => {
           <Grid container item spacing={1}>
             <Grid item container xs={6}>
               <Grid item xs={12}>
-                <Paper variant='outlined' elevation={0}>
-                  {imageData.loading && <CircularProgress />}
-                  <img className={imageData.loading ? '.hidden' : ''} src={imageData.url} alt={imageData.name} />
+                <Paper variant='outlined' elevation={0} className='item-main-image'>
+                  <Grid container justifyContent='center' alignContent='center' sx={{ height: '100%' }}>
+                    <Grid item>
+                      {imageData.loading && <CircularProgress />}
+                      <img className={imageData.loading ? 'hidden' : ''} src={imageData.url} alt={imageData.name} />
+                    </Grid>
+                  </Grid>
                 </Paper>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item container xs={12}>
                 {renderThumbs()}
               </Grid>
             </Grid>
