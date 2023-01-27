@@ -7,7 +7,8 @@ export const downloadFile = async (file: ItemFile & { url: string; item: Item })
   const blob = await response.blob();
 
   // Create blob link to download
-  const downloadUrl = window.URL.createObjectURL(new Blob([blob]));
+  // const downloadUrl = window.URL.createObjectURL(new Blob([blob]));
+  const downloadUrl = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = downloadUrl;
   link.setAttribute('download', file.storagePath);

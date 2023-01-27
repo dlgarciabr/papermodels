@@ -47,21 +47,9 @@ const FileThumbnail = ({ file, onClickRemove, onClickRadioType, validationEnable
           {file.type === 'application/pdf' ? (
             'pdf file'
           ) : (
-            // TODO eveluate the use of next/image here
-            // <Image
-            //   src={file.preview}
-            //   alt={file.name}
-            //   style={img}
-            //   // Revoke data uri after image is loaded
-            //   onLoad={() => {
-            //     URL.revokeObjectURL(file.preview);
-            //   }}
-            //   width={70}
-            //   height={100}
-            // />
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={file.preview}
+              src={file.uploadPreview}
               alt={file.name}
               style={img}
               // Revoke data uri after image is loaded

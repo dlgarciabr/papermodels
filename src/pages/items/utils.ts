@@ -1,50 +1,102 @@
-import { Item, ItemFile } from 'db';
+import { FileType, Item, ItemFile } from 'db';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
+import { compressImage, generateThumbnailArrayBuffer } from 'src/utils/image';
 import { UploadItemFile } from '../../items/types';
 
-// const pocThumbnailCreation = (blob) => {
-//   loadImage(
-//     blob,
-//     function (img, data) {
-//       console.log('Original image head: ', data.imageHead)
-//       console.log('Exif data: ', data.exif) // requires exif extension
-//       console.log('IPTC data: ', data.iptc) // requires iptc extension
-//     },
-//     { meta: true }
-//   )
-// }
+export const processFiles = async (files: UploadItemFile[]) => {
+  const processedFiles: UploadItemFile[] = [];
+  for await (const file of files) {
+    const index = ++file.item.files.length;
+    // TODO replace all special caracters of the name
+    // TODO validate some extensions for each artifact types
+    const name = file.item.name.replaceAll(' ', '_').toLowerCase();
+    const extension = file.name.split('.')[1];
+    const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
+    const imageBytes = await file.arrayBuffer();
+
+    if (file.artifactType === FileType.preview) {
+      const thumbFileName = `${storagePath}_thumb.${extension}`;
+      const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
+      const compressedThumbnail = await compressImage(thumbnailBytes);
+      const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
+      const thumbnailFile = new File([thumbnailCompressedBytes], thumbFileName) as UploadItemFile;
+      thumbnailFile.artifactType = FileType.thumbnail;
+      thumbnailFile.storagePath = thumbFileName;
+      thumbnailFile.item = file.item;
+      processedFiles.push(thumbnailFile);
+    }
+
+    const fileName = `${storagePath}.${extension}`;
+    const processedFile = new File([imageBytes], fileName) as UploadItemFile;
+    processedFile.artifactType = file.artifactType;
+    processedFile.storagePath = fileName;
+    processedFile.item = file.item;
+    processedFiles.push(processedFile);
+  }
+  return processedFiles;
+};
+// TODO clean if new function is working well
+// export const uploadFiles = (files: UploadItemFile[]) =>
+//   Promise.all(
+//     files.map(async (file) => {
+//       const index = ++file.item.files.length;
+//       // TODO replace all special caracters of the name
+//       // TODO validate some extensions for each artifact types
+//       const name = file.item.name.replaceAll(' ', '_').toLowerCase();
+//       const extension = file.name.split('.')[1];
+//       const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
+//       file.storagePath = storagePath;
+//       const imageBytes = await file.arrayBuffer();
+
+//       if (file.artifactType === FileType.preview) {
+//         const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
+//         const compressedThumbnail = await compressImage(thumbnailBytes);
+//         const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
+//         const thumbnailFile = (new File([thumbnailCompressedBytes], `${storagePath}_thumb.${extension}`)) as UploadItemFile;
+//         thumbnailFile.artifactType = FileType.thumbnail;
+//         await saveFile(thumbnailFile);
+//       }
+//       const temporaryFile = new File([imageBytes], `${storagePath}.${extension}`);
+//       await saveFile(temporaryFile);
+//     })
+//   );
 
 export const uploadFiles = (files: UploadItemFile[]) =>
   Promise.all(
     files.map(async (file) => {
-      const index = ++file.item.files.length;
-      //TODO replace all special caracters of the name
-      const name = file.item.name.replaceAll(' ', '_').toLowerCase();
-      const extension = file.name.split('.')[1];
-      const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;
-      file.storagePath = storagePath;
-      // pocThumbnailCreation(file.arrayBuffer())
-      // throw 'fakeError'
-      const bytes = await file.arrayBuffer();
-      const temporaryFile = new File([bytes], storagePath);
-      await saveFile(temporaryFile);
+      await saveFile(file);
     })
   );
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
-  const promises: Promise<void>[] = [];
-  files.forEach((file) => {
+  // TODO clean if the uncommented lines are working well
+  // const promises: Promise<void>[] = [];
+  // files.forEach((file) => {
+  //   const index = ++file.item.files.length;
+  //   promises.push(
+  //     createFileMutation({
+  //       storagePath: file.storagePath,
+  //       artifactType: file.artifactType,
+  //       itemId: file.item.id,
+  //       index
+  //     })
+  //   );
+  // });
+  // await Promise.all(promises);
+  for await (const file of files) {
     const index = ++file.item.files.length;
-    promises.push(
-      createFileMutation({
+    try {
+      await createFileMutation({
         storagePath: file.storagePath,
         artifactType: file.artifactType,
         itemId: file.item.id,
         index
-      })
-    );
-  });
-  await Promise.all(promises);
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 };
 
 export const sortFilesIndexes = async (

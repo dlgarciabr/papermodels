@@ -13,7 +13,7 @@ export const Dropzone = (props: DropzoneProps) => {
     const filesToAdd = acceptedFiles.map((file) => {
       file.tempId = getSimpleRandomKey();
       if (file.type.indexOf('image') >= 0) {
-        file.preview = URL.createObjectURL(file);
+        file.uploadPreview = URL.createObjectURL(file);
       }
       return file;
     });

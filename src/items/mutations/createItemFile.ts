@@ -1,15 +1,8 @@
 import { resolver } from '@blitzjs/rpc';
-import db, { FileType } from 'db';
-import { z } from 'zod';
+import db from 'db';
+import { CreateItemFileValidation } from '../validations';
 
-const CreateItemFile = z.object({
-  storagePath: z.string(),
-  artifactType: z.enum([FileType.scheme, FileType.instruction, FileType.preview]),
-  itemId: z.number(),
-  index: z.number()
-});
-
-export default resolver.pipe(resolver.zod(CreateItemFile), resolver.authorize(), async (input) => {
+export default resolver.pipe(resolver.zod(CreateItemFileValidation), resolver.authorize(), async (input) => {
   const item = await db.itemFile.create({
     data: {
       storagePath: input.storagePath,

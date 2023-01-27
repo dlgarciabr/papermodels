@@ -31,7 +31,7 @@
     "@mui/material": "5.11.5",
     "@prisma/client": "4.6.0",
     "blitz": "2.0.0-beta.19",
-    "blueimp-load-image": "5.16.0",
+    "browser-image-resizer": "2.4.1",
     "firebase": "9.15.0",
     "formik": "2.2.9",
     "next": "12.2.5",
