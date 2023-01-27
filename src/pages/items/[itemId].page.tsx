@@ -7,7 +7,7 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { Button, CircularProgress, Container, Grid, Paper, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, Grid, Link, Paper, Typography } from '@mui/material';
 import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
 import { IImageData, IThumbnailsData } from './types';
@@ -82,7 +82,7 @@ export const Item = () => {
   const itemId = useParam('itemId', 'number');
   const [item] = useQuery(getItemAnonymous, { id: itemId });
   const [imageData, setImageData] = useState<IImageData>({
-    loading: true
+    loading: false
   });
 
   const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
@@ -104,22 +104,38 @@ export const Item = () => {
     });
   };
 
+  const loadMainImage = async (storagePath: string) => {
+    setImageData({ loading: true });
+    const url = await getFilePath(storagePath);
+    const response = await fetch(url, { method: 'GET' });
+    const blob = await response.blob();
+    const urlCreator = window.URL || window.webkitURL;
+    var imageUrl = urlCreator.createObjectURL(blob);
+    setImageData({
+      loading: false,
+      url: imageUrl,
+      name: storagePath
+    });
+  };
+
+  const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
+    const thumbnailStoragePathParts = thumbnailsData.storagePaths[thumbnailIndex]?.split('.');
+    const imageName = thumbnailStoragePathParts![0]?.replaceAll('_thumb', '');
+    const extension = thumbnailStoragePathParts![1];
+    const imageStoragePath = `${imageName}.${extension}`;
+    if (imageData.name === imageStoragePath) {
+      return;
+    }
+    await loadMainImage(imageStoragePath);
+  };
+
   useEffect(() => {
     setupThumbnails();
     void (async () => {
       const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
       if (!imageData.url && previewFiles.length >= 1) {
         const file = previewFiles[0];
-        const url = await getFilePath(file!.storagePath);
-        const response = await fetch(url, { method: 'GET' });
-        const blob = await response.blob();
-        const urlCreator = window.URL || window.webkitURL;
-        var imageUrl = urlCreator.createObjectURL(blob);
-        setImageData({
-          loading: false,
-          url: imageUrl,
-          name: file!.storagePath
-        });
+        await loadMainImage(file!.storagePath);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -146,6 +162,7 @@ export const Item = () => {
   };
 
   const renderThumbnails = () => {
+    console.log('renderThumbnails'); //TODO remove only after evaluate the performance
     if (thumbnailsData.loading) {
       return (
         <Grid xs={3} item key={getSimpleRandomKey()}>
@@ -155,32 +172,17 @@ export const Item = () => {
         </Grid>
       );
     } else {
-      return thumbnailsData.finalUrls.map((url) => (
+      return thumbnailsData.finalUrls.map((url, index) => (
         <Grid xs={3} item key={getSimpleRandomKey()}>
-          <Paper variant='outlined' elevation={0}>
-            <img src={url} width='100' height='100' alt='' />
-          </Paper>
+          <Link onClick={() => loadMainImageFromThumbnail(index)}>
+            <Paper variant='outlined' elevation={0} className='thumbnail'>
+              <img src={url} width='100' height='100' alt='' />
+            </Paper>
+          </Link>
         </Grid>
       ));
     }
   };
-
-  // const renderThumbnails = () => (
-  //   <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
-  //     {
-  //     const a = '';
-  //     return item.files.map((item) => (
-  //     <ImageListItem key={item.img}>
-  //       <img
-  //         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
-  //         srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-  //         alt={item.title}
-  //         loading="lazy"
-  //       />
-  //     </ImageListItem>
-  //     ))}
-  //   </ImageList>
-  // );
 
   return (
     <>
