@@ -27,14 +27,14 @@ import Link from 'next/link';
 const theme = createTheme();
 
 const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
-  let thumbnailUrl = 'empty';
+  let imageUrl = '';
   if (item.files.length > 0) {
-    thumbnailUrl = item.files[0]?.storagePath as string;
+    imageUrl = item.files[0]!.storagePath as string;
   }
   return (
     <Link href={Routes.ShowItemPage({ itemId: item.id })}>
       <Card raised className='search-card'>
-        <CardMedia image={thumbnailUrl} title='green iguana' />
+        <CardMedia image={imageUrl} title='green iguana' />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
             {item.name}

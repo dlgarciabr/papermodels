@@ -12,11 +12,12 @@ body {
 }
 
 .MuiCard-root.search-card > .MuiCardMedia-root {
-  height: 140px;
+  height: 200px;
 }
 
 .MuiCardContent-root {
   height: 60px;
+  padding-bottom: 0;
 }
 
 .hidden {

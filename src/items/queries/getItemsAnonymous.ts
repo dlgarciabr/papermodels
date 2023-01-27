@@ -22,8 +22,9 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
         include: {
           files: {
             where: {
-              artifactType: { equals: FileType.thumbnail }
-            }
+              artifactType: { equals: FileType.preview }
+            },
+            take: 1
           }
         }
       })
