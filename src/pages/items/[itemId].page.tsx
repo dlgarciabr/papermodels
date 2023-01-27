@@ -10,9 +10,9 @@ import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { Button, CircularProgress, Container, Grid, Paper, Typography } from '@mui/material';
 import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
-import { IImageData } from './types';
-import { getSimpleRandomKey } from 'src/utils/global';
+import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
   const renderLicenseContent = () => {
@@ -84,20 +84,36 @@ export const Item = () => {
   const [imageData, setImageData] = useState<IImageData>({
     loading: true
   });
+
+  const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
+    loading: false,
+    total: 0,
+    finalUrls: [],
+    storagePaths: []
+  });
   // TODO if item is null redirect to home
 
+  const setupThumbnails = () => {
+    const thumbnailFiles = item.files.filter((file) => file.artifactType === FileType.thumbnail);
+    const storagePaths = thumbnailFiles.map((file) => file.storagePath);
+    setThumbnailsData({
+      ...thumbnailsData,
+      loading: true,
+      total: thumbnailFiles.length,
+      storagePaths: storagePaths
+    });
+  };
+
   useEffect(() => {
+    setupThumbnails();
     void (async () => {
       const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
       if (!imageData.url && previewFiles.length >= 1) {
         const file = previewFiles[0];
-
-        const filePath = await getFilePath(file!.storagePath);
-
-        const response = await fetch(filePath, { method: 'GET' });
+        const url = await getFilePath(file!.storagePath);
+        const response = await fetch(url, { method: 'GET' });
         const blob = await response.blob();
         const urlCreator = window.URL || window.webkitURL;
-
         var imageUrl = urlCreator.createObjectURL(blob);
         setImageData({
           loading: false,
@@ -109,16 +125,62 @@ export const Item = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const renderThumbs = () =>
-    item.files.map((file) => {
+  useEffect(() => {
+    if (thumbnailsData.storagePaths.length > 0) {
+      void loadThumbnailUrls();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [thumbnailsData.storagePaths]);
+
+  const loadThumbnailUrls = async () => {
+    const urls: string[] = [];
+    for await (const storagePath of thumbnailsData.storagePaths!) {
+      const url = await getFilePath(storagePath);
+      urls.push(url);
+    }
+    setThumbnailsData({
+      ...thumbnailsData,
+      loading: false,
+      finalUrls: urls
+    });
+  };
+
+  const renderThumbnails = () => {
+    if (thumbnailsData.loading) {
       return (
         <Grid xs={3} item key={getSimpleRandomKey()}>
           <Paper variant='outlined' elevation={0}>
-            {file.storagePath}
+            <CircularProgress />
           </Paper>
         </Grid>
       );
-    });
+    } else {
+      return thumbnailsData.finalUrls.map((url) => (
+        <Grid xs={3} item key={getSimpleRandomKey()}>
+          <Paper variant='outlined' elevation={0}>
+            <img src={url} width='100' height='100' alt='' />
+          </Paper>
+        </Grid>
+      ));
+    }
+  };
+
+  // const renderThumbnails = () => (
+  //   <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={164}>
+  //     {
+  //     const a = '';
+  //     return item.files.map((item) => (
+  //     <ImageListItem key={item.img}>
+  //       <img
+  //         src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
+  //         srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+  //         alt={item.title}
+  //         loading="lazy"
+  //       />
+  //     </ImageListItem>
+  //     ))}
+  //   </ImageList>
+  // );
 
   return (
     <>
@@ -140,7 +202,7 @@ export const Item = () => {
                 </Paper>
               </Grid>
               <Grid item container xs={12}>
-                {renderThumbs()}
+                {renderThumbnails()}
               </Grid>
             </Grid>
             <Grid item container xs={6} spacing={2}>
