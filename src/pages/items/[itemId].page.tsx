@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { Suspense, useContext, useEffect, useState } from 'react';
-import { RouterContext } from '@blitzjs/next';
+import { RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import { useQuery } from '@blitzjs/rpc';
 import { useParam } from '@blitzjs/next';
@@ -263,7 +263,7 @@ const ShowItemPage = () => {
   return (
     <div>
       <p>
-        <a href='#' onClick={() => router.back()}>
+        <a href='#' onClick={() => router.push(Routes.Home())}>
           Home
         </a>
       </p>
