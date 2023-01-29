@@ -1,10 +1,10 @@
 import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
-import { FileType } from '@prisma/client';
+import { FileType } from 'db';
 import { memo, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadItemFile } from 'src/items/types';
 import { getFileTypeByText, getSimpleRandomKey } from 'src/utils/global';
-import { ThumbnailList } from '../ThumbnailList';
+import Thumbnail from '../Thumbnail';
 import { DropzoneProps } from './types';
 
 export const Dropzone = (props: DropzoneProps) => {
@@ -119,38 +119,37 @@ export const Dropzone = (props: DropzoneProps) => {
   };
 
   const thumbnails = useMemo(
-    () => (
-      <ThumbnailList
-        items={dropedFiles.map((file) => ({
-          src: file.uploadPreview,
-          className: props.validateFiles && !file.artifactType ? 'thumbnail-error' : '',
-          children: (
-            <div>
-              <Typography variant='body2' noWrap>
-                {file.name}
-              </Typography>
-              <RadioGroup
-                aria-labelledby='radio-group-file-type-label'
-                defaultValue={file.artifactType}
-                name='radio-group-file-type'>
-                {Object.keys(FileType)
-                  .filter((key) => key !== FileType.thumbnail)
-                  .map((typeKey) => (
-                    <FormControlLabel
-                      key={getSimpleRandomKey()}
-                      value={typeKey}
-                      control={<Radio />}
-                      label={typeKey}
-                      onClick={() => handleClickRadioType(file, typeKey)}
-                    />
-                  ))}
-              </RadioGroup>
-              <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
-            </div>
-          )
-        }))}
-      />
-    ),
+    () =>
+      dropedFiles.map((file, index) => (
+        <Thumbnail
+          key={getSimpleRandomKey()}
+          index={index}
+          src={file.uploadPreview}
+          className={props.validateFiles && !file.artifactType ? 'thumbnail-error' : ''}>
+          <div>
+            <Typography variant='body2' noWrap>
+              {file.name}
+            </Typography>
+            <RadioGroup
+              aria-labelledby='radio-group-file-type-label'
+              defaultValue={file.artifactType}
+              name='radio-group-file-type'>
+              {Object.keys(FileType)
+                .filter((key) => key !== FileType.thumbnail)
+                .map((typeKey) => (
+                  <FormControlLabel
+                    key={getSimpleRandomKey()}
+                    value={typeKey}
+                    control={<Radio />}
+                    label={typeKey}
+                    onClick={() => handleClickRadioType(file, typeKey)}
+                  />
+                ))}
+            </RadioGroup>
+            <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
+          </div>
+        </Thumbnail>
+      )),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dropedFiles, props.validateFiles]
   );

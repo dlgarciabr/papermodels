@@ -12,7 +12,8 @@ import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
 import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
-import { ThumbnailList } from 'src/core/components/ThumbnailList';
+import Thumbnail from 'src/core/components/Thumbnail';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
   const renderLicenseContent = () => {
@@ -162,18 +163,16 @@ export const Item = () => {
     });
   };
 
-  const thumbnails = () => {
-    return (
-      <ThumbnailList
-        items={thumbnailsData.items.map((item) => ({
-          src: item.finalUrl,
-          altText: item.storagePath,
-          onClick: loadMainImageFromThumbnail
-        }))}
+  const thumbnails = () =>
+    thumbnailsData.items.map((item, index) => (
+      <Thumbnail
+        key={getSimpleRandomKey()}
+        index={index}
+        src={item.finalUrl}
+        altText={item.storagePath}
+        onClick={loadMainImageFromThumbnail}
       />
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  };
+    ));
 
   return (
     <>
