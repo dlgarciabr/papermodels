@@ -46,7 +46,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
                   <td>{file.storagePath}</td>
                   <td>{file.artifactType}</td>
                   <td>
-                    <a href='#' onClick={() => downloadFile(file)}>
+                    <a href='#' onClick={() => downloadFile(file.storagePath)}>
                       Download
                     </a>
                     <a href='#' onClick={() => props.onClickDelete(file)}>

@@ -14,6 +14,7 @@ import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
+import { useDownloadFiles } from './items.hook';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -97,6 +98,7 @@ export const Item = () => {
     loading: false,
     items: []
   });
+  const downloadFiles = useDownloadFiles(item);
   // TODO if item is null redirect to home
 
   const setupThumbnails = () => {
@@ -216,12 +218,24 @@ export const Item = () => {
                 <Paper className='item-download' elevation={0}>
                   <Grid container spacing={2} justifyContent='center'>
                     <Grid item xs={10}>
-                      <Button variant='contained' fullWidth startIcon={<MdDownload />}>
-                        Download scheme
+                      <Button
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        onClick={() => {
+                          downloadFiles(FileType.scheme);
+                        }}>
+                        Download schemes
                       </Button>
                     </Grid>
                     <Grid item xs={10}>
-                      <Button variant='contained' fullWidth startIcon={<MdDownload />}>
+                      <Button
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        onClick={() => {
+                          downloadFiles(FileType.instruction);
+                        }}>
                         Download instrunctions
                       </Button>
                     </Grid>
