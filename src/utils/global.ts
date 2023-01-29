@@ -1,4 +1,4 @@
-import { Item, ItemFile } from '.prisma/client';
+import { FileType, Item, ItemFile } from '.prisma/client';
 import { getFilePath } from './fileStorage';
 
 export const downloadFile = async (file: ItemFile & { url: string; item: Item }) => {
@@ -24,3 +24,17 @@ export const downloadFile = async (file: ItemFile & { url: string; item: Item })
 };
 
 export const getSimpleRandomKey = () => Math.random().toString(36).substring(2, 15);
+
+export const getFileTypeByText = (type: string): FileType => {
+  switch (type) {
+    case FileType.thumbnail:
+      return FileType.thumbnail;
+    case FileType.instruction:
+      return FileType.instruction;
+    case FileType.scheme:
+      return FileType.scheme;
+    case FileType.preview:
+    default:
+      return FileType.preview;
+  }
+};

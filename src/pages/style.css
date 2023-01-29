@@ -39,6 +39,12 @@ body {
   height: '100%';
 }
 
-.thumbnail {
+.MuiPaper-root.thumbnail-clickable {
   cursor: pointer;
+}
+
+.MuiPaper-root.thumbnail-error {
+  border-style: double;
+  border-width: 1px;
+  border-color: #dc143c;
 }

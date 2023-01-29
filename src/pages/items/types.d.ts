@@ -6,7 +6,5 @@ export interface IImageData {
 
 export interface IThumbnailsData {
   loading: boolean;
-  total: number;
-  storagePaths: string[];
-  finalUrls: string[];
+  items: { storagePath: string; finalUrl?: string }[];
 }

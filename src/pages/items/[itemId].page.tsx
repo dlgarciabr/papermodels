@@ -7,12 +7,12 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { Button, CircularProgress, Container, Grid, Link, Paper, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, Grid, Paper, Typography } from '@mui/material';
 import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
 import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
-import { getSimpleRandomKey } from 'src/utils/global';
+import { ThumbnailList } from 'src/core/components/ThumbnailList';
 
 const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
   const renderLicenseContent = () => {
@@ -87,20 +87,19 @@ export const Item = () => {
 
   const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
     loading: false,
-    total: 0,
-    finalUrls: [],
-    storagePaths: []
+    items: []
   });
   // TODO if item is null redirect to home
 
   const setupThumbnails = () => {
-    const thumbnailFiles = item.files.filter((file) => file.artifactType === FileType.thumbnail);
-    const storagePaths = thumbnailFiles.map((file) => file.storagePath);
+    const thumbnails = item.files
+      .filter((file) => file.artifactType === FileType.thumbnail)
+      .map((file) => ({
+        storagePath: file.storagePath
+      }));
     setThumbnailsData({
-      ...thumbnailsData,
       loading: true,
-      total: thumbnailFiles.length,
-      storagePaths: storagePaths
+      items: thumbnails
     });
   };
 
@@ -119,9 +118,9 @@ export const Item = () => {
   };
 
   const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
-    const thumbnailStoragePathParts = thumbnailsData.storagePaths[thumbnailIndex]?.split('.');
-    const imageName = thumbnailStoragePathParts![0]?.replaceAll('_thumb', '');
-    const extension = thumbnailStoragePathParts![1];
+    const storagePathParts = thumbnailsData.items[thumbnailIndex]?.storagePath.split('.');
+    const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
+    const extension = storagePathParts![1];
     const imageStoragePath = `${imageName}.${extension}`;
     if (imageData.name === imageStoragePath) {
       return;
@@ -142,46 +141,38 @@ export const Item = () => {
   }, []);
 
   useEffect(() => {
-    if (thumbnailsData.storagePaths.length > 0) {
+    if (thumbnailsData.items.length > 0) {
       void loadThumbnailUrls();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [thumbnailsData.storagePaths]);
+  }, [thumbnailsData.items]);
 
   const loadThumbnailUrls = async () => {
-    const urls: string[] = [];
-    for await (const storagePath of thumbnailsData.storagePaths!) {
-      const url = await getFilePath(storagePath);
-      urls.push(url);
+    for await (const item of thumbnailsData.items) {
+      const url = await getFilePath(item.storagePath);
+      item.finalUrl = url;
+      setThumbnailsData({
+        ...thumbnailsData,
+        items: thumbnailsData.items
+      });
     }
     setThumbnailsData({
       ...thumbnailsData,
-      loading: false,
-      finalUrls: urls
+      loading: false
     });
   };
 
-  const renderThumbnails = () => {
-    console.log('renderThumbnails'); //TODO remove only after evaluate the performance
-    if (thumbnailsData.loading) {
-      return (
-        <Grid xs={3} item key={getSimpleRandomKey()}>
-          <Paper variant='outlined' elevation={0}>
-            <CircularProgress />
-          </Paper>
-        </Grid>
-      );
-    } else {
-      return thumbnailsData.finalUrls.map((url, index) => (
-        <Grid xs={3} item key={getSimpleRandomKey()}>
-          <Link onClick={() => loadMainImageFromThumbnail(index)}>
-            <Paper variant='outlined' elevation={0} className='thumbnail'>
-              <img src={url} width='100' height='100' alt='' />
-            </Paper>
-          </Link>
-        </Grid>
-      ));
-    }
+  const thumbnails = () => {
+    return (
+      <ThumbnailList
+        items={thumbnailsData.items.map((item) => ({
+          src: item.finalUrl,
+          altText: item.storagePath,
+          onClick: loadMainImageFromThumbnail
+        }))}
+      />
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   return (
@@ -204,7 +195,7 @@ export const Item = () => {
                 </Paper>
               </Grid>
               <Grid item container xs={12}>
-                {renderThumbnails()}
+                {thumbnails()}
               </Grid>
             </Grid>
             <Grid item container xs={6} spacing={2}>
