@@ -1,4 +1,4 @@
-import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { FileType } from 'db';
 import { memo, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -125,11 +125,9 @@ export const Dropzone = (props: DropzoneProps) => {
           key={getSimpleRandomKey()}
           index={index}
           src={file.uploadPreview}
+          altText={file.name}
           className={props.validateFiles && !file.artifactType ? 'thumbnail-error' : ''}>
           <div>
-            <Typography variant='body2' noWrap>
-              {file.name}
-            </Typography>
             <RadioGroup
               aria-labelledby='radio-group-file-type-label'
               defaultValue={file.artifactType}
@@ -140,7 +138,7 @@ export const Dropzone = (props: DropzoneProps) => {
                   <FormControlLabel
                     key={getSimpleRandomKey()}
                     value={typeKey}
-                    control={<Radio />}
+                    control={<Radio size='small' />}
                     label={typeKey}
                     onClick={() => handleClickRadioType(file, typeKey)}
                   />

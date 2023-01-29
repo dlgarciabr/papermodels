@@ -16,11 +16,11 @@ export const Thumbnail = (props: IThumbnailProps) => {
       <Paper variant='outlined' elevation={0} className={className}>
         <Grid container>
           <Grid item>
-            {props.src ? (
+            {props.loading ? (
+              <CircularProgress />
+            ) : (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={props.src} width='100' height='100' alt={props.altText} />
-            ) : (
-              <CircularProgress />
             )}
           </Grid>
           <Grid item>{props.children}</Grid>

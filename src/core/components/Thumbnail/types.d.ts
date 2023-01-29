@@ -1,15 +1,9 @@
-export interface IThumbnailListItem {
+export interface IThumbnailProps extends IThumbnailListItem {
+  index: number;
+  altText: string;
+  loading?: boolean;
   src?: string;
-  altText?: string;
   onClick?: (index: number) => void;
   children?: React.ReactNode;
   className?: string;
-}
-
-export interface IThumbnailListProps {
-  items: IThumbnailListItem[];
-}
-
-export interface IThumbnailProps extends IThumbnailListItem {
-  index: number;
 }
