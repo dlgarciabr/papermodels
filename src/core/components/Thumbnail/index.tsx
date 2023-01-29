@@ -3,8 +3,9 @@ import { memo } from 'react';
 import { IThumbnailProps } from './types';
 
 export const Thumbnail = (props: IThumbnailProps) => {
-  let className = props.className ? props.className : '';
   const hasClickEvent = !!props.onClick;
+  let className = 'thumbnail';
+  className += props.className ? ` ${props.className}` : '';
   className += hasClickEvent ? ' thumbnail-clickable' : '';
   const handleClick = (index: number) => {
     if (hasClickEvent) {
@@ -14,8 +15,8 @@ export const Thumbnail = (props: IThumbnailProps) => {
   return (
     <Link onClick={() => handleClick(props.index)}>
       <Paper variant='outlined' elevation={0} className={className}>
-        <Grid container>
-          <Grid item>
+        <Grid container justifyContent='center'>
+          <Grid item container className='height100px' alignItems='center' justifyContent='center'>
             {props.loading ? (
               <CircularProgress />
             ) : (

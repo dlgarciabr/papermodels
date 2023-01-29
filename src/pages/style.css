@@ -31,12 +31,25 @@ body {
 }
 
 .MuiPaper-root.item-main-image {
-  /* text-align: center; */
   height: 500px;
 }
 
-.height100 {
-  height: '100%';
+.height100pc {
+  height: 100%;
+}
+
+.height100px {
+  height: 100px;
+}
+
+.MuiPaper-root.thumbnail {
+  width: 100px;
+  height: 100px;
+}
+
+.MuiPaper-root.thumbnail-dropzone {
+  width: 200px;
+  height: 250px;
 }
 
 .MuiPaper-root.thumbnail-clickable {

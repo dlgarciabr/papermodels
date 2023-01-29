@@ -168,7 +168,8 @@ export const Item = () => {
       <Thumbnail
         key={getSimpleRandomKey()}
         index={index}
-        loading={!item.finalUrl}
+        // loading={!item.finalUrl}
+        loading={true}
         src={item.finalUrl}
         altText={item.storagePath}
         onClick={loadMainImageFromThumbnail}

@@ -126,8 +126,10 @@ export const Dropzone = (props: DropzoneProps) => {
           index={index}
           src={file.uploadPreview}
           altText={file.name}
-          className={props.validateFiles && !file.artifactType ? 'thumbnail-error' : ''}>
-          <div>
+          className={
+            props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
+          }>
+          <>
             <RadioGroup
               aria-labelledby='radio-group-file-type-label'
               defaultValue={file.artifactType}
@@ -145,7 +147,7 @@ export const Dropzone = (props: DropzoneProps) => {
                 ))}
             </RadioGroup>
             <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
-          </div>
+          </>
         </Thumbnail>
       )),
     // eslint-disable-next-line react-hooks/exhaustive-deps
