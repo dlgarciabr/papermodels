@@ -7,7 +7,7 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { Button, CircularProgress, Container, Grid, Paper, Typography } from '@mui/material';
+import { Button, CircularProgress, Container, Grid, Paper, Rating, Typography } from '@mui/material';
 import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
 import { MdDownload } from 'react-icons/md';
 import { IImageData, IThumbnailsData } from './types';
@@ -15,67 +15,75 @@ import { getFilePath } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 
-const renderLicenseRow = (licenseType: string | null, licenseTypeLink: string | null) => {
-  const renderLicenseContent = () => {
-    if (licenseType && licenseTypeLink) {
+const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
+  const renderAuthorContent = () => {
+    if (name && url) {
       return (
-        <a href={licenseTypeLink} target='blank'>
-          {licenseType}
+        <a href={url} target='blank'>
+          {name}
         </a>
       );
-    } else if (licenseType && !licenseTypeLink) {
-      return licenseType;
-    } else if (!licenseType && licenseTypeLink) {
+    } else if (name && !url) {
+      return name;
+    } else if (!name && url) {
       return (
-        <a href={licenseTypeLink} target='blank'>
-          {licenseTypeLink}
+        <a href={url} target='blank'>
+          {url}
         </a>
       );
     }
   };
-
   return (
-    (licenseType || licenseTypeLink) && (
+    (name || url) && (
       <tr>
-        <td>License</td>
-        <td>{renderLicenseContent()}</td>
+        <td>
+          <Typography variant='body2'>{label}</Typography>
+        </td>
+        <td>
+          <Typography variant='body2'>{renderAuthorContent()}</Typography>
+        </td>
       </tr>
     )
   );
 };
 
 const DetailsTable = ({ item }: { item: IItem & { files: IItemFile[] } }) => {
+  const assemblyTime = Number(item.assemblyTime);
   return (
-    <table>
-      <thead>
-        <tr>
-          <td colSpan={2}>info</td>
-        </tr>
-      </thead>
-      <tbody>
-        {item.author && (
+    <Grid container item xs={12}>
+      <table className='width100pc content-info'>
+        <thead>
           <tr>
-            <td>Author</td>
-            <td>{item.author}</td>
+            <td colSpan={2}>
+              <Typography variant='subtitle2'>Content information</Typography>
+            </td>
           </tr>
-        )}
-        {item.authorLink && (
+        </thead>
+        <tbody>
+          {renderContentAndUrlRow('Author', item.author, item.authorLink)}
           <tr>
-            <td>Author URL</td>
-            <td>{item.authorLink}</td>
+            <td>
+              <Typography variant='body2'>Approx. assembly time</Typography>
+            </td>
+            <td>
+              <Typography variant='body2'>
+                {assemblyTime}
+                {assemblyTime <= 1 ? 'h' : 'hs'}
+              </Typography>
+            </td>
           </tr>
-        )}
-        <tr>
-          <td>Dificulty</td>
-          <td>{item.dificulty}</td>
-        </tr>
-        <tr>
-          <td>Approx. assembly time</td>
-          <td>{Number(item.assemblyTime)}</td>
-        </tr>
-        {renderLicenseRow(item.licenseType, item.licenseTypeLink)}
-      </tbody>
-    </table>
+          <tr>
+            <td className='width30pc'>
+              <Typography variant='body2'>Dificulty</Typography>
+            </td>
+            <td>
+              <Rating className='assembly-dificulty' readOnly name='simple-controlled' value={item.dificulty} />
+            </td>
+          </tr>
+          {renderContentAndUrlRow('License', item.licenseType, item.licenseTypeLink)}
+        </tbody>
+      </table>
+    </Grid>
   );
 };
 
@@ -85,7 +93,6 @@ export const Item = () => {
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
   });
-
   const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
     loading: false,
     items: []
@@ -178,7 +185,7 @@ export const Item = () => {
   return (
     <>
       <Head>
-        <title>Item {item.id}</title>
+        <title>Papermodels - {item.name}</title>
       </Head>
       <Container component='main'>
         <Grid container>
@@ -226,7 +233,7 @@ export const Item = () => {
                   </Grid>
                 </Paper>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item container xs={12}>
                 <DetailsTable item={item} />
               </Grid>
             </Grid>

@@ -52,6 +52,11 @@ const seed = async () => {
               index: 0,
               storagePath: '2/hospital_preview_1.jpg',
               artifactType: FileType.preview
+            },
+            {
+              index: 0,
+              storagePath: '2/hospital_preview_1_thumb.jpg',
+              artifactType: FileType.preview
             }
           ]
         }
@@ -66,6 +71,10 @@ const seed = async () => {
             'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
           dificulty: 5,
           assemblyTime: new Decimal(12),
+          licenseType: 'MIT',
+          licenseTypeLink: 'https://opensource.org/licenses/MIT',
+          author: 'Tod Jason',
+          authorLink: 'https://google.com',
           files: [
             {
               index: 0,
@@ -73,14 +82,29 @@ const seed = async () => {
               artifactType: FileType.preview
             },
             {
+              index: 0,
+              storagePath: '3/alcazar_of_segovia_preview_1_thumb.jpg',
+              artifactType: FileType.thumbnail
+            },
+            {
               index: 1,
               storagePath: '3/alcazar_of_segovia_preview_2.jpg',
               artifactType: FileType.preview
             },
             {
+              index: 1,
+              storagePath: '3/alcazar_of_segovia_preview_2_thumb.jpg',
+              artifactType: FileType.thumbnail
+            },
+            {
               index: 2,
               storagePath: '3/alcazar_of_segovia_preview_3.jpg',
               artifactType: FileType.preview
+            },
+            {
+              index: 2,
+              storagePath: '3/alcazar_of_segovia_preview_3_thumb.jpg',
+              artifactType: FileType.thumbnail
             }
           ]
         }
