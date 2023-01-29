@@ -412,7 +412,7 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
 
     // assert
-    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.storagePath);
   });
 
   test('User removes a file from an item', async () => {

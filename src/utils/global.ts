@@ -1,4 +1,4 @@
-import { FileType } from '.prisma/client';
+import { FileType } from 'db';
 import { getFilePath } from './fileStorage';
 
 export const downloadFile = async (storagePath: string) => {
