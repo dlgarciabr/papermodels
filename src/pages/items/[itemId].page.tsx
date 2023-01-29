@@ -205,7 +205,7 @@ export const Item = () => {
                 {thumbnails()}
               </Grid>
             </Grid>
-            <Grid item container xs={6} spacing={2}>
+            <Grid item container xs={6} spacing={0} alignItems='flex-start' direction='row'>
               <Grid item xs={12}>
                 <Typography variant='h6' component='div'>
                   {item.name}
@@ -225,11 +225,11 @@ export const Item = () => {
                         Download instrunctions
                       </Button>
                     </Grid>
-                    <Grid item xs={10}>
+                    {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
                         Download all
                       </Button>
-                    </Grid>
+                    </Grid> */}
                   </Grid>
                 </Paper>
               </Grid>
