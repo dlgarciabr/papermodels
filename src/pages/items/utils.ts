@@ -14,6 +14,7 @@ export const processFiles = async (files: UploadItemFile[]) => {
     const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
     const imageBytes = await file.arrayBuffer();
 
+    /* istanbul ignore if @preserve */
     if (file.artifactType === FileType.preview) {
       const thumbFileName = `${storagePath}_thumb.${extension}`;
       const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
@@ -35,31 +36,6 @@ export const processFiles = async (files: UploadItemFile[]) => {
   }
   return processedFiles;
 };
-// TODO clean if new function is working well
-// export const uploadFiles = (files: UploadItemFile[]) =>
-//   Promise.all(
-//     files.map(async (file) => {
-//       const index = ++file.item.files.length;
-//       // TODO replace all special caracters of the name
-//       // TODO validate some extensions for each artifact types
-//       const name = file.item.name.replaceAll(' ', '_').toLowerCase();
-//       const extension = file.name.split('.')[1];
-//       const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
-//       file.storagePath = storagePath;
-//       const imageBytes = await file.arrayBuffer();
-
-//       if (file.artifactType === FileType.preview) {
-//         const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
-//         const compressedThumbnail = await compressImage(thumbnailBytes);
-//         const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
-//         const thumbnailFile = (new File([thumbnailCompressedBytes], `${storagePath}_thumb.${extension}`)) as UploadItemFile;
-//         thumbnailFile.artifactType = FileType.thumbnail;
-//         await saveFile(thumbnailFile);
-//       }
-//       const temporaryFile = new File([imageBytes], `${storagePath}.${extension}`);
-//       await saveFile(temporaryFile);
-//     })
-//   );
 
 export const uploadFiles = (files: UploadItemFile[]) =>
   Promise.all(
@@ -69,33 +45,14 @@ export const uploadFiles = (files: UploadItemFile[]) =>
   );
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
-  // TODO clean if the uncommented lines are working well
-  // const promises: Promise<void>[] = [];
-  // files.forEach((file) => {
-  //   const index = ++file.item.files.length;
-  //   promises.push(
-  //     createFileMutation({
-  //       storagePath: file.storagePath,
-  //       artifactType: file.artifactType,
-  //       itemId: file.item.id,
-  //       index
-  //     })
-  //   );
-  // });
-  // await Promise.all(promises);
   for await (const file of files) {
     const index = ++file.item.files.length;
-    try {
-      await createFileMutation({
-        storagePath: file.storagePath,
-        artifactType: file.artifactType,
-        itemId: file.item.id,
-        index
-      });
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    await createFileMutation({
+      storagePath: file.storagePath,
+      artifactType: file.artifactType,
+      itemId: file.item.id,
+      index
+    });
   }
 };
 

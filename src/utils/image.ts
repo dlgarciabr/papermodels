@@ -19,21 +19,6 @@ export const generateThumbnailBlobUrl = async (bytes: ArrayBuffer) => {
   const canvas = await generateThumbnailCanvas(bytes);
   return canvas.toDataURL();
 };
-// new Promise<string>(resolve => {
-//   const downloadUrl = window.URL.createObjectURL(new Blob([bytes]));
-//   const img = document.createElement('img');
-//   img.onload = () => {
-//     const canvas = document.createElement("canvas");
-//     canvas.width = 100;
-//     canvas.height = 100;
-//     const ctx = canvas.getContext("2d");
-//     ctx?.drawImage(img, 0, 0, 100, 100);
-//     const dataUrl = canvas.toDataURL();
-//     resolve(dataUrl)
-//   }
-//   img.src = downloadUrl;
-// })
-// );
 
 export const generateThumbnailArrayBuffer = (bytes: ArrayBuffer) =>
   new Promise<ArrayBuffer>(async (resolve, reject) => {
