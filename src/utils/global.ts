@@ -1,25 +1,35 @@
-import { Item, ItemFile } from '.prisma/client';
+import { FileType } from 'db';
 import { getFilePath } from './fileStorage';
 
-export const downloadFile = async (file: ItemFile & { url: string; item: Item }) => {
-  const url = await getFilePath(file.storagePath);
+export const downloadFile = async (storagePath: string) => {
+  const url = await getFilePath(storagePath);
   const response = await fetch(url, { method: 'GET' });
   const blob = await response.blob();
 
-  // Create blob link to download
-  const downloadUrl = window.URL.createObjectURL(new Blob([blob]));
+  const downloadUrl = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = downloadUrl;
-  link.setAttribute('download', file.storagePath);
+  link.setAttribute('download', storagePath);
 
-  // Append to html link element page
   document.body.appendChild(link);
 
-  // Start download
   link.click();
 
-  // Clean up and remove the link
   (link.parentNode as any).removeChild(link);
 };
 
 export const getSimpleRandomKey = () => Math.random().toString(36).substring(2, 15);
+
+export const getFileTypeByText = (type: string): FileType => {
+  switch (type) {
+    case FileType.thumbnail:
+      return FileType.thumbnail;
+    case FileType.instruction:
+      return FileType.instruction;
+    case FileType.scheme:
+      return FileType.scheme;
+    case FileType.preview:
+    default:
+      return FileType.preview;
+  }
+};

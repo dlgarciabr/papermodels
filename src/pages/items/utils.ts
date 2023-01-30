@@ -1,37 +1,59 @@
-import { Item, ItemFile } from 'db';
+import { FileType, Item, ItemFile } from 'db';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
+import { compressImage, generateThumbnailArrayBuffer } from 'src/utils/image';
+import { removeDiacritics } from 'src/utils/string';
 import { UploadItemFile } from '../../items/types';
+
+export const processFiles = async (files: UploadItemFile[]) => {
+  const processedFiles: UploadItemFile[] = [];
+  for await (const file of files) {
+    const index = ++file.item.files.length;
+    // TODO validate some extensions for each artifact types
+    const name = removeDiacritics(file.item.name).replaceAll(' ', '_').toLowerCase();
+    const extension = file.name.split('.')[1];
+    const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
+    const imageBytes = await file.arrayBuffer();
+
+    /* istanbul ignore if @preserve */
+    if (file.artifactType === FileType.preview) {
+      const thumbFileName = `${storagePath}_thumb.${extension}`;
+      const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
+      const compressedThumbnail = await compressImage(thumbnailBytes);
+      const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
+      const thumbnailFile = new File([thumbnailCompressedBytes], thumbFileName) as UploadItemFile;
+      thumbnailFile.artifactType = FileType.thumbnail;
+      thumbnailFile.storagePath = thumbFileName;
+      thumbnailFile.item = file.item;
+      processedFiles.push(thumbnailFile);
+    }
+
+    const fileName = `${storagePath}.${extension}`;
+    const processedFile = new File([imageBytes], fileName) as UploadItemFile;
+    processedFile.artifactType = file.artifactType;
+    processedFile.storagePath = fileName;
+    processedFile.item = file.item;
+    processedFiles.push(processedFile);
+  }
+  return processedFiles;
+};
 
 export const uploadFiles = (files: UploadItemFile[]) =>
   Promise.all(
     files.map(async (file) => {
-      const index = ++file.item.files.length;
-      const name = file.item.name.replaceAll(' ', '_').toLowerCase();
-      const extension = file.name.split('.')[1];
-      const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}.${extension}`;
-      file.storagePath = storagePath;
-
-      const bytes = await file.arrayBuffer();
-      const temporaryFile = new File([bytes], storagePath);
-
-      await saveFile(temporaryFile);
+      await saveFile(file);
     })
   );
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
-  const promises: Promise<void>[] = [];
-  files.forEach((file) => {
+  for await (const file of files) {
     const index = ++file.item.files.length;
-    promises.push(
-      createFileMutation({
-        storagePath: file.storagePath,
-        artifactType: file.artifactType,
-        itemId: file.item.id,
-        index
-      })
-    );
-  });
-  await Promise.all(promises);
+    await createFileMutation({
+      storagePath: file.storagePath,
+      artifactType: file.artifactType,
+      itemId: file.item.id,
+      index
+    });
+  }
 };
 
 export const sortFilesIndexes = async (
@@ -39,12 +61,9 @@ export const sortFilesIndexes = async (
   files: ItemFile[],
   updateItemFileMutation: any
 ): Promise<ItemFile[]> => {
-  if (files.length === 0) {
-    return [];
+  if (files.length === 0 || (files.length === 1 && files[0]?.index === 0)) {
+    return files; //TODO improve index validation to suport n items on files and avoid more logic to be called
   }
-  if (files.length === 1 && files[0]?.index === 0) {
-    return files;
-  } //TODO improve index validation to suport n items on files and avoid more logic to be called
   const lockFileStorageName = `${item.id}/.lock`;
 
   await saveFile(new File([], lockFileStorageName));
@@ -64,7 +83,7 @@ export const sortFilesIndexes = async (
         await saveFile(new File([blob], backupFileName));
         await deleteFile(file.storagePath);
 
-        const name = item.name.replaceAll(' ', '_').toLowerCase();
+        const name = removeDiacritics(item.name).replaceAll(' ', '_').toLowerCase();
         const extension = file.storagePath.split('.')[1];
         const newStoragePath = `${item.id}/${name}_${file.artifactType}_${index + 1}.${extension}`;
 
@@ -72,9 +91,8 @@ export const sortFilesIndexes = async (
         await deleteFile(backupFileName);
 
         const updatedFile = await updateItemFileMutation({
-          id: file.id,
+          ...file,
           storagePath: newStoragePath,
-          artifactType: file.artifactType,
           index
         });
 
