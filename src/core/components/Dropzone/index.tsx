@@ -34,7 +34,6 @@ export const Dropzone = (props: DropzoneProps) => {
     onDrop
   });
 
-  // TODO remove after defined styling method
   const baseStyle = {
     flex: 1,
     display: 'flex',
@@ -51,22 +50,18 @@ export const Dropzone = (props: DropzoneProps) => {
     transition: 'border .24s ease-in-out'
   };
 
-  // TODO remove after defined styling method
   const focusedStyle = {
     borderColor: '#2196f3'
   };
 
-  // TODO remove after defined styling method
   const acceptStyle = {
     borderColor: '#00e676'
   };
 
-  // TODO remove after defined styling method
   const rejectStyle = {
     borderColor: '#ff1744'
   };
 
-  // TODO remove after defined styling method
   const thumbsContainer = {
     display: 'flex',
     flexDirection: 'row',

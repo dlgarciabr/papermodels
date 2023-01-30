@@ -18,7 +18,6 @@ const useSearch = () => {
         take: 9
       });
       void router.push({ query: { expression, page } });
-      //TODO  Improve the performance of the code below
       await Promise.all(
         items.map(async (item: Item & { files: ItemFile[] }) => {
           await Promise.all(

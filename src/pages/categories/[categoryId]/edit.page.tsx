@@ -9,6 +9,7 @@ import Layout from 'src/core/layouts/Layout';
 import getCategory from 'src/categories/queries/getCategory';
 import updateCategory from 'src/categories/mutations/updateCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
+import { UpdateCategoryValidation } from 'src/categories/validations';
 
 export const EditCategory = () => {
   const router = useContext(RouterContext);
@@ -34,15 +35,11 @@ export const EditCategory = () => {
 
         <CategoryForm
           submitText='Update Category'
-          // TODO use a zod schema for form validation
-          //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-          //         then import and use it here
-          // schema={UpdateCategory}
+          schema={UpdateCategoryValidation}
           initialValues={category}
           onSubmit={async (values) => {
             try {
               const updated = await updateCategoryMutation({
-                id: category.id,
                 ...values
               });
               await setQueryData(updated);

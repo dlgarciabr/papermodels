@@ -1,7 +1,7 @@
 import { FileType } from 'db';
 import { z } from 'zod';
 
-const basicItemValidation = {
+const basicValidation = {
   name: z.string().min(5, 'Field required and must contain at least 5 characters').max(30),
   description: z.string().max(100),
   dificulty: z.number().min(1).max(5),
@@ -16,7 +16,7 @@ const basicItemValidation = {
 const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
 
 export const CreateItemValidation = z.object({
-  ...basicItemValidation,
+  ...basicValidation,
   files: z.array(
     z.object({
       storagePath: z.string(),
@@ -27,7 +27,7 @@ export const CreateItemValidation = z.object({
 });
 
 export const UpdateItemValidation = z.object({
-  ...basicItemValidation,
+  ...basicValidation,
   id: z.number(),
   files: z.array(
     z.object({
