@@ -122,7 +122,6 @@ const Home: BlitzPage = () => {
       )),
     [data.items]
   );
-  // TODO do a first request to firebaseStorage in order to initialize the firebaseApp
   return (
     <Layout title='Home'>
       <Head>

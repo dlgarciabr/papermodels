@@ -8,7 +8,6 @@ export const processFiles = async (files: UploadItemFile[]) => {
   const processedFiles: UploadItemFile[] = [];
   for await (const file of files) {
     const index = ++file.item.files.length;
-    // TODO validate some extensions for each artifact types
     const name = removeDiacritics(file.item.name).replaceAll(' ', '_').toLowerCase();
     const extension = file.name.split('.')[1];
     const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
@@ -62,7 +61,7 @@ export const sortFilesIndexes = async (
   updateItemFileMutation: any
 ): Promise<ItemFile[]> => {
   if (files.length === 0 || (files.length === 1 && files[0]?.index === 0)) {
-    return files; //TODO improve index validation to suport n items on files and avoid more logic to be called
+    return files;
   }
   const lockFileStorageName = `${item.id}/.lock`;
 

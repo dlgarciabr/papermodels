@@ -99,7 +99,6 @@ export const Item = () => {
     items: []
   });
   const downloadFiles = useDownloadFiles(item);
-  // TODO if item is null redirect to home
 
   const setupThumbnails = () => {
     const thumbnails = item.files
