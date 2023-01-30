@@ -1,7 +1,5 @@
 /* istanbul ignore file -- @preserve */
-// It's not possible to make a real test mocking document.createElement and Image
-import { readAndCompressImage } from 'browser-image-resizer';
-
+// It's not possible to make real tests mocking document.createElement and Image
 const generateThumbnailCanvas = (bytes: ArrayBuffer) =>
   new Promise<HTMLCanvasElement>((resolve) => {
     const downloadUrl = window.URL.createObjectURL(new Blob([bytes]));
@@ -41,7 +39,11 @@ const config = {
 };
 
 export const compressImage = async (bytes: ArrayBuffer) => {
+  if (bytes.byteLength === 0) {
+    throw 'It is not possible to compress an empty ArrayBuffer';
+  }
   const file = new File([bytes], 'temp');
+  const { readAndCompressImage } = await import('browser-image-resizer');
   const compressedImage = await readAndCompressImage(file, config);
   return compressedImage;
 };
