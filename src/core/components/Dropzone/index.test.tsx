@@ -38,7 +38,8 @@ describe('Dropzone', () => {
 
   test('User drops an image file', async () => {
     // arrange
-    const file = new File([], 'test.png', { type: 'image/png' });
+    const fileName = 'test.png';
+    const file = new File([], fileName, { type: 'image/png' });
 
     const files = mockData([file]);
 
@@ -51,17 +52,18 @@ describe('Dropzone', () => {
 
     // assert
     await waitFor(async () => {
-      expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'test.png' })).toBeInTheDocument();
+      expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
     });
   });
 
-  test('User drops an image file', async () => {
+  test('User drops an pdf file', async () => {
     // arrange
-    const file = new File([], 'test.pdf', { type: 'application/pdf' });
+    const fileName = 'test.pdf';
+    const file = new File([], fileName, { type: 'application/pdf' });
 
     const files = mockData([file]);
 
-    render(<Dropzone {...globalOptions} />);
+    const { container } = render(<Dropzone {...globalOptions} />);
 
     // act
     const dropzoneContainer = screen.getByText(containerPlaceholder).parentElement as Element;
@@ -69,9 +71,8 @@ describe('Dropzone', () => {
     await act(() => fireEvent.drop(dropzoneContainer, files));
 
     // assert
-    await waitFor(async () => {
-      expect(await screen.findByText('test.pdf')).toBeInTheDocument();
-    });
+    const containsThumbnail = container.querySelector(`img[alt='${fileName}']`)?.closest('div.thumbnail-dropzone');
+    expect(containsThumbnail).not.toBeNull();
   });
 
   test('User try to drop an invalid type file ', async () => {
@@ -177,12 +178,13 @@ describe('Dropzone', () => {
 
   test('User drops a file and thumbnail error is activated', async () => {
     // arrange
-    const file = new File([], 'test.png', { type: 'image/png' });
+    const fileName = 'test.png';
+    const file = new File([], fileName, { type: 'image/png' });
     const files = mockData([file]);
 
     let validateFiles = false;
 
-    const { rerender } = render(<Dropzone {...globalOptions} validateFiles={validateFiles} />);
+    const { rerender, container } = render(<Dropzone {...globalOptions} validateFiles={validateFiles} />);
 
     const dropzoneContainer = screen.getByText(containerPlaceholder).parentElement as Element;
 
@@ -196,9 +198,12 @@ describe('Dropzone', () => {
     validateFiles = true;
 
     rerender(<Dropzone {...globalOptions} validateFiles={validateFiles} />);
-    // assert
 
-    const containsError = screen.getByText('test.png').closest('div.thumbnail')?.classList.contains('error');
-    expect(containsError).toBe(true);
+    // assert
+    const containsError = container
+      .querySelector(`img[alt='${fileName}']`)
+      ?.closest('div.thumbnail-dropzone')
+      ?.classList.contains('thumbnail-error');
+    expect(containsError).toBeTruthy();
   });
 });

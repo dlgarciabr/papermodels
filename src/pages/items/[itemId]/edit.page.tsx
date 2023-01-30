@@ -12,7 +12,7 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
-import { sortFilesIndexes, saveItemFiles, uploadFiles } from '../utils';
+import { sortFilesIndexes, uploadFiles, processFiles, saveItemFiles } from '../utils';
 import { UploadItemFile } from '../../../items/types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
@@ -46,7 +46,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
                   <td>{file.storagePath}</td>
                   <td>{file.artifactType}</td>
                   <td>
-                    <a href='#' onClick={() => downloadFile(file)}>
+                    <a href='#' onClick={() => downloadFile(file.storagePath)}>
                       Download
                     </a>
                     <a href='#' onClick={() => props.onClickDelete(file)}>
@@ -95,12 +95,14 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
+      //TODO replace by a modal
       alert('Chose a type for each file to be uploaded or remove the file from list');
       return;
     }
     try {
-      await uploadFiles(filesToUpload);
-      await saveItemFiles(filesToUpload, createItemFileMutation);
+      const processedFiles = await processFiles(filesToUpload);
+      await uploadFiles(processedFiles);
+      await saveItemFiles(processedFiles, createItemFileMutation);
       showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());

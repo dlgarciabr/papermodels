@@ -1,6 +1,6 @@
 import { AuthenticationError, PromiseReturnType } from 'blitz';
 import Link from 'next/link';
-import { LabeledTextField } from 'src/core/components/LabeledTextField';
+import { LabeledTextField } from 'src/core/components/Form/LabeledTextField';
 import { Form, FORM_ERROR } from 'src/core/components/Form';
 import login from 'src/auth/mutations/login';
 import { Login } from 'src/auth/validations';

@@ -43,7 +43,9 @@ const getStorage = () => getFirebaseStorage(getFirebaseApp());
 
 const listAllFiles = async () => await listAll(ref(getStorage(), ARTIFACTS_PATH));
 
-const getFilePath = async (path: string) => await getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
+const getFilePath = (path: string) => {
+  return getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
+};
 
 const saveFile = (file: File, path: string) => {
   const fileRef = ref(getStorage(), path);

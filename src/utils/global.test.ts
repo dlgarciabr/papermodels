@@ -1,6 +1,7 @@
+import { FileType } from '@prisma/client';
 import { expect, vi } from 'vitest';
 import { getFilePath } from './fileStorage';
-import { downloadFile } from './global';
+import { downloadFile, getFileTypeByText } from './global';
 
 describe('Global Util', () => {
   test('downloadFile', async () => {
@@ -31,5 +32,17 @@ describe('Global Util', () => {
     // assert
     expect((documentChanges[0]?.addedNodes[0] as HTMLAnchorElement).href).contains(blobUrl);
     expect((documentChanges[1]?.removedNodes[0] as HTMLAnchorElement).href).contains(blobUrl);
+  });
+
+  test('Should resolve FileType by text', async () => {
+    // arrange
+    const fileType = FileType.thumbnail;
+    const fileTypeName = fileType.toString();
+
+    // act
+    const resultFileType = getFileTypeByText(fileTypeName);
+
+    // assert
+    expect(resultFileType).toBe(fileType);
   });
 });

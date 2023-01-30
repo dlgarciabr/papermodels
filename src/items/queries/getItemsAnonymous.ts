@@ -13,14 +13,28 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
       db.item.findMany({
         ...paginateArgs,
         where: {
-          name: { contains: (where?.name as any).contains.expression }
+          OR: [
+            {
+              name: {
+                contains: (where?.name as Prisma.StringFilter).contains,
+                mode: 'insensitive'
+              }
+            },
+            {
+              description: {
+                contains: (where?.name as Prisma.StringFilter).contains,
+                mode: 'insensitive'
+              }
+            }
+          ]
         },
         orderBy,
         include: {
           files: {
             where: {
-              artifactType: { equals: FileType.thumbnail }
-            }
+              artifactType: { equals: FileType.preview }
+            },
+            take: 1
           }
         }
       })

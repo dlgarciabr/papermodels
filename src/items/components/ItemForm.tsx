@@ -1,7 +1,7 @@
 import { Category } from 'db';
 import { Form, FormProps } from 'src/core/components/Form';
-import LabeledSelect from 'src/core/components/LabeledSelect';
-import { LabeledTextField } from 'src/core/components/LabeledTextField';
+import { LabeledSelect } from 'src/core/components/Form/LabeledSelect';
+import { LabeledTextField } from 'src/core/components/Form/LabeledTextField';
 import { z } from 'zod';
 export { FORM_ERROR } from 'src/core/components/Form';
 
