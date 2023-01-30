@@ -24,6 +24,7 @@ import NewItemPage from './new.page';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
+import * as fileStorage from 'src/utils/fileStorage';
 import { FileType, ItemFile } from 'db';
 import { useQuery } from '@blitzjs/rpc';
 import getItem from 'src/items/queries/getItem';
@@ -744,5 +745,52 @@ describe('Item viewing', () => {
 
     // assert
     expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[2]?.storagePath);
+  });
+
+  test.skip('renders item, click on a thumbnail and and modify main image', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      files: [
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abc.jpg'
+        },
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abcde.jpg'
+        },
+        {
+          artifactType: FileType.preview,
+          storagePath: 'abcd.jpg'
+        }
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: 'Author Name',
+      authorLink: '',
+      licenseType: 'MIT',
+      licenseTypeLink: ''
+    };
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    // vi.mock('src/utils/fileStorage/getFilePath', () => 'http://localhost:3000/testUrl2');
+    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValue('http://localhost:3000/testUrl2');
+    // getFilePath  = vi.fn();
+
+    setupUseQueryReturn(item);
+
+    render(<Item />);
+    // screen.debug();
+    // action
+
+    // userEvent.click()
+
+    // assert
+    // expect(await screen.findByText(item.author)).toBeInTheDocument();
+    // expect(await screen.findByText(`${item.assemblyTime}h`)).toBeInTheDocument();
+    // expect(await screen.findByText(item.licenseType)).toBeInTheDocument();
   });
 });

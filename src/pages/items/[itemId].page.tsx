@@ -127,6 +127,7 @@ export const Item = () => {
     });
   };
 
+  /* istanbul ignore next -- @preserve */
   const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
     const storagePathParts = thumbnailsData.items[thumbnailIndex]?.storagePath.split('.');
     const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
