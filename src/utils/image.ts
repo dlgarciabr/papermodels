@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+// It's not possible to make a real test mocking document.createElement and Image
 import { readAndCompressImage } from 'browser-image-resizer';
 
 const generateThumbnailCanvas = (bytes: ArrayBuffer) =>
