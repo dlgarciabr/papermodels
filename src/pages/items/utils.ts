@@ -61,10 +61,7 @@ export const sortFilesIndexes = async (
   files: ItemFile[],
   updateItemFileMutation: any
 ): Promise<ItemFile[]> => {
-  if (files.length === 0) {
-    return [];
-  }
-  if (files.length === 1 && files[0]?.index === 0) {
+  if (files.length === 0 || (files.length === 1 && files[0]?.index === 0)) {
     return files; //TODO improve index validation to suport n items on files and avoid more logic to be called
   }
   const lockFileStorageName = `${item.id}/.lock`;
