@@ -42,6 +42,6 @@ const config = {
 
 export const compressImage = async (bytes: ArrayBuffer) => {
   const file = new File([bytes], 'temp');
-  let resizedImage = await readAndCompressImage(file, config);
-  return resizedImage;
+  const compressedImage = await readAndCompressImage(file, config);
+  return compressedImage;
 };
