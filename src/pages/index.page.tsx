@@ -17,12 +17,16 @@ import {
   Pagination
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import Link from 'next/link';
+
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import { Item, ItemFile } from 'db';
-import { useSearch } from './index.hooks';
-import Link from 'next/link';
+// import { useSearch } from './index.hooks';
+import { IData } from './items/index.types';
+import { getAntiCSRFToken } from '@blitzjs/auth';
 
 const theme = createTheme();
 
@@ -51,17 +55,11 @@ const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
   );
 };
 
-interface IData {
-  expression: string;
-  items: Item[];
-  currentPage: number;
-  pages: number;
-}
-
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
-  const search = useSearch();
+  // const search = useSearch();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const initialData = {
     expression: '',
@@ -102,16 +100,52 @@ const Home: BlitzPage = () => {
     void router.push({});
   };
 
-  const handleSearch = async (expression: string, page: number) => {
-    const { items, count } = await search(expression, page - 1);
-    const pages = Math.ceil(count / 9);
-    setData({
-      items,
-      pages,
-      expression,
-      currentPage: page
-    });
-  };
+  const handleSearch = useCallback(
+    async (expression: string, page: number) => {
+      // e.preventDefault();
+      if (!executeRecaptcha) {
+        console.log('Execute recaptcha not yet available');
+        return;
+      }
+      const gRecaptchaToken = await executeRecaptcha('searchForm');
+      const antiCSRFToken = getAntiCSRFToken();
+
+      void fetch(`${location.origin}/api/store`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
+          'anti-csrf': antiCSRFToken
+        },
+        body: JSON.stringify({
+          expression,
+          page,
+          gRecaptchaToken
+          // CSRFToken: 'OWY4NmQwODE4ODRjN2Q2NTlhMmZlYWEwYzU1YWQwMTVhM2JmNGYxYjJiMGI4MjJjZDE1ZDZMGYwMGEwOA=='
+        })
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log(res, 'response from backend');
+          if (res?.status === 'success') {
+            console.log(res?.message);
+          } else {
+            console.log(res?.message);
+          }
+        });
+
+      // const { items, count } = await search(expression, page - 1);
+      // const pages = Math.ceil(count / 9);
+      // setData({
+      //   items,
+      //   pages,
+      //   expression,
+      //   currentPage: page
+      // });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [executeRecaptcha]
+  );
 
   const renderCards = useMemo(
     () =>
