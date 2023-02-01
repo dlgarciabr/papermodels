@@ -2,6 +2,10 @@ body {
   background-image: url('/background.png');
 }
 
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
 .MuiOutlinedInput-input {
   background-color: white;
 }
