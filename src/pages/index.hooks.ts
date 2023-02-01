@@ -1,4 +1,4 @@
-import { RouterContext } from '@blitzjs/next';
+import { RouterContext, Routes } from '@blitzjs/next';
 import { invoke } from '@blitzjs/rpc';
 import { Item, ItemFile } from 'db';
 import { useContext } from 'react';
@@ -15,7 +15,7 @@ const useSearch = () => {
         console.error('Execute recaptcha not yet available');
         return Promise.reject();
       }
-      const gRecaptchaToken = await executeRecaptcha('searchForm');
+      const gRecaptchaToken = await executeRecaptcha('searchItems');
       const { items, count } = await invoke(getItemsAnonymous, {
         gRecaptchaToken,
         where: {
@@ -39,4 +39,29 @@ const useSearch = () => {
     });
 };
 
-export { useSearch };
+const useShowItem = () => {
+  const router = useContext(RouterContext);
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  return (itemId: number): void => {
+    // new Promise(async (resolve) => {
+    if (!executeRecaptcha) {
+      console.error('Execute recaptcha not yet available');
+      // return Promise.reject();
+    }
+    // const gRecaptchaToken = await executeRecaptcha('searchForm');
+    // const { items, count } = await invoke(getItemsAnonymous, {
+    //   gRecaptchaToken,
+    //   where: {
+    //     name: { contains: expression }
+    //   },
+    //   orderBy: { name: 'asc' },
+    //   skip: 9 * page,
+    //   take: 9
+    // });
+    void router.push(Routes.ShowItemPage({ itemId }));
+
+    // resolve({ items, count });
+  };
+};
+
+export { useSearch, useShowItem };

@@ -1,5 +1,5 @@
 import Layout from 'src/core/layouts/Layout';
-import { BlitzPage, RouterContext, Routes } from '@blitzjs/next';
+import { BlitzPage, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
@@ -22,21 +22,22 @@ import Link from 'next/link';
 
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
-import { Item, ItemFile } from 'db';
-import { useSearch } from './index.hooks';
+import { useSearch, useShowItem } from './index.hooks';
 import { IData } from './items/index.types';
+import { ItemWithFiles } from 'types';
 
 const theme = createTheme();
 
-const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
-  let imageUrl = '';
+const ItemCard = ({ item }: { item: ItemWithFiles }) => {
+  const showItemPage = useShowItem();
+  let mainImage = '';
   if (item.files.length > 0) {
-    imageUrl = item.files[0]!.storagePath as string;
+    mainImage = item.files[0]!.storagePath;
   }
   return (
-    <Link href={Routes.ShowItemPage({ itemId: item.id })}>
+    <Link href='#' onClick={() => showItemPage(item.id)} legacyBehavior={false}>
       <Card raised className='search-card'>
-        <CardMedia image={imageUrl} title='green iguana' />
+        <CardMedia image={mainImage} title={mainImage} />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
             {item.name}
@@ -98,47 +99,20 @@ const Home: BlitzPage = () => {
   };
 
   const handleSearch = async (expression: string, page: number) => {
-    // e.preventDefault();
-
-    // void fetch(`${location.origin}/api/store`, {
-    //   method: 'POST',
-    //   headers: {
-    //     Accept: 'application/json, text/plain, */*',
-    //     'Content-Type': 'application/json',
-    //     'anti-csrf': antiCSRFToken
-    //   },
-    //   body: JSON.stringify({
-    //     expression,
-    //     page,
-    //     gRecaptchaToken
-    //   })
-    // })
-    //   .then((res) => res.json())
-    //   .then((res) => {
-    //     console.log(res, 'response from backend');
-    //     if (res?.status === 'success') {
-    //       console.log(res?.message);
-    //     } else {
-    //       console.log(res?.message);
-    //     }
-    //   });
-
     const { items, count } = await search(expression, page - 1);
-    const pages = Math.ceil(count / 9);
     setData({
       items,
-      pages,
+      pages: Math.ceil(count / 9),
       expression,
       currentPage: page
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   const renderCards = useMemo(
     () =>
       data.items.map((item) => (
         <Grid item key={getSimpleRandomKey()}>
-          <SearchCard item={item as Item & { files: ItemFile[] }} />
+          <ItemCard item={item as ItemWithFiles} />
         </Grid>
       )),
     [data.items]
