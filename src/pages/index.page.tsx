@@ -1,5 +1,5 @@
 import Layout from 'src/core/layouts/Layout';
-import { BlitzPage, RouterContext } from '@blitzjs/next';
+import { BlitzPage, RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
@@ -22,20 +22,19 @@ import Link from 'next/link';
 
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
-import { useSearch, useShowItem } from './index.hooks';
+import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithFiles } from 'types';
 
 const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithFiles }) => {
-  const showItemPage = useShowItem();
   let mainImage = '/images/dog.png';
   if (item.files.length > 0) {
     mainImage = item.files[0]!.storagePath;
   }
   return (
-    <Link href='#' onClick={() => showItemPage(item.id)} legacyBehavior={false}>
+    <Link href={Routes.ShowItemPage({ itemId: item.id })}>
       <Card raised className='search-card'>
         <CardMedia image={mainImage} title={mainImage} />
         <CardContent>

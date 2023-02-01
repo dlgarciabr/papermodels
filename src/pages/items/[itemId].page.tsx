@@ -1,12 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { Suspense, useContext, useEffect, useState } from 'react';
-import { RouterContext, Routes } from '@blitzjs/next';
+import { RouterContext, Routes, useParam } from '@blitzjs/next';
 import Head from 'next/head';
-import { invoke } from '@blitzjs/rpc';
-import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
-import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { Button, CircularProgress, Container, Grid, Paper, Rating, Typography } from '@mui/material';
 import { FileType } from 'db';
 import { MdDownload } from 'react-icons/md';
@@ -14,9 +11,11 @@ import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
-import { useDownloadFiles } from './items.hook';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { ItemWithFiles } from 'types';
+import getItemAnonymous from 'src/items/queries/getItemAnonymous';
+import { invoke } from '@blitzjs/rpc';
+import { useDownloadFiles } from './items.hook';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -147,12 +146,6 @@ export const Item = () => {
   useEffect(() => {
     if (executeRecaptcha) {
       void (async () => {
-        // if (!executeRecaptcha) {
-        //   // console.error('Execute recaptcha not yet available');
-        //   // return Promise.reject();
-        //   throw Error('Execute recaptcha not yet available');
-        // }
-
         const gRecaptchaToken = await executeRecaptcha('viewItem');
         const item = await invoke(getItemAnonymous, {
           gRecaptchaToken,
