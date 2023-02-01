@@ -30,7 +30,7 @@ const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithFiles }) => {
   const showItemPage = useShowItem();
-  let mainImage = '';
+  let mainImage = '/images/dog.png';
   if (item.files.length > 0) {
     mainImage = item.files[0]!.storagePath;
   }

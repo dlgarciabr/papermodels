@@ -94,30 +94,7 @@ export const Item = () => {
   const itemId = useParam('itemId', 'number');
   const { executeRecaptcha } = useGoogleReCaptcha();
 
-  if (!executeRecaptcha) {
-    // console.error('Execute recaptcha not yet available');
-    // return Promise.reject();
-    throw Error('Execute recaptcha not yet available');
-  }
-
-  // const [item] = useQuery(getItemAnonymous, { id: itemId });
   const [itemWithFiles, setItemWithFiles] = useState<ItemWithFiles>();
-
-  // const [itemWithFiles, setItemWithFiles] = useState<ItemWithFiles>({
-  //   id: 0,
-  //   name: '',
-  //   files: [],
-  //   createdAt: new Date(),
-  //   updatedAt: new Date(),
-  //   description: '',
-  //   categoryId: 0,
-  //   dificulty: 0,
-  //   assemblyTime: new Decimal(0),
-  //   author: null,
-  //   authorLink: null,
-  //   licenseType: null,
-  //   licenseTypeLink: null
-  // });
 
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
@@ -168,22 +145,28 @@ export const Item = () => {
   };
 
   useEffect(() => {
-    void (async () => {
-      const gRecaptchaToken = await executeRecaptcha('viewItem');
-      const item = await invoke(getItemAnonymous, {
-        gRecaptchaToken,
-        id: itemId
-      });
-      setItemWithFiles(item);
+    if (executeRecaptcha) {
+      void (async () => {
+        // if (!executeRecaptcha) {
+        //   // console.error('Execute recaptcha not yet available');
+        //   // return Promise.reject();
+        //   throw Error('Execute recaptcha not yet available');
+        // }
 
-      setupThumbnails(item);
-
-      const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-      if (!imageData.url && previewFiles.length >= 1) {
-        const file = previewFiles[0];
-        await loadMainImage(file!.storagePath);
-      }
-    })();
+        const gRecaptchaToken = await executeRecaptcha('viewItem');
+        const item = await invoke(getItemAnonymous, {
+          gRecaptchaToken,
+          id: itemId
+        });
+        setItemWithFiles(item);
+        setupThumbnails(item);
+        const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+        if (!imageData.url && previewFiles.length >= 1) {
+          const file = previewFiles[0];
+          await loadMainImage(file!.storagePath);
+        }
+      })();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
