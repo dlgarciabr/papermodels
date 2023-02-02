@@ -98,6 +98,9 @@ const Home: BlitzPage = () => {
   };
 
   const handleSearch = async (expression: string, page: number) => {
+    if (expression.trim() === '') {
+      return;
+    }
     const { items, count } = await search(expression, page - 1);
     setData({
       items,
@@ -133,7 +136,7 @@ const Home: BlitzPage = () => {
               justifyContent='center'
               style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
               <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
-                <Grid item xs={11}>
+                <Grid item xs={10}>
                   <TextField
                     margin='normal'
                     fullWidth
@@ -160,9 +163,13 @@ const Home: BlitzPage = () => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={1}>
-                  <Button onClick={() => handleSearch(data.expression, 1)} variant='contained' size='large'>
-                    <MdSearch title='Search' />
+                <Grid item xs={2}>
+                  <Button
+                    className='search-button'
+                    onClick={() => handleSearch(data.expression, 1)}
+                    variant='contained'
+                    size='large'>
+                    <MdSearch title='Search for a model' size='22' />
                   </Button>
                 </Grid>
               </Grid>

@@ -23,7 +23,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     const searchInput = screen.getByLabelText('Search on Papermodels');
-    const submitButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search' });
+    const submitButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     // assert
     expect(searchInput).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('Index page tests', () => {
 
     // act
     const searchInput = screen.getByLabelText('Search on Papermodels');
-    const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search' });
+    const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     await userEvent.type(searchInput, textToSearch);
     await userEvent.click(searchButton);
