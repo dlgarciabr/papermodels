@@ -98,6 +98,9 @@ const Home: BlitzPage = () => {
   };
 
   const handleSearch = async (expression: string, page: number) => {
+    if (expression.trim() === '') {
+      return;
+    }
     const { items, count } = await search(expression, page - 1);
     setData({
       items,
