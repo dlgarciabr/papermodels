@@ -297,10 +297,10 @@ describe('Category changing', () => {
     });
     cleanup();
     render(<CategoriesPage />);
+
     // assert
-
+    expect(await screen.findByText('Category successfully updated!')).toBeInTheDocument();
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
-
     expect(await screen.findByText(categoryNewName)).toBeInTheDocument();
   });
 

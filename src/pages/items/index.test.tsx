@@ -341,6 +341,7 @@ describe('Item changing', () => {
     render(<ItemsPage />);
 
     // assert
+    expect(await screen.findByText('Item successfully updated!')).toBeInTheDocument();
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
     expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
   });
