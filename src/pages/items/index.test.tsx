@@ -31,6 +31,7 @@ import getItem from 'src/items/queries/getItem';
 import getCategories from 'src/categories/queries/getCategories';
 import getItems from 'src/items/queries/getItems';
 import { Item } from './[itemId].page';
+import * as googleRecaptcha from 'react-google-recaptcha-v3';
 
 // global arrange
 const items = [
@@ -276,6 +277,7 @@ describe('Item changing', () => {
   test('User edit an existing item', async () => {
     // arrange
     const initialItem = {
+      id: 1,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
@@ -289,6 +291,7 @@ describe('Item changing', () => {
     };
 
     const modifiedItem = {
+      id: 1,
       name: 'new name test',
       description: 'new desc test',
       categoryId: 1,
@@ -336,10 +339,14 @@ describe('Item changing', () => {
       ...paginatedQueryReturnData,
       items: [modifiedItem]
     });
+
+    // assert edit
+    expect(await screen.findByText('Item successfully updated!')).toBeInTheDocument();
+
     cleanup();
     render(<ItemsPage />);
 
-    // assert
+    // assert list
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
     expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
   });
@@ -647,8 +654,11 @@ describe('Item viewing', () => {
     };
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
 
-    setupUseQueryReturn(item);
+    setupUseInvoke(async () => item);
 
     // action
     render(<Item />);
@@ -689,7 +699,11 @@ describe('Item viewing', () => {
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
     vi.spyOn(globalUtils, 'downloadFile');
-    setupUseQueryReturn(item);
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvoke(async () => item);
 
     render(<Item />);
 
@@ -733,7 +747,11 @@ describe('Item viewing', () => {
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
     vi.spyOn(globalUtils, 'downloadFile');
-    setupUseQueryReturn(item);
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvoke(async () => item);
 
     render(<Item />);
 

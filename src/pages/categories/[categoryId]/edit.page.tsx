@@ -10,6 +10,8 @@ import getCategory from 'src/categories/queries/getCategory';
 import updateCategory from 'src/categories/mutations/updateCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
 import { UpdateCategoryValidation } from 'src/categories/validations';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 export const EditCategory = () => {
   const router = useContext(RouterContext);
@@ -42,6 +44,7 @@ export const EditCategory = () => {
               const updated = await updateCategoryMutation({
                 ...values
               });
+              showToast(ToastType.SUCCESS, 'Category successfully updated!');
               await setQueryData(updated);
               await router.push(Routes.CategoriesPage());
             } catch (error: any) {

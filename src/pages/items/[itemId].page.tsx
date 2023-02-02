@@ -1,19 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
 import { Suspense, useContext, useEffect, useState } from 'react';
-import { RouterContext, Routes } from '@blitzjs/next';
+import { RouterContext, Routes, useParam } from '@blitzjs/next';
 import Head from 'next/head';
-import { useQuery } from '@blitzjs/rpc';
-import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
-import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { Button, CircularProgress, Container, Grid, Paper, Rating, Typography } from '@mui/material';
-import { FileType, Item as IItem, ItemFile as IItemFile } from 'db';
+import { FileType } from 'db';
 import { MdDownload } from 'react-icons/md';
 import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { ItemWithFiles } from 'types';
+import getItemAnonymous from 'src/items/queries/getItemAnonymous';
+import { invoke } from '@blitzjs/rpc';
 import { useDownloadFiles } from './items.hook';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
@@ -48,7 +49,7 @@ const renderContentAndUrlRow = (label: string, name: string | null, url: string 
   );
 };
 
-const DetailsTable = ({ item }: { item: IItem & { files: IItemFile[] } }) => {
+const DetailsTable = ({ item }: { item: ItemWithFiles }) => {
   const assemblyTime = Number(item.assemblyTime);
   return (
     <Grid container item xs={12}>
@@ -90,7 +91,10 @@ const DetailsTable = ({ item }: { item: IItem & { files: IItemFile[] } }) => {
 
 export const Item = () => {
   const itemId = useParam('itemId', 'number');
-  const [item] = useQuery(getItemAnonymous, { id: itemId });
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  const [itemWithFiles, setItemWithFiles] = useState<ItemWithFiles>();
+
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
   });
@@ -98,9 +102,10 @@ export const Item = () => {
     loading: false,
     items: []
   });
-  const downloadFiles = useDownloadFiles(item);
 
-  const setupThumbnails = () => {
+  const downloadFiles = useDownloadFiles(itemWithFiles);
+
+  const setupThumbnails = (item: ItemWithFiles) => {
     const thumbnails = item.files
       .filter((file) => file.artifactType === FileType.thumbnail)
       .map((file) => ({
@@ -139,14 +144,22 @@ export const Item = () => {
   };
 
   useEffect(() => {
-    setupThumbnails();
-    void (async () => {
-      const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-      if (!imageData.url && previewFiles.length >= 1) {
-        const file = previewFiles[0];
-        await loadMainImage(file!.storagePath);
-      }
-    })();
+    if (executeRecaptcha) {
+      void (async () => {
+        const gRecaptchaToken = await executeRecaptcha('viewItem');
+        const item = await invoke(getItemAnonymous, {
+          gRecaptchaToken,
+          id: itemId
+        });
+        setItemWithFiles(item);
+        setupThumbnails(item);
+        const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+        if (!imageData.url && previewFiles.length >= 1) {
+          const file = previewFiles[0];
+          await loadMainImage(file!.storagePath);
+        }
+      })();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -187,7 +200,7 @@ export const Item = () => {
   return (
     <>
       <Head>
-        <title>Papermodels - {item.name}</title>
+        <title>Papermodels - {itemWithFiles?.name}</title>
       </Head>
       <Container component='main'>
         <Grid container>
@@ -210,9 +223,11 @@ export const Item = () => {
             <Grid item container xs={6} spacing={0} alignItems='flex-start' direction='row'>
               <Grid item xs={12}>
                 <Typography variant='h6' component='div'>
-                  {item.name}
+                  {itemWithFiles?.name}
                 </Typography>
-                {item.description && <Typography variant='subtitle1'>{item.description}</Typography>}
+                {itemWithFiles?.description && (
+                  <Typography variant='subtitle1'>{itemWithFiles?.description}</Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Paper className='item-download' elevation={0}>
@@ -248,7 +263,7 @@ export const Item = () => {
                 </Paper>
               </Grid>
               <Grid item container xs={12}>
-                <DetailsTable item={item} />
+                {itemWithFiles && <DetailsTable item={itemWithFiles} />}
               </Grid>
             </Grid>
           </Grid>

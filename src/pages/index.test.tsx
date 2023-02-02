@@ -1,6 +1,8 @@
 import userEvent from '@testing-library/user-event';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import { render, screen, setupUseInvokeOnce } from 'test/utils';
+import { vi } from 'vitest';
+import * as googleRecaptcha from 'react-google-recaptcha-v3';
 import Home from './index.page';
 
 describe('Index page tests', () => {
@@ -44,6 +46,10 @@ describe('Index page tests', () => {
       hasMore: true
     });
 
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
     render(<Home />);
 
     // act
@@ -73,6 +79,10 @@ describe('Index page tests', () => {
       hasMore: true
     });
 
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
     render(<Home />);
 
     // act
@@ -87,6 +97,10 @@ describe('Index page tests', () => {
 
   test('User cleans the search when the X icon button is clicked', async () => {
     // arrange
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
     render(<Home />);
     const searchInput = screen.getByLabelText('Search on Papermodels');
     await userEvent.type(searchInput, 'test');

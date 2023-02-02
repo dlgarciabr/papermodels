@@ -1,5 +1,9 @@
 body {
-  background-image: url('/background.png');
+  background-image: url('/images/background.png');
+}
+
+.grecaptcha-badge {
+  visibility: hidden;
 }
 
 .MuiOutlinedInput-input {

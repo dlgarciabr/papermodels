@@ -18,23 +18,25 @@ import {
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { useContext, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
-import { Item, ItemFile } from 'db';
 import { useSearch } from './index.hooks';
-import Link from 'next/link';
+import { IData } from './items/index.types';
+import { ItemWithFiles } from 'types';
 
 const theme = createTheme();
 
-const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
-  let imageUrl = '';
+const ItemCard = ({ item }: { item: ItemWithFiles }) => {
+  let mainImage = '/images/dog.png';
   if (item.files.length > 0) {
-    imageUrl = item.files[0]!.storagePath as string;
+    mainImage = item.files[0]!.storagePath;
   }
   return (
     <Link href={Routes.ShowItemPage({ itemId: item.id })}>
       <Card raised className='search-card'>
-        <CardMedia image={imageUrl} title='green iguana' />
+        <CardMedia image={mainImage} title={mainImage} />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
             {item.name}
@@ -50,13 +52,6 @@ const SearchCard = ({ item }: { item: Item & { files: ItemFile[] } }) => {
     </Link>
   );
 };
-
-interface IData {
-  expression: string;
-  items: Item[];
-  currentPage: number;
-  pages: number;
-}
 
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
@@ -104,10 +99,9 @@ const Home: BlitzPage = () => {
 
   const handleSearch = async (expression: string, page: number) => {
     const { items, count } = await search(expression, page - 1);
-    const pages = Math.ceil(count / 9);
     setData({
       items,
-      pages,
+      pages: Math.ceil(count / 9),
       expression,
       currentPage: page
     });
@@ -117,7 +111,7 @@ const Home: BlitzPage = () => {
     () =>
       data.items.map((item) => (
         <Grid item key={getSimpleRandomKey()}>
-          <SearchCard item={item as Item & { files: ItemFile[] }} />
+          <ItemCard item={item as ItemWithFiles} />
         </Grid>
       )),
     [data.items]
