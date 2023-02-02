@@ -88,3 +88,8 @@ table.content-info tr td {
 .assembly-dificulty.MuiRating-root > span > .MuiRating-iconFilled {
   color: #000000;
 }
+
+button.search-button {
+  height: 54px;
+  margin-top: 6px;
+}

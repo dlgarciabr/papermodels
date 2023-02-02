@@ -29,7 +29,7 @@ exports[`Index page tests > Index page is rendered 1`] = `
             class="MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-spacing-xs-3 MuiGrid-grid-xs-12 MuiGrid-grid-sm-10 MuiGrid-grid-md-8 MuiGrid-grid-lg-8 css-ajsk3p-MuiGrid-root"
           >
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-11 css-ykovpn-MuiGrid-root"
+              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-10 css-17p3wh3-MuiGrid-root"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-17vbkzs-MuiFormControl-root-MuiTextField-root"
@@ -101,24 +101,24 @@ exports[`Index page tests > Index page is rendered 1`] = `
               </div>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-u78q51-MuiGrid-root"
+              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-2 css-1o7apob-MuiGrid-root"
             >
               <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge css-jh47zj-MuiButtonBase-root-MuiButton-root"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeLarge MuiButton-containedSizeLarge search-button css-jh47zj-MuiButtonBase-root-MuiButton-root"
                 tabindex="0"
                 type="button"
               >
                 <svg
                   fill="currentColor"
-                  height="1em"
+                  height="22"
                   stroke="currentColor"
                   stroke-width="0"
                   viewBox="0 0 24 24"
-                  width="1em"
+                  width="22"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <title>
-                    Search
+                    Search for a model
                   </title>
                   <path
                     d="M0 0h24v24H0z"
