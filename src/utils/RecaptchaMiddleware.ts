@@ -20,6 +20,7 @@ const validateCaptcha = async (gRecaptchaToken: string, res: IRequestMiddlewareR
       status: 'failure',
       message: 'Error validating captcha'
     });
+    return;
   }
 
   const reCaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
