@@ -277,6 +277,7 @@ describe('Item changing', () => {
   test('User edit an existing item', async () => {
     // arrange
     const initialItem = {
+      id: 1,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
@@ -290,6 +291,7 @@ describe('Item changing', () => {
     };
 
     const modifiedItem = {
+      id: 1,
       name: 'new name test',
       description: 'new desc test',
       categoryId: 1,
@@ -337,11 +339,14 @@ describe('Item changing', () => {
       ...paginatedQueryReturnData,
       items: [modifiedItem]
     });
+
+    // assert edit
+    expect(await screen.findByText('Item successfully updated!')).toBeInTheDocument();
+
     cleanup();
     render(<ItemsPage />);
 
-    // assert
-    expect(await screen.findByText('Item successfully updated!')).toBeInTheDocument();
+    // assert list
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
     expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
   });

@@ -256,7 +256,7 @@ describe('Category changing', () => {
       hasMore: false
     });
 
-    setupUseQueryReturn({ name: categoryName, description: categoryDescription });
+    setupUseQueryReturn({ id: 1, name: categoryName, description: categoryDescription });
 
     render(<CategoriesPage />, {
       router: {
@@ -295,11 +295,14 @@ describe('Category changing', () => {
       ],
       hasMore: false
     });
+
+    // assert edit
+    expect(await screen.findByText('Category successfully updated!')).toBeInTheDocument();
+
     cleanup();
     render(<CategoriesPage />);
 
-    // assert
-    expect(await screen.findByText('Category successfully updated!')).toBeInTheDocument();
+    // assert list
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
     expect(await screen.findByText(categoryNewName)).toBeInTheDocument();
   });
