@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Layout from 'src/core/layouts/Layout';
 import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
 import logout from 'src/auth/mutations/logout';
-import logo from 'public/logo.png';
+import logo from 'public/images/logo.png';
 import { useMutation } from '@blitzjs/rpc';
 import { Routes, BlitzPage } from '@blitzjs/next';
 import Button from '@mui/material/Button';
@@ -63,7 +63,7 @@ const Admin: BlitzPage = () => {
       <div className='container'>
         <main>
           <div className='logo'>
-            <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='118px' layout='fixed' />
+            <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
           </div>
           <p>
             <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.

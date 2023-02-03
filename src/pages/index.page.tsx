@@ -19,9 +19,11 @@ import {
 import { MdClose, MdSearch } from 'react-icons/md';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
+import logo from 'public/images/logo.png';
 import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithFiles } from 'types';
@@ -128,7 +130,9 @@ const Home: BlitzPage = () => {
         <Container component='main'>
           <Grid container spacing={3}>
             <Grid item container justifyContent='center'>
-              <Grid item>Papermodels</Grid>
+              <Grid item>
+                <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
+              </Grid>
             </Grid>
             <Grid
               item
@@ -136,7 +140,7 @@ const Home: BlitzPage = () => {
               justifyContent='center'
               style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
               <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
-                <Grid item xs={10}>
+                <Grid item xs={11}>
                   <TextField
                     margin='normal'
                     fullWidth
@@ -163,7 +167,7 @@ const Home: BlitzPage = () => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={1}>
                   <Button
                     className='search-button'
                     onClick={() => handleSearch(data.expression, 1)}
