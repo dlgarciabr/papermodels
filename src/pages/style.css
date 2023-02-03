@@ -2,6 +2,10 @@ body {
   background-image: url('/images/background.png');
 }
 
+img.logo {
+  cursor: pointer;
+}
+
 .grecaptcha-badge {
   visibility: hidden;
 }
@@ -92,4 +96,8 @@ table.content-info tr td {
 button.search-button {
   height: 54px;
   margin-top: 6px;
+}
+
+.justify-content-center {
+  text-align: center;
 }

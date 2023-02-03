@@ -7,15 +7,18 @@ import Layout from 'src/core/layouts/Layout';
 import { Button, CircularProgress, Container, Grid, Paper, Rating, Typography } from '@mui/material';
 import { FileType } from 'db';
 import { MdDownload } from 'react-icons/md';
+import Image from 'next/image';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { invoke } from '@blitzjs/rpc';
+
 import { IImageData, IThumbnailsData } from './types';
 import { getFilePath } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { ItemWithFiles } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { invoke } from '@blitzjs/rpc';
 import { useDownloadFiles } from './items.hook';
+import logo from 'public/images/logo.png';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -92,6 +95,7 @@ const DetailsTable = ({ item }: { item: ItemWithFiles }) => {
 export const Item = () => {
   const itemId = useParam('itemId', 'number');
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const router = useContext(RouterContext);
 
   const [itemWithFiles, setItemWithFiles] = useState<ItemWithFiles>();
 
@@ -203,70 +207,79 @@ export const Item = () => {
         <title>Papermodels - {itemWithFiles?.name}</title>
       </Head>
       <Container component='main'>
-        <Grid container>
-          <Grid container item spacing={1}>
-            <Grid item container xs={6}>
-              <Grid item xs={12}>
-                <Paper variant='outlined' elevation={0} className='item-main-image'>
-                  <Grid container justifyContent='center' alignContent='center' sx={{ height: '100%' }}>
-                    <Grid item>
-                      {imageData.loading && <CircularProgress />}
-                      <img className={imageData.loading ? 'hidden' : ''} src={imageData.url} alt={imageData.name} />
-                    </Grid>
+        <Grid container spacing={2} justifyContent='center'>
+          <Grid item xs={12} className='justify-content-center'>
+            <Image
+              src={`${logo.src}`}
+              alt='blitzjs'
+              width='256px'
+              height='160px'
+              layout='fixed'
+              className='logo'
+              onClick={() => router.push(Routes.Home())}
+            />
+          </Grid>
+          {/* <Grid container item spacing={1}> */}
+          <Grid item container xs={12} md={6}>
+            <Grid item xs={12}>
+              <Paper variant='outlined' elevation={0} className='item-main-image'>
+                <Grid container justifyContent='center' alignContent='center' sx={{ height: '100%' }}>
+                  <Grid item>
+                    {imageData.loading && <CircularProgress />}
+                    <img className={imageData.loading ? 'hidden' : ''} src={imageData.url} alt={imageData.name} />
                   </Grid>
-                </Paper>
-              </Grid>
-              <Grid item container xs={12}>
-                {thumbnails()}
-              </Grid>
+                </Grid>
+              </Paper>
             </Grid>
-            <Grid item container xs={6} spacing={0} alignItems='flex-start' direction='row'>
-              <Grid item xs={12}>
-                <Typography variant='h6' component='div'>
-                  {itemWithFiles?.name}
-                </Typography>
-                {itemWithFiles?.description && (
-                  <Typography variant='subtitle1'>{itemWithFiles?.description}</Typography>
-                )}
-              </Grid>
-              <Grid item xs={12}>
-                <Paper className='item-download' elevation={0}>
-                  <Grid container spacing={2} justifyContent='center'>
-                    <Grid item xs={10}>
-                      <Button
-                        variant='contained'
-                        fullWidth
-                        startIcon={<MdDownload />}
-                        onClick={() => {
-                          downloadFiles(FileType.scheme);
-                        }}>
-                        Download schemes
-                      </Button>
-                    </Grid>
-                    <Grid item xs={10}>
-                      <Button
-                        variant='contained'
-                        fullWidth
-                        startIcon={<MdDownload />}
-                        onClick={() => {
-                          downloadFiles(FileType.instruction);
-                        }}>
-                        Download instrunctions
-                      </Button>
-                    </Grid>
-                    {/* <Grid item xs={10}>
+            <Grid item container xs={12}>
+              {thumbnails()}
+            </Grid>
+          </Grid>
+          <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
+            <Grid item xs={12}>
+              <Typography variant='h6' component='div'>
+                {itemWithFiles?.name}
+              </Typography>
+              {itemWithFiles?.description && <Typography variant='subtitle1'>{itemWithFiles?.description}</Typography>}
+            </Grid>
+            <Grid item xs={12}>
+              <Paper className='item-download' elevation={0}>
+                <Grid container spacing={2} justifyContent='center'>
+                  <Grid item xs={10}>
+                    <Button
+                      variant='contained'
+                      fullWidth
+                      startIcon={<MdDownload />}
+                      onClick={() => {
+                        downloadFiles(FileType.scheme);
+                      }}>
+                      Download schemes
+                    </Button>
+                  </Grid>
+                  <Grid item xs={10}>
+                    <Button
+                      variant='contained'
+                      fullWidth
+                      startIcon={<MdDownload />}
+                      onClick={() => {
+                        downloadFiles(FileType.instruction);
+                      }}>
+                      Download instrunctions
+                    </Button>
+                  </Grid>
+                  {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
                         Download all
                       </Button>
                     </Grid> */}
-                  </Grid>
-                </Paper>
-              </Grid>
-              <Grid item container xs={12}>
-                {itemWithFiles && <DetailsTable item={itemWithFiles} />}
-              </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+            <Grid item container xs={12}>
+              {itemWithFiles && <DetailsTable item={itemWithFiles} />}
             </Grid>
           </Grid>
+          {/* </Grid> */}
         </Grid>
       </Container>
     </>
@@ -274,14 +287,8 @@ export const Item = () => {
 };
 
 const ShowItemPage = () => {
-  const router = useContext(RouterContext);
   return (
     <div>
-      <p>
-        <a href='#' onClick={() => router.push(Routes.Home())}>
-          Home
-        </a>
-      </p>
       <Suspense fallback={<div>Loading...</div>}>
         <Item />
       </Suspense>
