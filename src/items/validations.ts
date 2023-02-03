@@ -13,7 +13,7 @@ const basicValidation = {
   licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
 };
 
-const zFileTypeEnum = z.enum([FileType.scheme, FileType.instruction, FileType.preview]);
+const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
 
 export const CreateItemValidation = z.object({
   ...basicValidation,
@@ -37,4 +37,20 @@ export const UpdateItemValidation = z.object({
       index: z.number()
     })
   )
+});
+
+const basicItemFileValidation = {
+  storagePath: z.string(),
+  artifactType: zFileTypeEnum,
+  itemId: z.number(),
+  index: z.number()
+};
+
+export const CreateItemFileValidation = z.object({
+  ...basicItemFileValidation
+});
+
+export const UpdateItemFileValidation = z.object({
+  id: z.number(),
+  ...basicItemFileValidation
 });

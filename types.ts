@@ -1,5 +1,5 @@
 import { SimpleRolesIsAuthorized } from '@blitzjs/auth';
-import { User } from 'db';
+import { Item, ItemFile, User } from 'db';
 
 export type Role = 'ADMIN' | 'USER';
 
@@ -11,4 +11,8 @@ declare module '@blitzjs/auth' {
       role: Role;
     };
   }
+}
+
+export interface ItemWithFiles extends Item {
+  files: ItemFile[];
 }

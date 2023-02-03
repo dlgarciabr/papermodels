@@ -26,7 +26,7 @@ export const ItemsList = () => {
 
   const loadItems = async () => {
     const { items, hasMore } = await invoke(getItems, {
-      orderBy: { id: 'asc' },
+      orderBy: { name: 'asc' },
       skip: ITEMS_PER_PAGE * page,
       take: ITEMS_PER_PAGE
     });
@@ -44,9 +44,7 @@ export const ItemsList = () => {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            <Link href={Routes.ShowItemPage({ itemId: item.id })}>
-              <a>{item.name}</a>
-            </Link>
+            {item.name}
             <a href='#' onClick={() => goToEditPage(item.id)}>
               &nbsp;edit
             </a>
@@ -97,5 +95,7 @@ const ItemsPage = () => {
     </Layout>
   );
 };
+
+ItemsPage.authenticate = { redirectTo: '/admin' };
 
 export default ItemsPage;

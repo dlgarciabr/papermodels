@@ -7,7 +7,13 @@ export const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 
 
 export const listAllFiles = async () => await storageProvider.listAllFiles();
 
-export const getFilePath = async (path: string) => await storageProvider.getFilePath(path);
+/**
+ * Retrieves a full downloadable artifact url from a pre-defined storage provider
+ *
+ * @param path initial stored artifact path
+ * @returns full storage artifact url
+ */
+export const getFilePath = (path: string) => storageProvider.getFilePath(path);
 
 export const saveFile = (file: File) => storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.name}`);
 

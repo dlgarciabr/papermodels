@@ -21,6 +21,7 @@ const originalError = global.console.error;
 
 beforeAll(() => {
   mockDefaultGlobal();
+  mockDefaultWindow();
   mockDefaultBlitzRPC();
   mockDefaultFileStorage();
   mockDefaultAllQueries();
@@ -80,7 +81,7 @@ const mockDefaultBlitzRPC = () => {
 const mockDefaultFileStorage = () => {
   vi.mock('src/utils/fileStorage', () => ({
     deleteFile: vi.fn().mockImplementation(() => Promise.resolve()),
-    getFilePath: vi.fn(),
+    getFilePath: vi.fn().mockResolvedValue('http://localhost:3000/testUrl'),
     saveFile: vi.fn().mockImplementation(() => Promise.resolve())
   }));
 };
@@ -91,6 +92,10 @@ const initializeDefaultBlitzMock = () => {
 
 const mockDefaultGlobal = () => {
   global.fetch = vi.fn();
+};
+
+const mockDefaultWindow = () => {
+  window.URL.createObjectURL = vi.fn().mockImplementation(() => '');
 };
 
 // TODO implement a code generation for the lines below if MSW will be not used

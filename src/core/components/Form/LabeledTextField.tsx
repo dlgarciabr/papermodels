@@ -1,5 +1,3 @@
-/* istanbul ignore file -- @preserve */
-// TODO review test to improve coverage
 import { forwardRef, PropsWithoutRef } from 'react';
 import { useField, useFormikContext, ErrorMessage } from 'formik';
 

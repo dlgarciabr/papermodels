@@ -9,6 +9,9 @@ import Layout from 'src/core/layouts/Layout';
 import getCategory from 'src/categories/queries/getCategory';
 import updateCategory from 'src/categories/mutations/updateCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
+import { UpdateCategoryValidation } from 'src/categories/validations';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 export const EditCategory = () => {
   const router = useContext(RouterContext);
@@ -34,17 +37,14 @@ export const EditCategory = () => {
 
         <CategoryForm
           submitText='Update Category'
-          // TODO use a zod schema for form validation
-          //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-          //         then import and use it here
-          // schema={UpdateCategory}
+          schema={UpdateCategoryValidation}
           initialValues={category}
           onSubmit={async (values) => {
             try {
               const updated = await updateCategoryMutation({
-                id: category.id,
                 ...values
               });
+              showToast(ToastType.SUCCESS, 'Category successfully updated!');
               await setQueryData(updated);
               await router.push(Routes.CategoriesPage());
             } catch (error: any) {
@@ -76,7 +76,7 @@ const EditCategoryPage = () => {
   );
 };
 
-EditCategoryPage.authenticate = true;
+EditCategoryPage.authenticate = { redirectTo: '/admin' };
 EditCategoryPage.getLayout = (page) => <Layout>{page}</Layout>;
 
 export default EditCategoryPage;

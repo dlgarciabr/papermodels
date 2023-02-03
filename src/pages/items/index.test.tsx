@@ -24,11 +24,14 @@ import NewItemPage from './new.page';
 import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
+import * as fileStorage from 'src/utils/fileStorage';
 import { FileType, ItemFile } from 'db';
 import { useQuery } from '@blitzjs/rpc';
 import getItem from 'src/items/queries/getItem';
 import getCategories from 'src/categories/queries/getCategories';
 import getItems from 'src/items/queries/getItems';
+import { Item } from './[itemId].page';
+import * as googleRecaptcha from 'react-google-recaptcha-v3';
 
 // global arrange
 const items = [
@@ -103,7 +106,7 @@ describe('Item listing', () => {
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
 
   test('Open Item list and navigate through pages', async () => {
@@ -140,19 +143,19 @@ describe('Item listing', () => {
       }
     });
 
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[10]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: items[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
 });
 
@@ -274,6 +277,7 @@ describe('Item changing', () => {
   test('User edit an existing item', async () => {
     // arrange
     const initialItem = {
+      id: 1,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
@@ -287,6 +291,7 @@ describe('Item changing', () => {
     };
 
     const modifiedItem = {
+      id: 1,
       name: 'new name test',
       description: 'new desc test',
       categoryId: 1,
@@ -334,10 +339,14 @@ describe('Item changing', () => {
       ...paginatedQueryReturnData,
       items: [modifiedItem]
     });
+
+    // assert edit
+    expect(await screen.findByText('Item successfully updated!')).toBeInTheDocument();
+
     cleanup();
     render(<ItemsPage />);
 
-    // assert
+    // assert list
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
     expect(await screen.findByText(modifiedItem.name)).toBeInTheDocument();
   });
@@ -412,7 +421,7 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
 
     // assert
-    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]);
+    expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.storagePath);
   });
 
   test('User removes a file from an item', async () => {
@@ -514,7 +523,7 @@ describe('Item changing', () => {
       {
         name: fileName,
         mimeType: 'image/png',
-        blob: [' ']
+        blob: []
       }
     ]);
 
@@ -572,7 +581,7 @@ describe('Item changing', () => {
       expect(await screen.findByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.RADIO, { name: FileType.instruction }));
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.RADIO, { name: FileType.scheme }));
 
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
 
@@ -616,5 +625,190 @@ describe('Item removing', () => {
 
     // assert
     expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+  });
+});
+
+describe('Item viewing', () => {
+  test('renders item, main image, thumbnails and table with content information', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      files: [
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abc.jpg'
+        },
+        {
+          artifactType: FileType.preview,
+          storagePath: 'abcd.jpg'
+        }
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: 'Author Name',
+      authorLink: '',
+      licenseType: 'MIT',
+      licenseTypeLink: ''
+    };
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvoke(async () => item);
+
+    // action
+    render(<Item />);
+
+    // assert
+    expect(await screen.findByText(item.author)).toBeInTheDocument();
+    expect(await screen.findByText(`${item.assemblyTime}h`)).toBeInTheDocument();
+    expect(await screen.findByText(item.licenseType)).toBeInTheDocument();
+  });
+
+  test('renders item and click at download schemes button', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      files: [
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abc.jpg'
+        },
+        {
+          artifactType: FileType.preview,
+          storagePath: 'abcd.jpg'
+        },
+        {
+          artifactType: FileType.scheme,
+          storagePath: 'abcde.jpg'
+        }
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: 'Author Name',
+      authorLink: '',
+      licenseType: 'MIT',
+      licenseTypeLink: ''
+    };
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    vi.spyOn(globalUtils, 'downloadFile');
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvoke(async () => item);
+
+    render(<Item />);
+
+    // action
+    const schemesDownloadButton = screen.getByText('Download schemes');
+    expect(schemesDownloadButton).toBeInTheDocument();
+
+    await userEvent.click(schemesDownloadButton);
+
+    // assert
+    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[2]?.storagePath);
+  });
+
+  test('renders item and click at download instrunctions button', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      files: [
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abc.jpg'
+        },
+        {
+          artifactType: FileType.preview,
+          storagePath: 'abcd.jpg'
+        },
+        {
+          artifactType: FileType.instruction,
+          storagePath: 'abcde.jpg'
+        }
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: 'Author Name',
+      authorLink: '',
+      licenseType: 'MIT',
+      licenseTypeLink: ''
+    };
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    vi.spyOn(globalUtils, 'downloadFile');
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvoke(async () => item);
+
+    render(<Item />);
+
+    // action
+    const schemesDownloadButton = screen.getByText('Download instrunctions');
+    expect(schemesDownloadButton).toBeInTheDocument();
+
+    await userEvent.click(schemesDownloadButton);
+
+    // assert
+    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[2]?.storagePath);
+  });
+
+  test.skip('renders item, click on a thumbnail and and modify main image', async () => {
+    // arrange
+    const item = {
+      name: 'name test',
+      description: 'desc test',
+      categoryId: 1,
+      files: [
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abc.jpg'
+        },
+        {
+          artifactType: FileType.thumbnail,
+          storagePath: 'abcde.jpg'
+        },
+        {
+          artifactType: FileType.preview,
+          storagePath: 'abcd.jpg'
+        }
+      ],
+      dificulty: 1,
+      assemblyTime: 0.5,
+      author: 'Author Name',
+      authorLink: '',
+      licenseType: 'MIT',
+      licenseTypeLink: ''
+    };
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
+    // vi.mock('src/utils/fileStorage/getFilePath', () => 'http://localhost:3000/testUrl2');
+    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValue('http://localhost:3000/testUrl2');
+    // getFilePath  = vi.fn();
+
+    setupUseQueryReturn(item);
+
+    render(<Item />);
+    // screen.debug();
+    // action
+
+    // userEvent.click()
+
+    // assert
+    // expect(await screen.findByText(item.author)).toBeInTheDocument();
+    // expect(await screen.findByText(`${item.assemblyTime}h`)).toBeInTheDocument();
+    // expect(await screen.findByText(item.licenseType)).toBeInTheDocument();
   });
 });

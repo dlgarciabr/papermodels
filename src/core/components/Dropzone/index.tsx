@@ -1,9 +1,10 @@
-import { FileType } from '@prisma/client';
-import { useMemo, useState } from 'react';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { FileType } from 'db';
+import { memo, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadItemFile } from 'src/items/types';
-import { getSimpleRandomKey } from 'src/utils/global';
-import FileThumbnail from './FileThumbnail';
+import { getFileTypeByText, getSimpleRandomKey } from 'src/utils/global';
+import Thumbnail from '../Thumbnail';
 import { DropzoneProps } from './types';
 
 export const Dropzone = (props: DropzoneProps) => {
@@ -13,7 +14,7 @@ export const Dropzone = (props: DropzoneProps) => {
     const filesToAdd = acceptedFiles.map((file) => {
       file.tempId = getSimpleRandomKey();
       if (file.type.indexOf('image') >= 0) {
-        file.preview = URL.createObjectURL(file);
+        file.uploadPreview = URL.createObjectURL(file);
       }
       return file;
     });
@@ -33,7 +34,6 @@ export const Dropzone = (props: DropzoneProps) => {
     onDrop
   });
 
-  // TODO remove after defined styling method
   const baseStyle = {
     flex: 1,
     display: 'flex',
@@ -50,22 +50,18 @@ export const Dropzone = (props: DropzoneProps) => {
     transition: 'border .24s ease-in-out'
   };
 
-  // TODO remove after defined styling method
   const focusedStyle = {
     borderColor: '#2196f3'
   };
 
-  // TODO remove after defined styling method
   const acceptStyle = {
     borderColor: '#00e676'
   };
 
-  // TODO remove after defined styling method
   const rejectStyle = {
     borderColor: '#ff1744'
   };
 
-  // TODO remove after defined styling method
   const thumbsContainer = {
     display: 'flex',
     flexDirection: 'row',
@@ -109,23 +105,45 @@ export const Dropzone = (props: DropzoneProps) => {
     }
   };
 
-  const handleClickRadioType = (fileId: string, artifactType: FileType) => {
+  const handleClickRadioType = (file: UploadItemFile, artifactType: string) => {
     const files = [...dropedFiles];
-    const file = files.find((file) => file.tempId === fileId) as UploadItemFile;
-    file.artifactType = artifactType;
-    setDropedFiles(files);
+    const index = files.findIndex((file1) => file1.tempId === file.tempId);
+    dropedFiles[index] = file;
+    file.artifactType = getFileTypeByText(artifactType);
+    setDropedFiles([...dropedFiles]);
   };
 
-  const renderThumbs = useMemo(
+  const thumbnails = useMemo(
     () =>
-      dropedFiles.map((file: UploadItemFile) => (
-        <FileThumbnail
+      dropedFiles.map((file, index) => (
+        <Thumbnail
           key={getSimpleRandomKey()}
-          file={file}
-          onClickRadioType={handleClickRadioType}
-          onClickRemove={removeFileFromUploadList}
-          validationEnable={props.validateFiles}
-        />
+          index={index}
+          src={file.uploadPreview}
+          altText={file.name}
+          className={
+            props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
+          }>
+          <>
+            <RadioGroup
+              aria-labelledby='radio-group-file-type-label'
+              defaultValue={file.artifactType}
+              name='radio-group-file-type'>
+              {Object.keys(FileType)
+                .filter((key) => key !== FileType.thumbnail)
+                .map((typeKey) => (
+                  <FormControlLabel
+                    key={getSimpleRandomKey()}
+                    value={typeKey}
+                    control={<Radio size='small' />}
+                    label={typeKey}
+                    onClick={() => handleClickRadioType(file, typeKey)}
+                  />
+                ))}
+            </RadioGroup>
+            <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
+          </>
+        </Thumbnail>
       )),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dropedFiles, props.validateFiles]
@@ -138,10 +156,10 @@ export const Dropzone = (props: DropzoneProps) => {
         <p>Drag and drop some files here, or click to select files</p>
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
-      <aside style={thumbsContainer as any}>{renderThumbs}</aside>
+      <aside style={thumbsContainer as any}>{thumbnails}</aside>
       {renderRejections()}
     </section>
   );
 };
 
-export default Dropzone;
+export default memo(Dropzone);

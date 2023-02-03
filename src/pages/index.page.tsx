@@ -1,274 +1,201 @@
-import { Suspense } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import Layout from 'src/core/layouts/Layout';
-import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
-import logout from 'src/auth/mutations/logout';
-import logo from 'public/logo.png';
-import { useMutation } from '@blitzjs/rpc';
-import { Routes, BlitzPage } from '@blitzjs/next';
+import { BlitzPage, RouterContext, Routes } from '@blitzjs/next';
+import Head from 'next/head';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {
+  Container,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  CardActions,
+  Button,
+  Pagination
+} from '@mui/material';
+import { MdClose, MdSearch } from 'react-icons/md';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-/*
- * This file is just for a pleasant getting started page for your new app.
- * You can delete everything in here and start from scratch if you like.
- */
+import { getSimpleRandomKey } from 'src/utils/global';
+import { calculateMarginTop } from './index.utils';
+import logo from 'public/images/logo.png';
+import { useSearch } from './index.hooks';
+import { IData } from './items/index.types';
+import { ItemWithFiles } from 'types';
 
-const UserInfo = () => {
-  const currentUser = useCurrentUser();
-  const [logoutMutation] = useMutation(logout);
+const theme = createTheme();
 
-  // TODO implement logout test
-  /* istanbul ignore next -- @preserve */
-  const handleLogout = async () => await logoutMutation();
-
-  // TODO implement tests to cover all branches
-  /* istanbul ignore else -- @preserve */
-  if (currentUser) {
-    return (
-      <>
-        <button
-          className='button small'
-          /* istanbul ignore next -- @preserve */
-          onClick={handleLogout}>
-          Logout
-        </button>
-        <div>
-          User id: <code>{currentUser.id}</code>
-          <br />
-          User role: <code>{currentUser.role}</code>
-          <br />
-          User email: <code>{currentUser.email}</code>
-        </div>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <Link href={Routes.SignupPage()}>
-          <a className='button small'>
-            <strong>Sign Up</strong>
-          </a>
-        </Link>
-        <Link href={Routes.LoginPage()}>
-          <a className='button small'>
-            <strong>Login</strong>
-          </a>
-        </Link>
-      </>
-    );
+const ItemCard = ({ item }: { item: ItemWithFiles }) => {
+  let mainImage = '/images/dog.png';
+  if (item.files.length > 0) {
+    mainImage = item.files[0]!.storagePath;
   }
+  return (
+    <Link href={Routes.ShowItemPage({ itemId: item.id })}>
+      <Card raised className='search-card'>
+        <CardMedia image={mainImage} title={mainImage} />
+        <CardContent>
+          <Typography gutterBottom variant='h5' component='div'>
+            {item.name}
+          </Typography>
+          <Typography variant='body2' color='text.secondary' noWrap>
+            {item.description}
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Button size='small'>See more</Button>
+        </CardActions>
+      </Card>
+    </Link>
+  );
 };
 
 const Home: BlitzPage = () => {
+  const router = useContext(RouterContext);
+  const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
+  const search = useSearch();
+
+  const initialData = {
+    expression: '',
+    items: [],
+    pages: 0,
+    currentPage: Number(router.query.page) || 1
+  };
+
+  const [data, setData] = useState<IData>({ ...initialData });
+
+  const adjustSearchFieldMarginTop = () => {
+    if (data.items.length === 0) {
+      setMarginTopProp({ marginTop: calculateMarginTop() });
+    } else {
+      setMarginTopProp({ marginTop: '0px' });
+    }
+  };
+
+  useEffect(() => {
+    adjustSearchFieldMarginTop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.items]);
+
+  useEffect(() => {
+    if (router.query.expression && router.query.expression !== data.expression) {
+      const expression = String(router.query.expression);
+      setData({ ...data, expression });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.expression]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cleanSearch = () => {
+    setData({ ...initialData });
+    void router.push({});
+  };
+
+  const handleSearch = async (expression: string, page: number) => {
+    if (expression.trim() === '') {
+      return;
+    }
+    const { items, count } = await search(expression, page - 1);
+    setData({
+      items,
+      pages: Math.ceil(count / 9),
+      expression,
+      currentPage: page
+    });
+  };
+
+  const renderCards = useMemo(
+    () =>
+      data.items.map((item) => (
+        <Grid item key={getSimpleRandomKey()}>
+          <ItemCard item={item as ItemWithFiles} />
+        </Grid>
+      )),
+    [data.items]
+  );
   return (
     <Layout title='Home'>
-      <div className='container'>
-        <main>
-          <div className='logo'>
-            <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='118px' layout='fixed' />
-          </div>
-          <p>
-            <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
-          </p>
-          <div className='buttons' style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-            <Suspense fallback='Loading...'>
-              <UserInfo />
-            </Suspense>
-          </div>
-          <p>
-            <strong>
-              To add a new model to your app, <br />
-              run the following in your terminal:
-            </strong>
-          </p>
-          <pre>
-            <code>blitz generate all project name:string</code>
-          </pre>
-          <div style={{ marginBottom: '1rem' }}>(And select Yes to run prisma migrate)</div>
-          <div>
-            <p>
-              Then <strong>restart the server</strong>
-            </p>
-            <pre>
-              <code>Ctrl + c</code>
-            </pre>
-            <pre>
-              <code>blitz dev</code>
-            </pre>
-            <p>
-              <Link href='/categories'>
-                <a>categories</a>
-              </Link>
-            </p>
-            <p>
-              <Link href='/items'>
-                <a>items</a>
-              </Link>
-            </p>
-          </div>
-          <div className='buttons' style={{ marginTop: '5rem' }}>
-            <a
-              className='button'
-              href='https://blitzjs.com/docs/getting-started?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
-              target='_blank'
-              rel='noopener noreferrer'>
-              Documentation
-            </a>
-            <a
-              className='button-outline'
-              href='https://github.com/blitz-js/blitz'
-              target='_blank'
-              rel='noopener noreferrer'>
-              Github Repo
-            </a>
-            <a className='button-outline' href='https://discord.blitzjs.com' target='_blank' rel='noopener noreferrer'>
-              Discord Community
-            </a>
-          </div>
-        </main>
-
-        <footer>
-          <a
-            href='https://blitzjs.com?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
-            target='_blank'
-            rel='noopener noreferrer'>
-            Powered by Blitz.js
-          </a>
-        </footer>
-
-        <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap');
-
-          html,
-          body {
-            padding: 0;
-            margin: 0;
-            font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
-              Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-          }
-
-          * {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            box-sizing: border-box;
-          }
-          .container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-          }
-
-          main {
-            padding: 5rem 0;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-          }
-
-          main p {
-            font-size: 1.2rem;
-          }
-
-          p {
-            text-align: center;
-          }
-
-          footer {
-            width: 100%;
-            height: 60px;
-            border-top: 1px solid #eaeaea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #45009d;
-          }
-
-          footer a {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-
-          footer a {
-            color: #f4f4f4;
-            text-decoration: none;
-          }
-
-          .logo {
-            margin-bottom: 2rem;
-          }
-
-          .logo img {
-            width: 300px;
-          }
-
-          .buttons {
-            display: grid;
-            grid-auto-flow: column;
-            grid-gap: 0.5rem;
-          }
-          .button {
-            font-size: 1rem;
-            background-color: #6700eb;
-            padding: 1rem 2rem;
-            color: #f4f4f4;
-            text-align: center;
-          }
-
-          .button.small {
-            padding: 0.5rem 1rem;
-          }
-
-          .button:hover {
-            background-color: #45009d;
-          }
-
-          .button-outline {
-            border: 2px solid #6700eb;
-            padding: 1rem 2rem;
-            color: #6700eb;
-            text-align: center;
-          }
-
-          .button-outline:hover {
-            border-color: #45009d;
-            color: #45009d;
-          }
-
-          pre {
-            background: #fafafa;
-            border-radius: 5px;
-            padding: 0.75rem;
-            text-align: center;
-          }
-          code {
-            font-size: 0.9rem;
-            font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono,
-              Courier New, monospace;
-          }
-
-          .grid {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-
-            max-width: 800px;
-            margin-top: 3rem;
-          }
-
-          @media (max-width: 600px) {
-            .grid {
-              width: 100%;
-              flex-direction: column;
-            }
-          }
-        `}</style>
-      </div>
+      <Head>
+        <title>Papermodels</title>
+      </Head>
+      <ThemeProvider theme={theme}>
+        <Container component='main'>
+          <Grid container spacing={3}>
+            <Grid item container justifyContent='center'>
+              <Grid item>
+                <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
+              </Grid>
+            </Grid>
+            <Grid
+              item
+              container
+              justifyContent='center'
+              style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
+              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
+                <Grid item xs={11}>
+                  <TextField
+                    margin='normal'
+                    fullWidth
+                    label='Search on Papermodels'
+                    name='searchModel'
+                    autoFocus
+                    hidden={true}
+                    value={data.expression}
+                    onChange={(event) => setData({ ...data, expression: event.target.value })}
+                    onKeyPress={(ev) => {
+                      if (ev.key === 'Enter') {
+                        void handleSearch(data.expression, 1);
+                        ev.preventDefault();
+                      }
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton onClick={cleanSearch} title='Clean'>
+                            <MdClose />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={1}>
+                  <Button
+                    className='search-button'
+                    onClick={() => handleSearch(data.expression, 1)}
+                    variant='contained'
+                    size='large'>
+                    <MdSearch title='Search for a model' size='22' />
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item container justifyContent='center' spacing={3}>
+              {renderCards}
+            </Grid>
+            <Grid item container justifyContent='center' spacing={3} className={data.pages === 0 ? 'hidden' : ''}>
+              <Grid item container xs={12} justifyContent='center'>
+                <Pagination
+                  count={data.pages}
+                  page={data.currentPage}
+                  onChange={(_event, page) => handleSearch(data.expression, page)}
+                />
+              </Grid>
+              <Grid item container xs={12} justifyContent='center'>
+                <Typography>Total pages: {data.pages}</Typography>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Container>
+      </ThemeProvider>
     </Layout>
   );
 };

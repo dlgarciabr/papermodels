@@ -1,4 +1,4 @@
-import { LabeledTextField } from 'src/core/components/LabeledTextField';
+import { LabeledTextField } from 'src/core/components/Form/LabeledTextField';
 import { Form, FORM_ERROR } from 'src/core/components/Form';
 import signup from 'src/auth/mutations/signup';
 import { Signup } from 'src/auth/validations';

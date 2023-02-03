@@ -80,7 +80,7 @@ describe('Listing Category', () => {
 
     // assert
     expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(categories[0]!.name)).toBeInTheDocument();
   });
 
   test('Open Category list and navigate through pages', async () => {
@@ -117,19 +117,19 @@ describe('Listing Category', () => {
       }
     });
 
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(categories[0]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[10]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(categories[10]!.name)).toBeInTheDocument();
 
     // act
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
 
     // assert
-    expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: categories[0]?.name })).toBeInTheDocument();
+    expect(await screen.findByText(categories[0]!.name)).toBeInTheDocument();
   });
 });
 
@@ -256,7 +256,7 @@ describe('Category changing', () => {
       hasMore: false
     });
 
-    setupUseQueryReturn({ name: categoryName, description: categoryDescription });
+    setupUseQueryReturn({ id: 1, name: categoryName, description: categoryDescription });
 
     render(<CategoriesPage />, {
       router: {
@@ -295,12 +295,15 @@ describe('Category changing', () => {
       ],
       hasMore: false
     });
+
+    // assert edit
+    expect(await screen.findByText('Category successfully updated!')).toBeInTheDocument();
+
     cleanup();
     render(<CategoriesPage />);
-    // assert
 
+    // assert list
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Category' })).toBeInTheDocument();
-
     expect(await screen.findByText(categoryNewName)).toBeInTheDocument();
   });
 

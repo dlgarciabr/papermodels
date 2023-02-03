@@ -25,7 +25,7 @@ export const CategoriesList = () => {
 
   const loadCategories = async () => {
     const { categories, hasMore } = await invoke(getCategories, {
-      orderBy: { id: 'asc' },
+      orderBy: { name: 'asc' },
       skip: ITEMS_PER_PAGE * page,
       take: ITEMS_PER_PAGE
     });
@@ -43,9 +43,7 @@ export const CategoriesList = () => {
       <ul>
         {categories.map((category) => (
           <li key={category.id}>
-            <Link href={Routes.ShowCategoryPage({ categoryId: category.id })}>
-              <a>{category.name}</a>
-            </Link>
+            {category.name}
             <a href='#' onClick={() => goToEditPage(category.id)}>
               &nbsp;edit
             </a>
@@ -94,5 +92,7 @@ const CategoriesPage = () => {
     </Layout>
   );
 };
+
+CategoriesPage.authenticate = { redirectTo: '/admin' };
 
 export default CategoriesPage;
