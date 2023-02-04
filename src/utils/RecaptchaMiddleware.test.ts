@@ -35,7 +35,7 @@ describe('RecaptchaMidleware', () => {
       ...process,
       env: {
         ...process.env,
-        NEXT_PUBLIC_RECAPTCHA_SECRET: undefined
+        NEXT_RECAPTCHA_SECRET: undefined
       }
     };
     const next = vi.fn().mockImplementationOnce(() => {});
@@ -55,7 +55,7 @@ describe('RecaptchaMidleware', () => {
       ...process,
       env: {
         ...process.env,
-        NEXT_PUBLIC_RECAPTCHA_SECRET: 'secret123'
+        NEXT_RECAPTCHA_SECRET: 'secret123'
       }
     };
     const fetch = vi.fn().mockResolvedValue({
@@ -82,7 +82,7 @@ describe('RecaptchaMidleware', () => {
       ...process,
       env: {
         ...process.env,
-        NEXT_PUBLIC_RECAPTCHA_SECRET: 'secret123'
+        NEXT_RECAPTCHA_SECRET: 'secret123'
       }
     };
     const fetch = vi.fn().mockResolvedValue({
