@@ -14,7 +14,7 @@ interface IRequestMiddlewareResponse extends MiddlewareResponse {
 const protectedUrls = ['/api/rpc/getItemAnonymous', '/api/rpc/getItemsAnonymous'];
 
 const validateCaptcha = async (gRecaptchaToken: string, res: IRequestMiddlewareResponse, next: MiddlewareNext) => {
-  const gRecaptchaSecret = process.env.NEXT_PUBLIC_RECAPTCHA_SECRET;
+  const gRecaptchaSecret = process.env.NEXT_RECAPTCHA_SECRET;
   if (!gRecaptchaToken || !gRecaptchaSecret) {
     res.status(500).json({
       status: 'failure',
