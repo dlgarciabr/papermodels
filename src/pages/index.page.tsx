@@ -24,6 +24,7 @@ import Image from 'next/image';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
+import dog from 'public/images/dog.png';
 import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithFiles } from 'types';
@@ -31,7 +32,7 @@ import { ItemWithFiles } from 'types';
 const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithFiles }) => {
-  let mainImage = '/images/dog.png';
+  let mainImage = dog.src;
   if (item.files.length > 0) {
     mainImage = item.files[0]!.storagePath;
   }

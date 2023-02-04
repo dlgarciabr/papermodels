@@ -23,20 +23,20 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
   }
 };
 
-const dbKeepAlive = async () => {
-  if (typeof location !== 'undefined') {
-    try {
-      await fetch(`${location.origin}/api/dbKeepAlive`);
-    } finally {
-      setTimeout(() => dbKeepAlive(), 180000);
-    }
-  }
-};
+// const dbKeepAlive = async () => {
+//   if (typeof location !== 'undefined') {
+//     try {
+//       await fetch(`${location.origin}/api/dbKeepAlive`);
+//     } finally {
+//       setTimeout(() => dbKeepAlive(), 180000);
+//     }
+//   }
+// };
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const getLayout = Component.getLayout || ((page) => page);
   if (process.env.NODE_ENV === 'development') {
-    void dbKeepAlive();
+    // void dbKeepAlive();
   }
   return (
     <GoogleReCaptchaProvider
