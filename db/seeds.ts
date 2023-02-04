@@ -1,5 +1,5 @@
 import { Decimal } from '@prisma/client/runtime';
-import db, { FileType } from 'db';
+import db, { FileType, IntegrationItemStatus } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -11,6 +11,7 @@ const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Category_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
 
   const categories = [
     {
@@ -243,6 +244,23 @@ const seed = async () => {
             }
           }))
         }
+      }
+    });
+  }
+
+  const integrationItems = [
+    {
+      reference: '',
+      status: IntegrationItemStatus.todo,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+
+  for await (const integrationItem of integrationItems) {
+    await db.integrationItem.create({
+      data: {
+        ...integrationItem
       }
     });
   }
