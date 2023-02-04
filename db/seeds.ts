@@ -17,7 +17,7 @@ const seed = async () => {
       name: 'Service buildings',
       items: [
         {
-          name: 'Vet clinic',
+          name: 'Veterinary  clinic',
           description: 'A tiny and nice vet clinic building',
           dificulty: 1,
           assemblyTime: new Decimal(0.5),

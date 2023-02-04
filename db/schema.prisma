@@ -109,3 +109,16 @@ model ItemFile {
   item         Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId       Int
 }
+
+enum IntegrationItemStatus {
+  todo
+  running
+  done
+}
+
+model IntegrationItem {
+  id        Int                   @id @default(autoincrement())
+  reference String
+  status    IntegrationItemStatus
+  error     String
+}
