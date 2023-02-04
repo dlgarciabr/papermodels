@@ -1,82 +1,64 @@
-import { Suspense } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import Layout from 'src/core/layouts/Layout';
-import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
-import logout from 'src/auth/mutations/logout';
-import logo from 'public/images/logo.png';
-import { useMutation } from '@blitzjs/rpc';
-import { Routes, BlitzPage } from '@blitzjs/next';
-import Button from '@mui/material/Button';
-import { useRouter } from 'next/router';
+// Vitest Snapshot v1
 
-/*
- * This file is just for a pleasant getting started page for your new app.
- * You can delete everything in here and start from scratch if you like.
- */
-
-const UserInfo = () => {
-  const currentUser = useCurrentUser();
-  const [logoutMutation] = useMutation(logout);
-  const router = useRouter();
-
-  // TODO implement logout test
-  /* istanbul ignore next -- @preserve */
-  const handleLogout = async () => await logoutMutation();
-
-  // TODO implement tests to cover all branches
-  /* istanbul ignore else -- @preserve */
-  if (currentUser) {
-    return (
-      <>
-        <Button variant='contained' onClick={handleLogout}>
-          Logout
-        </Button>
-        <div>Hello {currentUser.email}</div>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <Button variant='contained' onClick={() => router.push(Routes.SignupPage())}>
-          Sign Up
-        </Button>
-        <Button variant='contained' onClick={() => router.push(Routes.LoginPage())}>
-          Login
-        </Button>
-      </>
-    );
-  }
-};
-
-const Admin: BlitzPage = () => {
-  return (
-    <Layout title='Home'>
-      <div className='container'>
-        <main>
-          <div className='logo'>
-            <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
-          </div>
-          <div className='buttons' style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-            <Suspense fallback='Loading...'>
-              <UserInfo />
-            </Suspense>
-          </div>
+exports[`Admin page is rendered 1`] = `
+<body>
+  <div>
+    <div
+      class="Toastify"
+    />
+    <div
+      class="container"
+    >
+      <main>
+        <div
+          class="logo"
+        >
+          <img
+            alt="blitzjs"
+            height="160px"
+            layout="fixed"
+            src="undefined"
+            width="256px"
+          />
+        </div>
+        <div
+          class="buttons"
+          style="margin-top: 1rem; margin-bottom: 1rem;"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Logout
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
           <div>
-            <p>
-              <Link href='/categories'>
-                <a>categories</a>
-              </Link>
-            </p>
-            <p>
-              <Link href='/items'>
-                <a>items</a>
-              </Link>
-            </p>
+            Hello 
+            user@email.com
           </div>
-        </main>
-
-        <style jsx global>{`
+        </div>
+        <div>
+          <p>
+            <a
+              href="/categories"
+            >
+              categories
+            </a>
+          </p>
+          <p>
+            <a
+              href="/items"
+            >
+              items
+            </a>
+          </p>
+        </div>
+      </main>
+      <style>
+        
           @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap');
 
           html,
@@ -207,10 +189,9 @@ const Admin: BlitzPage = () => {
               flex-direction: column;
             }
           }
-        `}</style>
-      </div>
-    </Layout>
-  );
-};
-
-export default Admin;
+        
+      </style>
+    </div>
+  </div>
+</body>
+`;

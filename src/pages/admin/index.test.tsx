@@ -1,12 +1,10 @@
 import { expect, vi } from 'vitest';
 
-import { render, screen } from 'test/utils';
+import { render } from 'test/utils';
 import Home from './index.page';
 
-test('renders blitz documentation link', () => {
+test('Admin page is rendered', () => {
   // arrange
-  const userEmail = 'user@email.com';
-
   vi.mock('src/users/hooks/useCurrentUser', () => ({
     useCurrentUser: () => ({
       id: 1,
@@ -17,13 +15,12 @@ test('renders blitz documentation link', () => {
   }));
 
   // act
-  render(<Home />);
+  const result = render(<Home />);
 
   // assert
-  expect(screen.getByText(userEmail)).toBeInTheDocument();
-
-  const linkElement = screen.getByText(/Documentation/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(result.baseElement).toMatchSnapshot();
 });
 
 test.todo('User click on logout buton');
+
+test.todo('User click on login buton');

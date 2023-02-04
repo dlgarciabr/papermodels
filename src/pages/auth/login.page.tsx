@@ -1,6 +1,6 @@
 /* istanbul ignore file -- @preserve */
 // TODO remove ignore and improve coverage
-import { BlitzPage } from '@blitzjs/next';
+import { BlitzPage, Routes } from '@blitzjs/next';
 import Layout from 'src/core/layouts/Layout';
 import { LoginForm } from 'src/auth/components/LoginForm.page';
 import { useRouter } from 'next/router';
@@ -12,7 +12,7 @@ const LoginPage: BlitzPage = () => {
     <Layout title='Log In'>
       <LoginForm
         onSuccess={(_user) => {
-          const next = router.query.next ? decodeURIComponent(router.query.next as string) : '/';
+          const next = router.query.next ? decodeURIComponent(router.query.next as string) : Routes.Admin();
           return router.push(next);
         }}
       />
