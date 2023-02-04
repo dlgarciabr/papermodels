@@ -8,6 +8,7 @@ import logo from 'public/images/logo.png';
 import { useMutation } from '@blitzjs/rpc';
 import { Routes, BlitzPage } from '@blitzjs/next';
 import Button from '@mui/material/Button';
+import { useRouter } from 'next/router';
 
 /*
  * This file is just for a pleasant getting started page for your new app.
@@ -17,6 +18,7 @@ import Button from '@mui/material/Button';
 const UserInfo = () => {
   const currentUser = useCurrentUser();
   const [logoutMutation] = useMutation(logout);
+  const router = useRouter();
 
   // TODO implement logout test
   /* istanbul ignore next -- @preserve */
@@ -30,28 +32,18 @@ const UserInfo = () => {
         <Button variant='contained' onClick={handleLogout}>
           Logout
         </Button>
-        <div>
-          User id: <code>{currentUser.id}</code>
-          <br />
-          User role: <code>{currentUser.role}</code>
-          <br />
-          User email: <code>{currentUser.email}</code>
-        </div>
+        <div>Hello {currentUser.email}</div>
       </>
     );
   } else {
     return (
       <>
-        <Link href={Routes.SignupPage()}>
-          <a className='button small'>
-            <strong>Sign Up</strong>
-          </a>
-        </Link>
-        <Link href={Routes.LoginPage()}>
-          <a className='button small'>
-            <strong>Login</strong>
-          </a>
-        </Link>
+        <Button variant='contained' onClick={() => router.push(Routes.SignupPage())}>
+          Sign Up
+        </Button>
+        <Button variant='contained' onClick={() => router.push(Routes.LoginPage())}>
+          Login
+        </Button>
       </>
     );
   }
@@ -65,34 +57,12 @@ const Admin: BlitzPage = () => {
           <div className='logo'>
             <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
           </div>
-          <p>
-            <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
-          </p>
           <div className='buttons' style={{ marginTop: '1rem', marginBottom: '1rem' }}>
             <Suspense fallback='Loading...'>
               <UserInfo />
             </Suspense>
           </div>
-          <p>
-            <strong>
-              To add a new model to your app, <br />
-              run the following in your terminal:
-            </strong>
-          </p>
-          <pre>
-            <code>blitz generate all project name:string</code>
-          </pre>
-          <div style={{ marginBottom: '1rem' }}>(And select Yes to run prisma migrate)</div>
           <div>
-            <p>
-              Then <strong>restart the server</strong>
-            </p>
-            <pre>
-              <code>Ctrl + c</code>
-            </pre>
-            <pre>
-              <code>blitz dev</code>
-            </pre>
             <p>
               <Link href='/categories'>
                 <a>categories</a>
@@ -104,35 +74,7 @@ const Admin: BlitzPage = () => {
               </Link>
             </p>
           </div>
-          <div className='buttons' style={{ marginTop: '5rem' }}>
-            <a
-              className='button'
-              href='https://blitzjs.com/docs/getting-started?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
-              target='_blank'
-              rel='noopener noreferrer'>
-              Documentation
-            </a>
-            <a
-              className='button-outline'
-              href='https://github.com/blitz-js/blitz'
-              target='_blank'
-              rel='noopener noreferrer'>
-              Github Repo
-            </a>
-            <a className='button-outline' href='https://discord.blitzjs.com' target='_blank' rel='noopener noreferrer'>
-              Discord Community
-            </a>
-          </div>
         </main>
-
-        <footer>
-          <a
-            href='https://blitzjs.com?utm_source=blitz-new&utm_medium=app-template&utm_campaign=blitz-new'
-            target='_blank'
-            rel='noopener noreferrer'>
-            Powered by Blitz.js
-          </a>
-        </footer>
 
         <style jsx global>{`
           @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap');
