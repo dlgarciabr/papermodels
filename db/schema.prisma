@@ -9,7 +9,7 @@ datasource db {
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["rhel-openssl-1.0.x"]
+  binaryTargets = ["windows", "rhel-openssl-1.0.x"]
 }
 
 // --------------------------------------
@@ -108,4 +108,19 @@ model ItemFile {
   artifactType FileType
   item         Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId       Int
+}
+
+enum IntegrationItemStatus {
+  todo
+  running
+  done
+}
+
+model IntegrationItem {
+  id        Int                   @id @default(autoincrement())
+  reference String
+  status    IntegrationItemStatus
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  error     String?
 }
