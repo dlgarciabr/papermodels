@@ -28,7 +28,7 @@ const dbKeepAlive = async () => {
     try {
       await fetch(`${location.origin}/api/dbKeepAlive`);
     } finally {
-      setTimeout(() => dbKeepAlive(), 2400000);
+      setTimeout(() => dbKeepAlive(), 240000);
     }
   }
 };
