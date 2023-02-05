@@ -250,8 +250,8 @@ const seed = async () => {
 
   const integrationItems = [
     {
-      reference: '',
-      status: IntegrationItemStatus.todo,
+      reference: 'testitem',
+      status: IntegrationItemStatus.pending,
       createdAt: new Date(),
       updatedAt: new Date()
     }

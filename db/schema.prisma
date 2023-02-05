@@ -111,7 +111,7 @@ model ItemFile {
 }
 
 enum IntegrationItemStatus {
-  todo
+  pending
   running
   done
   error
