@@ -4,6 +4,11 @@ import { compressImage, generateThumbnailArrayBuffer } from 'src/utils/image';
 import { removeDiacritics } from 'src/utils/string';
 import { UploadItemFile } from '../../items/types';
 
+// TODO remover
+export const testCallServerlessFunc = () => {
+  console.log('##################testCallServerlessFunc############################');
+};
+
 export const processFiles = async (files: UploadItemFile[]) => {
   const processedFiles: UploadItemFile[] = [];
   for await (const file of files) {

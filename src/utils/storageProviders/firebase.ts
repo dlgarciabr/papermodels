@@ -34,7 +34,7 @@ const getFirebaseApp = (): FirebaseApp => {
       isTokenAutoRefreshEnabled: true
     });
   } else {
-    throw 'FirebaseApp not initialized\nEnvironment variable NEXT_RECAPTCHA_SITE_KEY not set';
+    throw 'FirebaseApp not initialized\nEnvironment variable NEXT_PUBLIC_RECAPTCHA_SITE_KEY not set';
   }
   return getApps()[0] as FirebaseApp;
 };

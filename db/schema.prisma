@@ -114,6 +114,7 @@ enum IntegrationItemStatus {
   todo
   running
   done
+  error
 }
 
 model IntegrationItem {
