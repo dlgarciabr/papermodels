@@ -7,13 +7,13 @@ import { readPageNodesAsString } from './util';
 
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
-    const nodesReaded = await readPageNodesAsString(req.body.url, req.body.querySelector);
+    const originalNodes = await readPageNodesAsString(req.body.url, req.body.querySelector);
 
     const existingNodes = (
       await db.integrationItem.findMany({
         where: {
           node: {
-            in: nodesReaded
+            in: originalNodes
           }
         },
         select: {
@@ -22,17 +22,23 @@ export default api(async (req, res, _ctx) => {
       })
     ).map((existingNode) => existingNode.node);
 
-    const sanitizedNodesReaded = nodesReaded.filter(
-      (nodeReaded) => !existingNodes.some((existingNode) => nodeReaded === existingNode)
-    );
+    let sanitizedNodes: string[];
 
-    if (sanitizedNodesReaded.length === 0) {
+    if (existingNodes.length === 0) {
+      sanitizedNodes = [...originalNodes];
+    } else {
+      sanitizedNodes = originalNodes.filter(
+        (nodeReaded) => !existingNodes.some((existingNode) => nodeReaded === existingNode)
+      );
+    }
+
+    if (sanitizedNodes.length === 0) {
       res.status(304).send({});
       return;
     }
 
     await db.integrationItem.createMany({
-      data: sanitizedNodesReaded.map((stringNode) => {
+      data: sanitizedNodes.map((stringNode) => {
         const node = new JSDOM(stringNode);
         const emptyNodes = Array.from(node.window.document.querySelectorAll('*')).filter(
           (node) => node.children.length === 0
