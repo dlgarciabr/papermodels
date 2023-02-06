@@ -3,14 +3,12 @@ import { invoke } from '@blitzjs/rpc';
 import { Button, Container, createTheme, TextField, ThemeProvider } from '@mui/material';
 import { IntegrationSetup } from '@prisma/client';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import Layout from 'src/core/layouts/Layout';
 import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationSetups';
 import { getSimpleRandomKey } from 'src/utils/global';
 
 const Integration = () => {
-  // const [url, setUrl] = useState('https://papermau.blogspot.com/');
-  // const [querySelector, setQuerySelector] = useState('div>b>a');
   // const [param, setParam] = useState('href')
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,6 +21,7 @@ const Integration = () => {
     updatedAt: new Date()
   });
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
+  const [message, setMessage] = useState<string>('');
 
   const loadSetups = async () => {
     const { integrationSetups } = await invoke(getIntegrationSetups, {
@@ -32,6 +31,8 @@ const Integration = () => {
   };
 
   const evaluate = async () => {
+    setItems([]);
+    setMessage('');
     setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
@@ -45,15 +46,15 @@ const Integration = () => {
         body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.selector })
       });
       const text = await response.text();
-      const parsedItems = JSON.parse(text);
-      setItems(parsedItems);
-      const demoItem = parsedItems[0];
-      const parser = new DOMParser();
-      const demoNode = parser.parseFromString(demoItem, 'text/html');
-      const emptyNodes = Array.from(demoNode.querySelectorAll('*')).filter((node) => node.children.length === 0);
-      console.log(emptyNodes[emptyNodes.length - 1]?.innerHTML);
+      const json = JSON.parse(text);
+      if (json.error) {
+        setMessage(json.error);
+      } else {
+        setItems(json);
+      }
     } catch (error) {
       console.log(error);
+      setMessage(error);
     }
     setLoading(false);
   };
@@ -79,8 +80,17 @@ const Integration = () => {
 
   const handleSelectSetup = (id: number) => {
     const selectedSetup = integrationSetups.find((setup) => setup.id === id);
-    console.log(integrationSetups);
     setSelectedSetup(selectedSetup!);
+  };
+
+  const setParam = (e: ChangeEvent<HTMLInputElement>) => {
+    // const setup = { ...selectedSetup };
+    // setup[e.target.name] = e.target.value;
+    // setSelectedSetup(setup);
+    setSelectedSetup({
+      ...selectedSetup,
+      [e.target.name]: e.target.value
+    });
   };
 
   useEffect(() => {
@@ -103,20 +113,29 @@ const Integration = () => {
               </option>
             ))}
           </select>
-          <TextField label='Url' value={selectedSetup.domain} disabled />
-          <TextField label='Selector' value={selectedSetup.selector} disabled />
-          {/* <TextField label='Param' value={param} onChange={(e) => setParam(e.target.value)} /> */}
+          <TextField label='Domain' value={selectedSetup.domain} name='domain' onChange={(e) => setParam(e as any)} />
+          <TextField
+            label='Selector'
+            value={selectedSetup.selector}
+            name='selector'
+            onChange={(e) => setParam(e as any)}
+          />
           <Button onClick={() => evaluate()} disabled={loading}>
             Evaluate
           </Button>
           <Button onClick={() => enqueue()} disabled={loading}>
             Enqueue
           </Button>
-          <ul>
-            {items.map((item) => (
-              <li key={getSimpleRandomKey()}>{JSON.stringify(item)}</li>
-            ))}
-          </ul>
+          {loading && <p>please wait...</p>}
+          {items.length > 0 && (
+            <ul>
+              {items.map((item) => (
+                <li key={getSimpleRandomKey()}>{JSON.stringify(item)}</li>
+              ))}
+            </ul>
+          )}
+          {!loading && items.length === 0 && !message && <p>No items found</p>}
+          {<p style={{ color: 'red' }}>{message}</p>}
         </Container>
       </ThemeProvider>
     </Layout>

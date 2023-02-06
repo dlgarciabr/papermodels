@@ -251,33 +251,15 @@ const seed = async () => {
 
   const integrationSetups = [
     {
-      name: 'Papermau',
-      domain: 'https://papermau.blogspot.com/',
-      selector: 'div>b>a>'
+      name: 'Papermau Exclusive',
+      domain: 'https://papermau.blogspot.com/search/label/exclusive',
+      selector: 'div>b>a'
     }
   ];
 
   await db.integrationSetup.createMany({
     data: integrationSetups
   });
-
-  // const integrationItems = [
-  //   {
-  //     name: 'test item',
-  //     node: '<div></div>',
-  //     status: IntegrationItemStatus.pending,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date()
-  //   }
-  // ];
-
-  // for await (const integrationItem of integrationItems) {
-  //   await db.integrationItem.create({
-  //     data: {
-  //       ...integrationItem
-  //     }
-  //   });
-  // }
 };
 
 export default seed;
