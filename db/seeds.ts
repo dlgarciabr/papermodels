@@ -12,6 +12,7 @@ const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;
 
   const categories = [
     {
@@ -248,10 +249,29 @@ const seed = async () => {
     });
   }
 
+  // const integrationSetups = [
+  //   {
+  //     name: 'test item',
+  //     node: '<div></div>',
+  //     status: IntegrationItemStatus.pending,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date()
+  //   }
+  // ];
+
+  // for await (const integrationItem of integrationItems) {
+  //   await db.integrationItem.create({
+  //     data: {
+  //       ...integrationItem
+  //     }
+  //   });
+  // }
+
   const integrationItems = [
     {
-      reference: '',
-      status: IntegrationItemStatus.todo,
+      name: 'test item',
+      node: '<div></div>',
+      status: IntegrationItemStatus.pending,
       createdAt: new Date(),
       updatedAt: new Date()
     }

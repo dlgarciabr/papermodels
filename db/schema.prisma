@@ -111,7 +111,8 @@ model ItemFile {
 }
 
 enum IntegrationItemStatus {
-  todo
+  feeding
+  pending
   running
   done
   error
@@ -119,9 +120,18 @@ enum IntegrationItemStatus {
 
 model IntegrationItem {
   id        Int                   @id @default(autoincrement())
-  reference String
+  name      String
+  node      String
   status    IntegrationItemStatus
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
   error     String?
+}
+
+model IntegrationSetup {
+  id        Int      @id @default(autoincrement())
+  domain    String
+  selector  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
