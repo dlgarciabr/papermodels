@@ -1,5 +1,5 @@
 import { Decimal } from '@prisma/client/runtime';
-import db, { FileType, IntegrationItemStatus } from 'db';
+import db, { FileType } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -267,23 +267,23 @@ const seed = async () => {
   //   });
   // }
 
-  const integrationItems = [
-    {
-      name: 'test item',
-      node: '<div></div>',
-      status: IntegrationItemStatus.pending,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
+  // const integrationItems = [
+  //   {
+  //     name: 'test item',
+  //     node: '<div></div>',
+  //     status: IntegrationItemStatus.pending,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date()
+  //   }
+  // ];
 
-  for await (const integrationItem of integrationItems) {
-    await db.integrationItem.create({
-      data: {
-        ...integrationItem
-      }
-    });
-  }
+  // for await (const integrationItem of integrationItems) {
+  //   await db.integrationItem.create({
+  //     data: {
+  //       ...integrationItem
+  //     }
+  //   });
+  // }
 };
 
 export default seed;

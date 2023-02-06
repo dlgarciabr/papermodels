@@ -10,8 +10,10 @@ const Integration = () => {
   const [querySelector, setQuerySelector] = useState('div>b>a');
   // const [param, setParam] = useState('href')
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const evaluate = async () => {
+    setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
       const response = await fetch(`${location.origin}/api/integration/evaluateSetup`, {
@@ -24,16 +26,24 @@ const Integration = () => {
         body: JSON.stringify({ url, querySelector })
       });
       const text = await response.text();
-      setItems(JSON.parse(text));
+      const parsedItems = JSON.parse(text);
+      setItems(parsedItems);
+      const demoItem = parsedItems[0];
+      const parser = new DOMParser();
+      const demoNode = parser.parseFromString(demoItem, 'text/html');
+      const emptyNodes = Array.from(demoNode.querySelectorAll('*')).filter((node) => node.children.length === 0);
+      console.log(emptyNodes[emptyNodes.length - 1]?.innerHTML);
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
   };
 
-  const aaa = async () => {
+  const enqueue = async () => {
+    setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
-      await fetch(`${location.origin}/api/integration/aaa`, {
+      await fetch(`${location.origin}/api/integration/enqueue`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -45,6 +55,7 @@ const Integration = () => {
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
   };
 
   return (
@@ -58,8 +69,12 @@ const Integration = () => {
           <TextField label='Url' value={url} onChange={(e) => setUrl(e.target.value)} />
           <TextField label='Selector' value={querySelector} onChange={(e) => setQuerySelector(e.target.value)} />
           {/* <TextField label='Param' value={param} onChange={(e) => setParam(e.target.value)} /> */}
-          <Button onClick={() => evaluate()}>Evaluate</Button>
-          <Button onClick={() => aaa()}>AAAA</Button>
+          <Button onClick={() => evaluate()} disabled={loading}>
+            Evaluate
+          </Button>
+          <Button onClick={() => enqueue()} disabled={loading}>
+            Enqueue
+          </Button>
           <ul>
             {items.map((item) => (
               <li key={getSimpleRandomKey()}>{JSON.stringify(item)}</li>

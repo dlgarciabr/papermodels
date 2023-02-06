@@ -120,8 +120,8 @@ enum IntegrationItemStatus {
 
 model IntegrationItem {
   id        Int                   @id @default(autoincrement())
-  name      String
-  node      String
+  name      String                @unique
+  node      String                @unique
   status    IntegrationItemStatus
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt

@@ -26,7 +26,7 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
 const dbKeepAlive = async () => {
   if (typeof location !== 'undefined') {
     try {
-      await fetch(`${location.origin}/api/dbKeepAlive`);
+      await fetch(`${location.origin}/api/integration`);
     } finally {
       setTimeout(() => dbKeepAlive(), 240000);
     }

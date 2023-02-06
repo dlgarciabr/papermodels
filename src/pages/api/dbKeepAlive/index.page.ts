@@ -1,3 +1,4 @@
+// TODO remove after total migration to the integration api
 /* istanbul ignore file -- @preserve */
 import { Decimal } from '@prisma/client/runtime';
 import db, { IntegrationItemStatus } from 'db';
