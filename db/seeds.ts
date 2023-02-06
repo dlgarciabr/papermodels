@@ -249,23 +249,17 @@ const seed = async () => {
     });
   }
 
-  // const integrationSetups = [
-  //   {
-  //     name: 'test item',
-  //     node: '<div></div>',
-  //     status: IntegrationItemStatus.pending,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date()
-  //   }
-  // ];
+  const integrationSetups = [
+    {
+      name: 'Papermau',
+      domain: 'https://papermau.blogspot.com/',
+      selector: 'div>b>a>'
+    }
+  ];
 
-  // for await (const integrationItem of integrationItems) {
-  //   await db.integrationItem.create({
-  //     data: {
-  //       ...integrationItem
-  //     }
-  //   });
-  // }
+  await db.integrationSetup.createMany({
+    data: integrationSetups
+  });
 
   // const integrationItems = [
   //   {

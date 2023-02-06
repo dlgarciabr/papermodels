@@ -7,17 +7,6 @@ import { readPageNodesAsString } from './util';
 //   'drive.google.com'
 // ]
 
-// const readPageItemList = async (url: string, querySelector: string) => {
-//   const pageResponse = await fetch(url);
-//   const pageContent = await pageResponse.text();
-//   const document = new JSDOM(pageContent);
-//   const selection = document.window.document.querySelectorAll(querySelector);
-//   const result = Array.from(selection).map((node: any) => ({
-//     node: node.outerHTML,
-//   }));
-//   return result;
-// }
-
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const nodes = await readPageNodesAsString(req.body.url, req.body.querySelector);

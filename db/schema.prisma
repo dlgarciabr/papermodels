@@ -130,6 +130,7 @@ model IntegrationItem {
 
 model IntegrationSetup {
   id        Int      @id @default(autoincrement())
+  name      String
   domain    String
   selector  String
   createdAt DateTime @default(now())
