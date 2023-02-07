@@ -5,7 +5,7 @@ import { useMutation } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import createCategory from 'src/categories/mutations/createCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
-import { CreateCategoryValidation } from 'src/categories/validations';
+import { CreateCategoryValidation } from 'src/categories/mutations/validations';
 
 const NewCategoryPage = () => {
   const router = useContext(RouterContext);

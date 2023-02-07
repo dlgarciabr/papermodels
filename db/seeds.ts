@@ -253,7 +253,14 @@ const seed = async () => {
     {
       name: 'Papermau Exclusive',
       domain: 'https://papermau.blogspot.com/search/label/exclusive',
-      selector: 'div>b>a'
+      itemUrlSelector: 'div > b > a',
+      previewImagesSelector: ''
+    },
+    {
+      name: 'Paperdiorama machines',
+      domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
+      itemUrlSelector: 'article > div > h2 > a',
+      previewImagesSelector: 'div > div > div > img.caption'
     }
   ];
 

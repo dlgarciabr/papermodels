@@ -1,6 +1,6 @@
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
-import { UpdateItemValidation } from '../validations';
+import { UpdateItemValidation } from './validations';
 
 export default resolver.pipe(resolver.zod(UpdateItemValidation), resolver.authorize(), async ({ id, ...data }) => {
   const item = await db.item.update({

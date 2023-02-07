@@ -20,7 +20,7 @@ import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
-import { UpdateItemValidation } from 'src/items/validations';
+import { UpdateItemValidation } from 'src/items/mutations/validations';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 

@@ -1,60 +1,64 @@
 /* istanbul ignore file -- @preserve */
 import db, { IntegrationItemStatus } from 'db';
 import { api } from 'src/blitz-server';
-import { JSDOM } from 'jsdom';
-import { jsEscape } from 'src/utils/string';
+import fs from 'fs';
 
-const scriptDependencies = `
-  // import { 
-  //   readPageNodesAsString, 
-  //   fetchPageAsString,
-  //   executeSelectorOnHtmlText
-  // } from './util';
-  // const { 
-  //   readPageNodesAsString, 
-  //   fetchPageAsString,
-  //   executeSelectorOnHtmlText
-  // } = require('./util');
-`;
+import { executeSelectorAllOnHtmlText, fetchPageAsString } from './util';
+import { Decimal } from '@prisma/client/runtime';
+
+// const scriptDependencies = `
+// import {
+//   readPageNodesAsString,
+//   fetchPageAsString,
+//   executeSelectorOnHtmlText
+// } from './util';
+// const {
+//   readPageNodesAsString,
+//   fetchPageAsString,
+//   executeSelectorOnHtmlText
+// } = require('./util');
+// `;
 
 const setup = {
   ignoreTexts: ['.by.Papermau.Download.Now!'], // TODO use this
-  steps: [
-    {
-      script: `
-        console.log()
-        const node = '{0}';
-        // const a = executeSelectorOnHtmlText(node, 'a');
-        // const page = await fetchPageAsString(url);
-        // test();
-      `
-    }
-  ]
+  previewImagesSelector: 'div > div > div > img.caption',
+  descriptionSelector: ''
+  // steps: [
+  //   {
+  //     script: `
+  //       console.log()
+  //       const node = '{0}';
+  //       // const a = executeSelectorOnHtmlText(node, 'a');
+  //       // const page = await fetchPageAsString(url);
+  //       // test();
+  //     `
+  //   }
+  // ]
 };
 
-const runStepScript = (script: string, params: string[]) => {
-  let finalScript = `
-    ${scriptDependencies}
-    ${script}
-  `;
+// const runStepScript = (script: string, params: string[]) => {
+//   let finalScript = `
+//     ${scriptDependencies}
+//     ${script}
+//   `;
 
-  params.forEach((param, index) => {
-    finalScript = finalScript.replace(`{${index}}`, jsEscape(param));
-  });
+//   params.forEach((param, index) => {
+//     finalScript = finalScript.replace(`{${index}}`, jsEscape(param));
+//   });
 
-  const dom = new JSDOM(
-    `
-    <body>
-      <script src="utilJS.js"></script>
-      <script>${finalScript}</script>
-    </body>`,
-    {
-      runScripts: 'dangerously',
-      resources: 'usable'
-    }
-  );
-  console.log('######', JSON.stringify(dom.window.document.scripts));
-};
+//   const dom = new JSDOM(
+//     `
+//     <body>
+//       <script src="utilJS.js"></script>
+//       <script>${finalScript}</script>
+//     </body>`,
+//     {
+//       runScripts: 'dangerously',
+//       resources: 'usable'
+//     }
+//   );
+//   console.log('######', JSON.stringify(dom.window.document.scripts));
+// };
 
 const processIntegration = async () => {
   const integrationList = await db.integrationItem.findMany({
@@ -78,21 +82,43 @@ const processIntegration = async () => {
           }
         });
 
-        setup.steps.forEach((step) => {
-          runStepScript(step.script, [integrationItem.node]);
-          // The script will be executed and modify the DOM:
-          // dom.window.document.body.children.length === 2;
+        const pageContent = await fetchPageAsString(integrationItem.url);
+
+        // setup.steps.forEach((step) => {
+        //   runStepScript(step.script, [integrationItem.node]);
+        //   // The script will be executed and modify the DOM:
+        //   // dom.window.document.body.children.length === 2;
+        // });
+
+        const description = '';
+        const dificulty = 0;
+        const categoryId = 1;
+        const assemblyTime = new Decimal(1);
+
+        // TODO save preview images
+        const previewImageNodes = executeSelectorAllOnHtmlText(pageContent, setup.previewImagesSelector);
+
+        previewImageNodes.forEach((node, index) => {
+          const src = node.getAttribute('src');
+          if (src) {
+            void fetch(src).then(async (response) => {
+              const buffer = await response.arrayBuffer();
+              fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => {});
+            });
+          } else {
+            //TODO handle error
+          }
         });
 
-        // await db.item.create({
-        //   data: {
-        //     name: integrationItem.name,
-        //     description: 'item desc',
-        //     dificulty: 1,
-        //     assemblyTime: new Decimal(1),
-        //     categoryId: 1
-        //   }
-        // });
+        await db.item.create({
+          data: {
+            name: integrationItem.name,
+            description,
+            dificulty,
+            assemblyTime,
+            categoryId
+          }
+        });
 
         await db.integrationItem.update({
           where: { id: integrationItem.id },

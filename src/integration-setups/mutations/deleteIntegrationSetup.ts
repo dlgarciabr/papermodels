@@ -7,7 +7,6 @@ const DeleteIntegrationSetup = z.object({
 });
 
 export default resolver.pipe(resolver.zod(DeleteIntegrationSetup), resolver.authorize(), async ({ id }) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const integrationSetup = await db.integrationSetup.deleteMany({ where: { id } });
   return integrationSetup;
 });

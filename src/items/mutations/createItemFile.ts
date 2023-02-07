@@ -1,6 +1,6 @@
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
-import { CreateItemFileValidation } from '../validations';
+import { CreateItemFileValidation } from './validations';
 
 export default resolver.pipe(resolver.zod(CreateItemFileValidation), resolver.authorize(), async (input) => {
   const item = await db.itemFile.create({

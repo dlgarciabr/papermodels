@@ -1,12 +1,12 @@
 import { getAntiCSRFToken } from '@blitzjs/auth';
 import { invoke } from '@blitzjs/rpc';
-import { Button, Container, createTheme, TextField, ThemeProvider } from '@mui/material';
+import { Button, Container, Grid, TextField } from '@mui/material';
 import { IntegrationSetup } from '@prisma/client';
 import Head from 'next/head';
 import { ChangeEvent, useEffect, useState } from 'react';
-import Layout from 'src/core/layouts/Layout';
 import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationSetups';
-import { getSimpleRandomKey } from 'src/utils/global';
+import Box from '@mui/material/Box';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 const Integration = () => {
   const [items, setItems] = useState<any[]>([]);
@@ -14,7 +14,8 @@ const Integration = () => {
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
     id: 0,
     domain: '',
-    selector: '',
+    itemUrlSelector: '',
+    previewImagesSelector: '',
     name: '',
     createdAt: new Date(),
     updatedAt: new Date()
@@ -42,7 +43,7 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.selector })
+        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.itemUrlSelector })
       });
       const text = await response.text();
       const json = JSON.parse(text);
@@ -69,7 +70,7 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.selector })
+        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.itemUrlSelector })
       });
     } catch (error) {
       console.log(error);
@@ -93,48 +94,65 @@ const Integration = () => {
     void loadSetups();
   }, []);
 
+  const columns: GridColDef[] = [{ field: 'id', headerName: 'Url', width: 1000 }];
+
+  const rows = items.map((item) => ({ id: item }));
+
   return (
-    <Layout title='Home'>
+    <>
       <Head>
         <title>Papermodels</title>
       </Head>
-      <ThemeProvider theme={createTheme()}>
-        <Container component='main'>
-          Setup
-          <select onChange={(e) => handleSelectSetup(Number(e.target.value))}>
-            <option value={-1}>Setups...</option>
-            {integrationSetups.map((item) => (
-              <option key={Math.random().toString(36).substring(2, 15)} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <TextField label='Domain' value={selectedSetup.domain} name='domain' onChange={(e) => setParam(e as any)} />
-          <TextField
-            label='Selector'
-            value={selectedSetup.selector}
-            name='selector'
-            onChange={(e) => setParam(e as any)}
-          />
-          <Button onClick={() => evaluate()} disabled={loading}>
-            Evaluate
-          </Button>
-          <Button onClick={() => enqueue()} disabled={loading}>
-            Enqueue
-          </Button>
-          {loading && <p>please wait...</p>}
-          {items.length > 0 && (
-            <ul>
-              {items.map((item) => (
-                <li key={getSimpleRandomKey()}>{JSON.stringify(item)}</li>
+      <Container component='main'>
+        <Grid container>
+          <Grid item xs={12}>
+            Setup
+            <select onChange={(e) => handleSelectSetup(Number(e.target.value))}>
+              <option value={-1}>Setups...</option>
+              {integrationSetups.map((item) => (
+                <option key={Math.random().toString(36).substring(2, 15)} value={item.id}>
+                  {item.name}
+                </option>
               ))}
-            </ul>
-          )}
-          {!loading && items.length === 0 && !message && <p>No items found</p>}
-          {<p style={{ color: 'red' }}>{message}</p>}
-        </Container>
-      </ThemeProvider>
-    </Layout>
+            </select>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label='Domain'
+              value={selectedSetup.domain}
+              name='domain'
+              onChange={(e) => setParam(e as any)}
+            />
+            <TextField
+              label='Item url selector'
+              value={selectedSetup.itemUrlSelector}
+              name='itemUrlSelector'
+              onChange={(e) => setParam(e as any)}
+            />
+            <TextField
+              label='Preview images selector'
+              value={selectedSetup.previewImagesSelector}
+              name='previewImagesSelector'
+              onChange={(e) => setParam(e as any)}
+            />
+            <Button onClick={() => evaluate()} disabled={loading}>
+              Evaluate
+            </Button>
+            <Button onClick={() => enqueue()} disabled={loading}>
+              Enqueue
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          {loading && <p>please wait...</p>}
+          {<p style={{ color: 'red', fontWeight: 'bold' }}>{message}</p>}
+          <Box sx={{ height: 400, width: '100%' }}>
+            <DataGrid rows={rows} columns={columns} pageSize={5} rowsPerPageOptions={[5]} loading={loading} />
+          </Box>
+        </Grid>
+      </Container>
+    </>
   );
 };
 
