@@ -13,10 +13,13 @@ const Integration = () => {
   const [loading, setLoading] = useState(false);
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
     id: 0,
+    name: '',
     domain: '',
     itemUrlSelector: '',
     previewImagesSelector: '',
-    name: '',
+    categorySelector: '',
+    categoryBinding: '',
+    descriptionSelector: null,
     createdAt: new Date(),
     updatedAt: new Date()
   });
@@ -53,8 +56,7 @@ const Integration = () => {
         setItems(json);
       }
     } catch (error) {
-      console.log(error);
-      setMessage(error);
+      setMessage(error.message);
     }
     setLoading(false);
   };
@@ -70,10 +72,16 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.itemUrlSelector })
+        body: JSON.stringify({
+          url: selectedSetup.domain,
+          querySelector: selectedSetup.itemUrlSelector,
+          setupId: selectedSetup.id,
+          categorySelector: selectedSetup.categorySelector,
+          categoryBinding: JSON.parse(selectedSetup.categoryBinding)
+        })
       });
     } catch (error) {
-      console.log(error);
+      setMessage(error.message);
     }
     setLoading(false);
   };

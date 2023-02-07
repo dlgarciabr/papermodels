@@ -1,8 +1,7 @@
 import { JSDOM } from 'jsdom';
 
 export const fetchPageAsString = async (url: string) => {
-  const pageResponse = await fetch(url);
-  const pageContent = await pageResponse.text();
+  const pageContent = await (await fetch(url)).text();
   return pageContent;
 };
 
@@ -16,10 +15,9 @@ export const executeSelectorAllOnHtmlText = (content: string, querySelector: str
   return window.document.querySelectorAll(querySelector);
 };
 
-export const readPageNodesAsString = async (url: string, querySelector: string) => {
-  const pageContent = await fetchPageAsString(url);
+export const readPageNodesAsString = (pageContent: string, querySelector: string) => {
   const selection = executeSelectorAllOnHtmlText(pageContent, querySelector);
-  return Array.from(selection).map((node: Element) => node.outerHTML);
+  return Array.from(selection).map((node) => node.outerHTML);
 };
 
 export const readPageUrlsFromNodes = (nodesAsString: string[]) => {
@@ -27,7 +25,8 @@ export const readPageUrlsFromNodes = (nodesAsString: string[]) => {
 };
 
 export const readPageUrls = async (url: string, querySelector: string) => {
-  const nodes = await readPageNodesAsString(url, querySelector);
+  const pageContent = await fetchPageAsString(url);
+  const nodes = readPageNodesAsString(pageContent, querySelector);
   return nodes.map((node) => executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'));
 };
 

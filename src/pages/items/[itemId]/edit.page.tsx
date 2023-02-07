@@ -161,7 +161,8 @@ export const EditItem = () => {
           initialValues={{
             ...item,
             categoryId: item.categoryId.toString(),
-            assemblyTime: parseFloat(item.assemblyTime.toString()),
+            dificulty: item.dificulty || undefined,
+            assemblyTime: item.assemblyTime ? parseFloat(item.assemblyTime.toString()) : undefined,
             author: item.author || '',
             authorLink: item.authorLink || '',
             licenseType: item.licenseType || '',

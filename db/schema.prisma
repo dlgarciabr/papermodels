@@ -84,8 +84,8 @@ model Item {
   category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId      Int
   files           ItemFile[]
-  dificulty       Int
-  assemblyTime    Decimal
+  dificulty       Int?
+  assemblyTime    Decimal?
   author          String?
   authorLink      String?
   licenseType     String?
@@ -118,22 +118,29 @@ enum IntegrationItemStatus {
   error
 }
 
-model IntegrationItem {
-  id        Int                   @id @default(autoincrement())
-  name      String
-  url       String                @unique
-  status    IntegrationItemStatus
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  error     String?
-}
-
 model IntegrationSetup {
-  id                    Int      @id @default(autoincrement())
+  id                    Int               @id @default(autoincrement())
   name                  String
   domain                String
   itemUrlSelector       String
+  categorySelector      String
+  categoryBinding       String
+  descriptionSelector   String?
   previewImagesSelector String
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  integrationItems      IntegrationItem[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+}
+
+model IntegrationItem {
+  id         Int                   @id @default(autoincrement())
+  name       String
+  url        String                @unique
+  status     IntegrationItemStatus
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  setup      IntegrationSetup      @relation(fields: [setupId], references: [id])
+  setupId    Int
+  categoryId Int
+  error      String?
 }

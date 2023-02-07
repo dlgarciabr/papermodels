@@ -1,72 +1,25 @@
 /* istanbul ignore file -- @preserve */
-import db, { IntegrationItemStatus } from 'db';
+import db, { IntegrationItem, IntegrationItemStatus, IntegrationSetup } from 'db';
 import { api } from 'src/blitz-server';
-import fs from 'fs';
 
-import { executeSelectorAllOnHtmlText, fetchPageAsString } from './util';
-import { Decimal } from '@prisma/client/runtime';
+// import fs from 'fs';
+import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
-// const scriptDependencies = `
-// import {
-//   readPageNodesAsString,
-//   fetchPageAsString,
-//   executeSelectorOnHtmlText
-// } from './util';
-// const {
-//   readPageNodesAsString,
-//   fetchPageAsString,
-//   executeSelectorOnHtmlText
-// } = require('./util');
-// `;
-
-const setup = {
-  ignoreTexts: ['.by.Papermau.Download.Now!'], // TODO use this
-  previewImagesSelector: 'div > div > div > img.caption',
-  descriptionSelector: ''
-  // steps: [
-  //   {
-  //     script: `
-  //       console.log()
-  //       const node = '{0}';
-  //       // const a = executeSelectorOnHtmlText(node, 'a');
-  //       // const page = await fetchPageAsString(url);
-  //       // test();
-  //     `
-  //   }
-  // ]
-};
-
-// const runStepScript = (script: string, params: string[]) => {
-//   let finalScript = `
-//     ${scriptDependencies}
-//     ${script}
-//   `;
-
-//   params.forEach((param, index) => {
-//     finalScript = finalScript.replace(`{${index}}`, jsEscape(param));
-//   });
-
-//   const dom = new JSDOM(
-//     `
-//     <body>
-//       <script src="utilJS.js"></script>
-//       <script>${finalScript}</script>
-//     </body>`,
-//     {
-//       runScripts: 'dangerously',
-//       resources: 'usable'
-//     }
-//   );
-//   console.log('######', JSON.stringify(dom.window.document.scripts));
+// const setup = {
+//   // ignoreTexts: ['.by.Papermau.Download.Now!'], // TODO use this
+//   descriptionSelector: 'article > div> div > div > p'
 // };
 
 const processIntegration = async () => {
-  const integrationList = await db.integrationItem.findMany({
+  const integrationList = (await db.integrationItem.findMany({
     where: {
       status: IntegrationItemStatus.pending
     },
-    take: 1
-  });
+    take: 1,
+    include: {
+      setup: true
+    }
+  })) as (IntegrationItem & { setup: IntegrationSetup })[];
 
   if (integrationList.length > 0) {
     console.log(`[IntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
@@ -75,40 +28,54 @@ const processIntegration = async () => {
     for await (const integrationItem of integrationList) {
       try {
         console.log(`[IntegrationJOB] Integrating item '${integrationItem.name}'...`);
-        await db.integrationItem.update({
-          where: { id: integrationItem.id },
-          data: {
-            status: IntegrationItemStatus.running
-          }
-        });
+        // await db.integrationItem.update({
+        //   where: { id: integrationItem.id },
+        //   data: {
+        //     status: IntegrationItemStatus.running
+        //   }
+        // });
 
         const pageContent = await fetchPageAsString(integrationItem.url);
 
-        // setup.steps.forEach((step) => {
-        //   runStepScript(step.script, [integrationItem.node]);
-        //   // The script will be executed and modify the DOM:
-        //   // dom.window.document.body.children.length === 2;
-        // });
+        let description;
+        if (integrationItem.setup.descriptionSelector) {
+          description = getTextFromNodeAsString(pageContent, integrationItem.setup.descriptionSelector);
+        }
 
-        const description = '';
-        const dificulty = 0;
-        const categoryId = 1;
-        const assemblyTime = new Decimal(1);
+        let dificulty;
+        let assemblyTime;
 
         // TODO save preview images
-        const previewImageNodes = executeSelectorAllOnHtmlText(pageContent, setup.previewImagesSelector);
+        const previewImageNodes = executeSelectorAllOnHtmlText(
+          pageContent,
+          integrationItem.setup.previewImagesSelector
+        );
 
-        previewImageNodes.forEach((node, index) => {
+        let index = 0;
+        for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            void fetch(src).then(async (response) => {
-              const buffer = await response.arrayBuffer();
-              fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => {});
-            });
+            // eslint-disable-next-line unused-imports/no-unused-vars
+            const buffer = await (await fetch(src)).arrayBuffer();
+            //fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
+            // eslint-disable-next-line unused-imports/no-unused-vars
+            index++;
           } else {
             //TODO handle error
           }
-        });
+        }
+
+        // previewImageNodes.forEach((node, index) => {
+        //   const src = node.getAttribute('src');
+        //   if (src) {
+        //     void fetch(src).then(async (response) => {
+        //       // const buffer = await response.arrayBuffer();
+        //       // fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
+        //     });
+        //   } else {
+        //     //TODO handle error
+        //   }
+        // });
 
         await db.item.create({
           data: {
@@ -116,23 +83,23 @@ const processIntegration = async () => {
             description,
             dificulty,
             assemblyTime,
-            categoryId
+            categoryId: integrationItem.categoryId
           }
         });
 
-        await db.integrationItem.update({
-          where: { id: integrationItem.id },
-          data: {
-            status: IntegrationItemStatus.done
-          }
-        });
+        // await db.integrationItem.update({
+        //   where: { id: integrationItem.id },
+        //   data: {
+        //     status: IntegrationItemStatus.done
+        //   }
+        // });
       } catch (error) {
         console.log(`[IntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
-        console.error(error);
+        console.log(error);
         await db.integrationItem.update({
           where: { id: integrationItem.id },
           data: {
-            error,
+            error: error.message,
             status: IntegrationItemStatus.error
           }
         });

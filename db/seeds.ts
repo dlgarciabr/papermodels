@@ -10,13 +10,19 @@ import db, { FileType } from 'db';
 const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Category_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationItem_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;
 
   const categories = [
     {
-      name: 'Service buildings',
+      name: 'Misc.',
+      items: []
+    },
+    {
+      name: 'Buildings',
       items: [
         {
           name: 'Veterinary  clinic',
@@ -37,6 +43,20 @@ const seed = async () => {
               artifactType: FileType.thumbnail
             }
           ]
+        },
+        {
+          name: 'Pharmacy',
+          description: '',
+          dificulty: 1,
+          assemblyTime: new Decimal(1),
+          files: []
+        },
+        {
+          name: 'Market',
+          description: '',
+          dificulty: 1,
+          assemblyTime: new Decimal(1),
+          files: []
         }
       ]
     },
@@ -162,7 +182,7 @@ const seed = async () => {
       ]
     },
     {
-      name: 'Houses & residential apartments',
+      name: 'Houses & Apartments',
       items: [
         {
           name: 'Farm House',
@@ -186,25 +206,6 @@ const seed = async () => {
       ]
     },
     {
-      name: 'Stores',
-      items: [
-        {
-          name: 'Pharmacy',
-          description: '',
-          dificulty: 1,
-          assemblyTime: new Decimal(1),
-          files: []
-        },
-        {
-          name: 'Market',
-          description: '',
-          dificulty: 1,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
-      ]
-    },
-    {
       name: 'Plants & trees',
       items: [
         {
@@ -217,7 +218,7 @@ const seed = async () => {
       ]
     },
     {
-      name: 'Miscelaneus',
+      name: 'Origami',
       items: [
         {
           name: 'Origami bird',
@@ -227,6 +228,10 @@ const seed = async () => {
           files: []
         }
       ]
+    },
+    {
+      name: 'Work Machines',
+      items: []
     }
   ];
 
@@ -236,7 +241,7 @@ const seed = async () => {
         name,
         description: name,
         items: {
-          create: items.map((item) => ({
+          create: items!.map((item) => ({
             ...item,
             files: {
               create: item.files.map((file) => ({
@@ -254,12 +259,22 @@ const seed = async () => {
       name: 'Papermau Exclusive',
       domain: 'https://papermau.blogspot.com/search/label/exclusive',
       itemUrlSelector: 'div > b > a',
+      categorySelector: '',
+      categoryBinding: '',
       previewImagesSelector: ''
     },
     {
       name: 'Paperdiorama machines',
       domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
       itemUrlSelector: 'article > div > h2 > a',
+      categorySelector: 'p.post-category > a',
+      categoryBinding: `[
+        {
+          "systemCategoryName": "Work Machines",
+          "pageCategoryName": "Work Machines"
+        }
+      ]`,
+      descriptionSelector: 'article > div> div > div > p',
       previewImagesSelector: 'div > div > div > img.caption'
     }
   ];

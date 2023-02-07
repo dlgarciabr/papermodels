@@ -4,8 +4,8 @@ import { z } from 'zod';
 const basicValidation = {
   name: z.string().min(5, 'Field required and must contain at least 5 characters').max(30),
   description: z.string().max(100),
-  dificulty: z.number().min(1).max(5),
-  assemblyTime: z.number().min(0.5).max(100),
+  dificulty: z.number().min(1).max(5).optional(),
+  assemblyTime: z.number().min(0.5).max(100).optional(),
   categoryId: z.string().regex(/^((?!-1).)*$/, 'Field required'),
   author: z.string().max(50).nullable(),
   authorLink: z.union([z.string().max(100).url().nullish(), z.literal('')]),

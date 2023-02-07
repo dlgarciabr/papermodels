@@ -2,11 +2,17 @@
 import db, { IntegrationItemStatus } from 'db';
 import { api } from 'src/blitz-server';
 
-import { getTextFromNodeAsString, readPageNodesAsString, readPageUrlsFromNodes } from './util';
+import { fetchPageAsString, getTextFromNodeAsString, readPageNodesAsString, readPageUrlsFromNodes } from './util';
+
+const parseCategory = (pageContent: string, categorySelector: string, categoryBinding: any[]) => {
+  const pageCategory = getTextFromNodeAsString(pageContent, categorySelector);
+  return categoryBinding.find((cat) => cat.pageCategoryName === pageCategory).systemCategoryName;
+};
 
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
-    const pageNodes = await readPageNodesAsString(req.body.url, req.body.querySelector);
+    const pageContent = await fetchPageAsString(req.body.url);
+    const pageNodes = readPageNodesAsString(pageContent, req.body.querySelector);
     const pageUrls = readPageUrlsFromNodes(pageNodes) as string[];
 
     if (pageUrls.length > 0) {
@@ -36,14 +42,19 @@ export default api(async (req, res, _ctx) => {
         return;
       }
 
+      const categories = await db.category.findMany();
+
       await db.integrationItem.createMany({
         data: sanitizedUrls.map((url) => {
           const currentNode = pageNodes.find((node) => node.includes(url));
           const name = getTextFromNodeAsString(currentNode!, '*') || url;
+          const categoryName = parseCategory(pageContent, req.body.categorySelector, req.body.categoryBinding);
           return {
             name,
             url,
-            status: IntegrationItemStatus.pending
+            status: IntegrationItemStatus.pending,
+            setupId: req.body.setupId,
+            categoryId: categories.find((category) => category.name === categoryName)?.id || 1
           };
         })
       });
