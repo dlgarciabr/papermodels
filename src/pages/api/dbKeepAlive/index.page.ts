@@ -3,28 +3,8 @@
 import { Decimal } from '@prisma/client/runtime';
 import db, { IntegrationItemStatus } from 'db';
 import { api } from 'src/blitz-server';
-// import { JSDOM } from 'jsdom';
-
-// const readPageItemList = async () => {
-//   const url = 'https://papermau.blogspot.com/';
-//   const querySelector = 'div>b>a';
-//   const param = 'href';
-
-//   const pageResponse = await fetch(url);
-//   const pageContent = await pageResponse.text();
-//   const document = new JSDOM(pageContent);
-//   const selection = document.window.document.querySelectorAll(querySelector);
-//   await db.integrationItem.createMany({
-//     data: Array.from(selection).map((node: any) => ({
-//       reference: node[param],
-//       status: IntegrationItemStatus.feeding
-//     }))
-//   });
-// }
 
 const processIntegration = async () => {
-  // void readPageItemList();
-
   const integrationList = await db.integrationItem.findMany({
     where: {
       status: IntegrationItemStatus.pending
@@ -72,14 +52,6 @@ const processIntegration = async () => {
         });
       }
     }
-
-    // for await (const integrationItem of integrationList) {
-
-    // const processedList = await processFiles(integrationItem.integrationList);
-    // console.log('processedList', processedList)
-    // await uploadFiles(processedList);
-    // await saveItemFiles(processedList);
-    // }
 
     console.log(`[IntegrationJOB] ${new Date().toISOString()} Item integration process finished.`);
   } else {

@@ -183,7 +183,38 @@ for (let i = 0; i < defaultDiacriticsRemovalMap.length; i++) {
 }
 
 export const removeDiacritics = (text: string) => {
-  return text.replace(/[^\u0000-\u007E]/g, (a) => {
-    return diacriticsMap[a] || a;
+  return text.replace(/[^\u0000-\u007E]/g, (character) => {
+    return diacriticsMap[character] || character;
+  });
+};
+
+/**
+ * Extracted from https://github.com/joliss/js-string-escape/blob/master/index.js
+ *
+ * @param text
+ * @returns
+ */
+export const jsEscape = (text: string) => {
+  return text.replace(/["'\\\n\r\u2028\u2029]/g, (character) => {
+    // Escape all characters not included in SingleStringCharacters and
+    // DoubleStringCharacters on
+    // http://www.ecma-international.org/ecma-262/5.1/#sec-7.8.4
+    switch (character) {
+      case '"':
+      case "'":
+      case '\\':
+        return '\\' + character;
+      // Four possible LineTerminator characters need to be escaped:
+      case '\n':
+        return '\\n';
+      case '\r':
+        return '\\r';
+      case '\u2028':
+        return '\\u2028';
+      case '\u2029':
+        return '\\u2029';
+      default:
+        return character;
+    }
   });
 };

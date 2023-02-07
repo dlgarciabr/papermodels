@@ -46,7 +46,7 @@ export default api(async (req, res, _ctx) => {
         return {
           name: emptyNodes[emptyNodes.length - 1]?.innerHTML || '',
           node: stringNode,
-          status: IntegrationItemStatus.feeding
+          status: IntegrationItemStatus.pending
         };
       })
     });

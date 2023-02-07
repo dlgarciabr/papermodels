@@ -9,7 +9,6 @@ import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationS
 import { getSimpleRandomKey } from 'src/utils/global';
 
 const Integration = () => {
-  // const [param, setParam] = useState('href')
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
@@ -84,9 +83,6 @@ const Integration = () => {
   };
 
   const setParam = (e: ChangeEvent<HTMLInputElement>) => {
-    // const setup = { ...selectedSetup };
-    // setup[e.target.name] = e.target.value;
-    // setSelectedSetup(setup);
     setSelectedSetup({
       ...selectedSetup,
       [e.target.name]: e.target.value
