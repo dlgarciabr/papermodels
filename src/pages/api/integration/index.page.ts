@@ -1,6 +1,8 @@
 /* istanbul ignore file -- @preserve */
-import db, { IntegrationItem, IntegrationItemStatus, IntegrationSetup } from 'db';
+import db, { FileType, IntegrationItem, IntegrationItemStatus, IntegrationSetup, ItemStatus } from 'db';
 import { api } from 'src/blitz-server';
+import { UploadItemFile } from 'src/items/types';
+import { processFiles, uploadFiles } from 'src/pages/items/utils';
 
 // import fs from 'fs';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
@@ -44,48 +46,59 @@ const processIntegration = async () => {
         let dificulty;
         let assemblyTime;
 
-        // TODO save preview images
         const previewImageNodes = executeSelectorAllOnHtmlText(
           pageContent,
           integrationItem.setup.previewImagesSelector
         );
 
-        let index = 0;
-        // const images = [];
-        for await (const node of previewImageNodes) {
-          const src = node.getAttribute('src');
-          if (src) {
-            // eslint-disable-next-line unused-imports/no-unused-vars
-            const buffer = await (await fetch(src)).arrayBuffer();
-            //fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
-            // eslint-disable-next-line unused-imports/no-unused-vars
-            index++;
-          } else {
-            //TODO handle error
-          }
-        }
-
-        // previewImageNodes.forEach((node, index) => {
-        //   const src = node.getAttribute('src');
-        //   if (src) {
-        //     void fetch(src).then(async (response) => {
-        //       // const buffer = await response.arrayBuffer();
-        //       // fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
-        //     });
-        //   } else {
-        //     //TODO handle error
-        //   }
-        // });
-
-        await db.item.create({
+        const item = await db.item.create({
           data: {
             name: integrationItem.name,
             description,
             dificulty,
             assemblyTime,
-            categoryId: integrationItem.categoryId
+            categoryId: integrationItem.categoryId,
+            status: ItemStatus.integrating
           }
         });
+
+        const images: UploadItemFile[] = [];
+        for await (const node of previewImageNodes) {
+          const src = node.getAttribute('src');
+          if (src) {
+            const buffer = await (await fetch(src)).arrayBuffer();
+            const file = new File([buffer], 'tempFile') as UploadItemFile;
+            file.item = item;
+            file.artifactType = FileType.preview;
+            images.push(file);
+            //fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
+          } else {
+            throw new Error(`Error integrating image ${node}`);
+            //TODO handle error
+          }
+        }
+
+        const processedFiles = await processFiles(images);
+        await uploadFiles(processedFiles);
+
+        await db.itemFile.createMany({
+          data: processedFiles.map((file) => ({
+            storagePath: file.storagePath,
+            artifactType: file.artifactType,
+            itemId: file.item.id,
+            index: file.index
+          }))
+        });
+
+        // for await (const file of processedFiles) {
+        //   const index = ++file.item.files.length;
+        //   await createFileMutation({
+        //     storagePath: file.storagePath,
+        //     artifactType: file.artifactType,
+        //     itemId: file.item.id,
+        //     index
+        //   });
+        // }
 
         // await db.integrationItem.update({
         //   where: { id: integrationItem.id },

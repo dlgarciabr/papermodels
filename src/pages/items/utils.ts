@@ -23,6 +23,7 @@ export const processFiles = async (files: UploadItemFile[]) => {
       thumbnailFile.artifactType = FileType.thumbnail;
       thumbnailFile.storagePath = thumbFileName;
       thumbnailFile.item = file.item;
+      thumbnailFile.index = index;
       processedFiles.push(thumbnailFile);
     }
 
@@ -31,6 +32,7 @@ export const processFiles = async (files: UploadItemFile[]) => {
     processedFile.artifactType = file.artifactType;
     processedFile.storagePath = fileName;
     processedFile.item = file.item;
+    processedFile.index = index;
     processedFiles.push(processedFile);
   }
   return processedFiles;
@@ -45,12 +47,11 @@ export const uploadFiles = (files: UploadItemFile[]) =>
 
 export const saveItemFiles = async (files: UploadItemFile[], createFileMutation: any) => {
   for await (const file of files) {
-    const index = ++file.item.files.length;
     await createFileMutation({
       storagePath: file.storagePath,
       artifactType: file.artifactType,
       itemId: file.item.id,
-      index
+      index: file.index
     });
   }
 };

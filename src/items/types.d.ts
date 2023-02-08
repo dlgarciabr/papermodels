@@ -6,4 +6,5 @@ export type UploadItemFile = File & {
   uploadPreview: string;
   artifactType: FileType;
   item: Item;
+  index: number;
 };

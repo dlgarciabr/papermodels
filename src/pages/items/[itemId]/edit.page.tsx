@@ -7,7 +7,7 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItem from 'src/items/queries/getItem';
-import updateItem from 'src/items/mutations/updateItem';
+import updateItem, { UpdateItemValidation } from 'src/items/mutations/updateItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
@@ -20,7 +20,6 @@ import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
-import { UpdateItemValidation } from 'src/items/mutations/validations';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 

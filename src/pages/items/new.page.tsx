@@ -4,11 +4,10 @@ import Link from 'next/link';
 import { invoke, useMutation } from '@blitzjs/rpc';
 
 import Layout from 'src/core/layouts/Layout';
-import createItem from 'src/items/mutations/createItem';
+import createItem, { CreateItemValidation } from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
 import { Category, ItemStatus } from 'db';
-import { CreateItemValidation } from 'src/items/mutations/validations';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { showToast } from 'src/core/components/Toast';
 

@@ -174,7 +174,8 @@ describe('Item creating', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable'
     };
 
     const createItemMutation = vi.fn();
@@ -287,7 +288,8 @@ describe('Item changing', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable'
     };
 
     const modifiedItem = {
