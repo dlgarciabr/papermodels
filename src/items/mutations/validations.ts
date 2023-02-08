@@ -1,9 +1,13 @@
-import { FileType } from 'db';
+import { FileType, ItemStatus } from 'db';
 import { z } from 'zod';
+
+const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating]);
+const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
 
 const basicValidation = {
   name: z.string().min(5, 'Field required and must contain at least 5 characters').max(30),
   description: z.string().max(100),
+  status: zItemStatusEnum,
   dificulty: z.number().min(1).max(5).optional(),
   assemblyTime: z.number().min(0.5).max(100).optional(),
   categoryId: z.string().regex(/^((?!-1).)*$/, 'Field required'),
@@ -12,8 +16,6 @@ const basicValidation = {
   licenseType: z.string().max(50).nullable(),
   licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
 };
-
-const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
 
 export const CreateItemValidation = z.object({
   ...basicValidation,
