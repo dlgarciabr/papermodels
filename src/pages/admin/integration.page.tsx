@@ -62,6 +62,7 @@ const Integration = () => {
   };
 
   const enqueue = async () => {
+    setMessage('');
     setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
