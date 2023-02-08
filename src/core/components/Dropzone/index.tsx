@@ -10,14 +10,21 @@ import { DropzoneProps } from './types';
 export const Dropzone = (props: DropzoneProps) => {
   const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
 
-  const onDrop = (acceptedFiles: UploadItemFile[]) => {
-    const filesToAdd = acceptedFiles.map((file) => {
-      file.tempId = getSimpleRandomKey();
+  const onDrop = async (acceptedFiles: File[]) => {
+    const filesToAdd: UploadItemFile[] = [];
+
+    for await (const file of acceptedFiles) {
+      let uploadPreview = '';
       if (file.type.indexOf('image') >= 0) {
-        file.uploadPreview = URL.createObjectURL(file);
+        uploadPreview = URL.createObjectURL(file);
       }
-      return file;
-    });
+      filesToAdd.push({
+        storagePath: file.name,
+        tempId: getSimpleRandomKey(),
+        uploadPreview,
+        bytes: await file.arrayBuffer()
+      } as UploadItemFile);
+    }
 
     const newFileList = [...filesToAdd, ...dropedFiles];
     setDropedFiles(newFileList);
@@ -121,7 +128,7 @@ export const Dropzone = (props: DropzoneProps) => {
           key={getSimpleRandomKey()}
           index={index}
           src={file.uploadPreview}
-          altText={file.name}
+          altText={file.storagePath}
           className={
             props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
           }>

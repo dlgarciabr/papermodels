@@ -38,7 +38,7 @@ export default api(async (req, res, _ctx) => {
       }
 
       if (sanitizedUrls.length === 0) {
-        res.status(304).send({});
+        res.status(304).end();
         return;
       }
 
@@ -60,7 +60,7 @@ export default api(async (req, res, _ctx) => {
       });
       res.status(200).send({ message: 'success' });
     } else {
-      res.status(204).send({});
+      res.status(204).end();
     }
   } else {
     res.status(501).send({});

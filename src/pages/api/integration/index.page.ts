@@ -2,7 +2,7 @@
 import db, { FileType, IntegrationItem, IntegrationItemStatus, IntegrationSetup, ItemStatus } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { processFiles, uploadFiles } from 'src/pages/items/utils';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 // import fs from 'fs';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
@@ -67,9 +67,15 @@ const processIntegration = async () => {
           const src = node.getAttribute('src');
           if (src) {
             const buffer = await (await fetch(src)).arrayBuffer();
-            const file = new File([buffer], 'tempFile') as UploadItemFile;
-            file.item = item;
-            file.artifactType = FileType.preview;
+            // const file = new File([buffer], 'tempFile');
+            const file: UploadItemFile = {
+              storagePath: '',
+              item,
+              artifactType: FileType.preview,
+              bytes: buffer,
+              index: 0,
+              tempId: getSimpleRandomKey()
+            };
             images.push(file);
             //fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
           } else {
@@ -78,17 +84,17 @@ const processIntegration = async () => {
           }
         }
 
-        const processedFiles = await processFiles(images);
-        await uploadFiles(processedFiles);
+        //const processedFiles = await processFiles(images);
+        //await uploadFiles(processedFiles);
 
-        await db.itemFile.createMany({
-          data: processedFiles.map((file) => ({
-            storagePath: file.storagePath,
-            artifactType: file.artifactType,
-            itemId: file.item.id,
-            index: file.index
-          }))
-        });
+        // await db.itemFile.createMany({
+        //   data: processedFiles.map((file) => ({
+        //     storagePath: file.storagePath,
+        //     artifactType: file.artifactType,
+        //     itemId: file.item.id,
+        //     index: file.index
+        //   }))
+        // });
 
         // for await (const file of processedFiles) {
         //   const index = ++file.item.files.length;

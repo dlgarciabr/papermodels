@@ -500,6 +500,12 @@ describe('Item changing', () => {
       } as ItemFile)
     ]);
 
+    vi.mocked(global.fetch).mockResolvedValue({
+      blob: vi.fn().mockResolvedValue({
+        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0))
+      })
+    } as any);
+
     const { rerender } = render(<EditItemPage />);
 
     // act

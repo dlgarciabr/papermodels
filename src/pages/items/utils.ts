@@ -9,28 +9,28 @@ export const processFiles = async (files: UploadItemFile[]) => {
   for await (const file of files) {
     const index = ++file.item.files.length;
     const name = removeDiacritics(file.item.name).replaceAll(' ', '_').toLowerCase();
-    const extension = file.name.split('.')[1];
+    const extension = file.storagePath.split('.')[1];
     const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
-    const imageBytes = await file.arrayBuffer();
-
+    const imageBytes = file.bytes;
     /* istanbul ignore if @preserve */
     if (file.artifactType === FileType.preview) {
-      const thumbFileName = `${storagePath}_thumb.${extension}`;
+      const thumbFilePath = `${storagePath}_thumb.${extension}`;
       const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
       const compressedThumbnail = await compressImage(thumbnailBytes);
       const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
-      const thumbnailFile = new File([thumbnailCompressedBytes], thumbFileName) as UploadItemFile;
+      const thumbnailFile = {} as UploadItemFile;
+      thumbnailFile.bytes = thumbnailCompressedBytes;
       thumbnailFile.artifactType = FileType.thumbnail;
-      thumbnailFile.storagePath = thumbFileName;
+      thumbnailFile.storagePath = thumbFilePath;
       thumbnailFile.item = file.item;
       thumbnailFile.index = index;
       processedFiles.push(thumbnailFile);
     }
 
-    const fileName = `${storagePath}.${extension}`;
-    const processedFile = new File([imageBytes], fileName) as UploadItemFile;
+    const filePath = `${storagePath}.${extension}`;
+    const processedFile = { ...file };
     processedFile.artifactType = file.artifactType;
-    processedFile.storagePath = fileName;
+    processedFile.storagePath = filePath;
     processedFile.item = file.item;
     processedFile.index = index;
     processedFiles.push(processedFile);
@@ -66,7 +66,7 @@ export const sortFilesIndexes = async (
   }
   const lockFileStorageName = `${item.id}/.lock`;
 
-  await saveFile(new File([], lockFileStorageName));
+  await saveFile({ bytes: new ArrayBuffer(0), storagePath: lockFileStorageName } as UploadItemFile);
 
   const promises: Promise<void>[] = [];
   const updatedFiles: ItemFile[] = [];
@@ -78,16 +78,17 @@ export const sortFilesIndexes = async (
         const url = await getFilePath(file.storagePath);
 
         const response = await fetch(url, { method: 'GET' });
+
         const blob = await response.blob();
 
-        await saveFile(new File([blob], backupFileName));
+        await saveFile({ bytes: await blob.arrayBuffer(), storagePath: backupFileName } as UploadItemFile);
         await deleteFile(file.storagePath);
 
         const name = removeDiacritics(item.name).replaceAll(' ', '_').toLowerCase();
         const extension = file.storagePath.split('.')[1];
         const newStoragePath = `${item.id}/${name}_${file.artifactType}_${index + 1}.${extension}`;
 
-        await saveFile(new File([blob], newStoragePath));
+        await saveFile({ bytes: await blob.arrayBuffer(), storagePath: newStoragePath } as UploadItemFile);
         await deleteFile(backupFileName);
 
         const updatedFile = await updateItemFileMutation({

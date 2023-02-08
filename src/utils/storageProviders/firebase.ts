@@ -47,10 +47,10 @@ const getFilePath = (path: string) => {
   return getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
 };
 
-const saveFile = (file: File, path: string) => {
+const saveFile = (bytes: ArrayBuffer, path: string) => {
   const fileRef = ref(getStorage(), path);
   // return Promise.reject('forced error saving');
-  return uploadBytes(fileRef, file);
+  return uploadBytes(fileRef, bytes);
   // const uploadTask = storageRef.put(firstFile);
   // uploadTask.on(‘state_changed’, function progress(snapshot) {
   //    console.log(snapshot.totalBytesTransferred); // progress of upload
