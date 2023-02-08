@@ -7,7 +7,6 @@ import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsStrin
 
 // const setup = {
 //   // ignoreTexts: ['.by.Papermau.Download.Now!'], // TODO use this
-//   descriptionSelector: 'article > div> div > div > p'
 // };
 
 const processIntegration = async () => {
@@ -52,6 +51,7 @@ const processIntegration = async () => {
         );
 
         let index = 0;
+        // const images = [];
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {

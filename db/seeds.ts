@@ -1,5 +1,5 @@
 import { Decimal } from '@prisma/client/runtime';
-import db, { FileType } from 'db';
+import db, { FileType, ItemStatus } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -30,6 +30,7 @@ const seed = async () => {
           dificulty: 1,
           assemblyTime: new Decimal(0.5),
           licenseType: 'MIT',
+          status: ItemStatus.enable,
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: [
             {
@@ -48,6 +49,7 @@ const seed = async () => {
           name: 'Pharmacy',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         },
@@ -55,6 +57,7 @@ const seed = async () => {
           name: 'Market',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -67,6 +70,7 @@ const seed = async () => {
           name: 'Hospital',
           description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           licenseType: 'MIT',
           files: [
@@ -92,6 +96,7 @@ const seed = async () => {
           description:
             'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
           dificulty: 5,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(12),
           licenseType: 'MIT',
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
@@ -139,6 +144,7 @@ const seed = async () => {
           name: 'Speedboat',
           description: 'A fast racing speed boat',
           dificulty: 2,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(3),
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: []
@@ -152,6 +158,7 @@ const seed = async () => {
           name: 'Oporto Metro',
           description: 'A two wagon metro of Oporto city',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -164,6 +171,7 @@ const seed = async () => {
           name: 'F-14 Tomcat',
           description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
           dificulty: 1,
+          status: ItemStatus.disable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -176,6 +184,7 @@ const seed = async () => {
           name: 'Mercedes Class A',
           description: 'The small solution of a city car presented by Mercedes',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -188,6 +197,7 @@ const seed = async () => {
           name: 'Farm House',
           description: 'A nice farm house',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -200,6 +210,7 @@ const seed = async () => {
           name: 'Jaguar',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -212,6 +223,7 @@ const seed = async () => {
           name: 'Oak',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -224,6 +236,7 @@ const seed = async () => {
           name: 'Origami bird',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }

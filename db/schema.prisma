@@ -75,6 +75,12 @@ model Category {
   items       Item[]
 }
 
+enum ItemStatus {
+  integrating
+  enable
+  disable
+}
+
 model Item {
   id              Int        @id @default(autoincrement())
   createdAt       DateTime   @default(now())
@@ -84,6 +90,7 @@ model Item {
   category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId      Int
   files           ItemFile[]
+  status          ItemStatus @default(disable)
   dificulty       Int?
   assemblyTime    Decimal?
   author          String?
