@@ -17,6 +17,6 @@ export const listAllFiles = async () => await storageProvider.listAllFiles();
 export const getFilePath = (path: string) => storageProvider.getFilePath(path);
 
 export const saveFile = (file: UploadItemFile) =>
-  storageProvider.saveFile(file.bytes, `${ARTIFACTS_PATH}/${file.storagePath}`);
+  storageProvider.saveFile(file.bytes!, `${ARTIFACTS_PATH}/${file.storagePath}`);
 
 export const deleteFile = async (path: string) => await storageProvider.deleteFile(path);

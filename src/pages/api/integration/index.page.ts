@@ -2,14 +2,8 @@
 import db, { FileType, IntegrationItem, IntegrationItemStatus, IntegrationSetup, ItemStatus } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { getSimpleRandomKey } from 'src/utils/global';
-
-// import fs from 'fs';
+import { uploadImage } from '../upload/image.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
-
-// const setup = {
-//   // ignoreTexts: ['.by.Papermau.Download.Now!'], // TODO use this
-// };
 
 const processIntegration = async () => {
   const integrationList = (await db.integrationItem.findMany({
@@ -29,12 +23,12 @@ const processIntegration = async () => {
     for await (const integrationItem of integrationList) {
       try {
         console.log(`[IntegrationJOB] Integrating item '${integrationItem.name}'...`);
-        // await db.integrationItem.update({
-        //   where: { id: integrationItem.id },
-        //   data: {
-        //     status: IntegrationItemStatus.running
-        //   }
-        // });
+        await db.integrationItem.update({
+          where: { id: integrationItem.id },
+          data: {
+            status: IntegrationItemStatus.running
+          }
+        });
 
         const pageContent = await fetchPageAsString(integrationItem.url);
 
@@ -66,52 +60,42 @@ const processIntegration = async () => {
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            const buffer = await (await fetch(src)).arrayBuffer();
-            // const file = new File([buffer], 'tempFile');
+            const response = await uploadImage(src);
             const file: UploadItemFile = {
-              storagePath: '',
-              item,
+              storagePath: `${response.public_id}.${response.format}`,
+              item: { ...item, files: [] },
               artifactType: FileType.preview,
-              bytes: buffer,
-              index: 0,
-              tempId: getSimpleRandomKey()
+              tempId: ''
             };
             images.push(file);
-            //fs.writeFile(`image_${index}.png`, Buffer.from(buffer), () => { });
           } else {
             throw new Error(`Error integrating image ${node}`);
             //TODO handle error
           }
         }
 
-        //const processedFiles = await processFiles(images);
-        //await uploadFiles(processedFiles);
+        await db.itemFile.createMany({
+          data: images.map((file) => ({
+            storagePath: file.storagePath,
+            artifactType: file.artifactType,
+            itemId: item.id,
+            index: 0 //TODO remove property from schema
+          }))
+        });
 
-        // await db.itemFile.createMany({
-        //   data: processedFiles.map((file) => ({
-        //     storagePath: file.storagePath,
-        //     artifactType: file.artifactType,
-        //     itemId: file.item.id,
-        //     index: file.index
-        //   }))
-        // });
+        await db.item.update({
+          where: { id: item.id },
+          data: {
+            status: ItemStatus.enable
+          }
+        });
 
-        // for await (const file of processedFiles) {
-        //   const index = ++file.item.files.length;
-        //   await createFileMutation({
-        //     storagePath: file.storagePath,
-        //     artifactType: file.artifactType,
-        //     itemId: file.item.id,
-        //     index
-        //   });
-        // }
-
-        // await db.integrationItem.update({
-        //   where: { id: integrationItem.id },
-        //   data: {
-        //     status: IntegrationItemStatus.done
-        //   }
-        // });
+        await db.integrationItem.update({
+          where: { id: integrationItem.id },
+          data: {
+            status: IntegrationItemStatus.done
+          }
+        });
       } catch (error) {
         console.log(`[IntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
         console.log(error);
@@ -124,14 +108,6 @@ const processIntegration = async () => {
         });
       }
     }
-
-    // for await (const integrationItem of integrationList) {
-
-    // const processedList = await processFiles(integrationItem.integrationList);
-    // console.log('processedList', processedList)
-    // await uploadFiles(processedList);
-    // await saveItemFiles(processedList);
-    // }
 
     console.log(`[IntegrationJOB] ${new Date().toISOString()} Item integration process finished.`);
   } else {

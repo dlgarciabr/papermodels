@@ -1,6 +1,5 @@
-import { FileType, Item, ItemFile } from 'db';
+import { Item, ItemFile } from 'db';
 import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
-import { compressImage, generateThumbnailArrayBuffer } from 'src/utils/image';
 import { removeDiacritics } from 'src/utils/string';
 import { UploadItemFile } from '../../items/types';
 
@@ -11,21 +10,22 @@ export const processFiles = async (files: UploadItemFile[]) => {
     const name = removeDiacritics(file.item.name).replaceAll(' ', '_').toLowerCase();
     const extension = file.storagePath.split('.')[1];
     const storagePath = `${file.item.id}/${name}_${file.artifactType}_${index}`;
-    const imageBytes = file.bytes;
+    // const imageBytes = file.bytes;
     /* istanbul ignore if @preserve */
-    if (file.artifactType === FileType.preview) {
-      const thumbFilePath = `${storagePath}_thumb.${extension}`;
-      const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
-      const compressedThumbnail = await compressImage(thumbnailBytes);
-      const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
-      const thumbnailFile = {} as UploadItemFile;
-      thumbnailFile.bytes = thumbnailCompressedBytes;
-      thumbnailFile.artifactType = FileType.thumbnail;
-      thumbnailFile.storagePath = thumbFilePath;
-      thumbnailFile.item = file.item;
-      thumbnailFile.index = index;
-      processedFiles.push(thumbnailFile);
-    }
+    // if (file.artifactType === FileType.preview) {
+    // TODO remove thumbnial type from scheme
+    // const thumbFilePath = `${storagePath}_thumb.${extension}`;
+    // const thumbnailBytes = await generateThumbnailArrayBuffer(imageBytes);
+    // const compressedThumbnail = await compressImage(thumbnailBytes);
+    // const thumbnailCompressedBytes = await compressedThumbnail.arrayBuffer();
+    // const thumbnailFile = {} as UploadItemFile;
+    // thumbnailFile.bytes = thumbnailCompressedBytes;
+    // thumbnailFile.artifactType = FileType.thumbnail;
+    // thumbnailFile.storagePath = thumbFilePath;
+    // thumbnailFile.item = file.item;
+    // thumbnailFile.index = index;
+    // processedFiles.push(thumbnailFile);
+    // }
 
     const filePath = `${storagePath}.${extension}`;
     const processedFile = { ...file };

@@ -12,6 +12,7 @@ const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationItem_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;

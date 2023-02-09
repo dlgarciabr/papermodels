@@ -5,7 +5,7 @@ export type UploadItemFile = {
   tempId: string;
   uploadPreview?: string;
   artifactType: FileType;
-  item: Item;
-  index: number;
-  bytes: ArrayBuffer;
+  item?: Item; // TODO evaluate existance
+  index?: number; // TODO evaluate existance
+  bytes?: ArrayBuffer; // TODO evaluate existance
 };
