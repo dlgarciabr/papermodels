@@ -1,8 +1,8 @@
 import { FileType } from 'db';
-import { getFilePath } from './fileStorage';
+import { getFileUrl } from './fileStorage';
 
 export const downloadFile = async (storagePath: string) => {
-  const url = await getFilePath(storagePath);
+  const url = getFileUrl(storagePath);
   const response = await fetch(url, { method: 'GET' });
   const blob = await response.blob();
 

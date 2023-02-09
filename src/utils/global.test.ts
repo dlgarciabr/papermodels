@@ -1,6 +1,6 @@
 import { FileType } from '@prisma/client';
 import { expect, vi } from 'vitest';
-import { getFilePath } from './fileStorage';
+import { getFileUrl } from './fileStorage';
 import { downloadFile, getFileTypeByText } from './global';
 
 describe('Global Util', () => {
@@ -8,7 +8,7 @@ describe('Global Util', () => {
     // arrange
     const blobUrl = 'blob:http://127.0.0.1/550e8400-e29b-41d4-a716-446655440000';
 
-    vi.mocked(getFilePath).mockResolvedValueOnce('url');
+    vi.mocked(getFileUrl).mockResolvedValueOnce('url');
 
     global.fetch = vi.fn(() =>
       Promise.resolve({

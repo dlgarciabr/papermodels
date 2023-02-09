@@ -1,5 +1,5 @@
 import { Item, ItemFile } from 'db';
-import { deleteFile, getFilePath, saveFile } from 'src/utils/fileStorage';
+import { deleteFile, getFileUrl, saveFile } from 'src/utils/fileStorage';
 import { removeDiacritics } from 'src/utils/string';
 import { UploadItemFile } from '../../items/types';
 
@@ -55,7 +55,14 @@ export const saveItemFiles = async (files: UploadItemFile[], createFileMutation:
     });
   }
 };
-
+/**
+ * @deprecated
+ *
+ * @param item
+ * @param files
+ * @param updateItemFileMutation
+ * @returns
+ */
 export const sortFilesIndexes = async (
   item: Item,
   files: ItemFile[],
@@ -75,7 +82,7 @@ export const sortFilesIndexes = async (
     promises.push(
       new Promise(async (resolve) => {
         const backupFileName = `${file.storagePath}_bak`;
-        const url = await getFilePath(file.storagePath);
+        const url = await getFileUrl(file.storagePath);
 
         const response = await fetch(url, { method: 'GET' });
 

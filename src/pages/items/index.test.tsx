@@ -803,7 +803,7 @@ describe('Item viewing', () => {
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
     // vi.mock('src/utils/fileStorage/getFilePath', () => 'http://localhost:3000/testUrl2');
-    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValue('http://localhost:3000/testUrl2');
+    vi.spyOn(fileStorage, 'getFileUrl').mockResolvedValue('http://localhost:3000/testUrl2');
     // getFilePath  = vi.fn();
 
     setupUseQueryReturn(item);
