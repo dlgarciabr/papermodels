@@ -36,7 +36,7 @@ describe('Global Util', () => {
 
   test('Should resolve FileType by text', async () => {
     // arrange
-    const fileType = FileType.thumbnail;
+    const fileType = FileType.preview;
     const fileTypeName = fileType.toString();
 
     // act

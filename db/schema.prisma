@@ -103,12 +103,10 @@ enum FileType {
   instruction
   preview
   scheme
-  thumbnail
 }
 
 model ItemFile {
   id           Int      @id @default(autoincrement())
-  index        Int
   storagePath  String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

@@ -12,13 +12,12 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
-import { sortFilesIndexes, uploadFiles, processFiles, saveItemFiles } from '../utils';
+import { uploadFiles, saveItemFiles } from '../utils';
 import { UploadItemFile } from '../../../items/types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
-import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
@@ -86,7 +85,7 @@ export const EditItem = () => {
   );
 
   const [updateItemMutation] = useMutation(updateItem);
-  const [updateItemFileMutation] = useMutation(updateItemFile);
+  // const [updateItemFileMutation] = useMutation(updateItemFile);
   const [createItemFileMutation] = useMutation(createItemFile);
   const [deleteItemFileMutation] = useMutation(deleteItemFile);
 
@@ -99,9 +98,8 @@ export const EditItem = () => {
       return;
     }
     try {
-      const processedFiles = await processFiles(filesToUpload);
-      await uploadFiles(processedFiles);
-      await saveItemFiles(processedFiles, createItemFileMutation);
+      const uploadedFiles = await uploadFiles(filesToUpload);
+      await saveItemFiles(uploadedFiles, createItemFileMutation);
       showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
@@ -117,8 +115,8 @@ export const EditItem = () => {
     if (confirm(`are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
-      const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
-      await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
+      // const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
+      // await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
       await queryResult.refetch();
       showToast(ToastType.SUCCESS, 'file removed');
     }

@@ -2,13 +2,12 @@ import { resolver } from '@blitzjs/rpc';
 import db, { FileType } from 'db';
 import { z } from 'zod';
 
-export const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme, FileType.thumbnail]);
+export const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme]);
 
 export const basicItemFileValidation = {
   storagePath: z.string(),
   artifactType: zFileTypeEnum,
-  itemId: z.number(),
-  index: z.number()
+  itemId: z.number()
 };
 
 export const CreateItemFileValidation = z.object({
@@ -20,8 +19,7 @@ export default resolver.pipe(resolver.zod(CreateItemFileValidation), resolver.au
     data: {
       storagePath: input.storagePath,
       artifactType: input.artifactType,
-      itemId: input.itemId,
-      index: input.index
+      itemId: input.itemId
     }
   });
 

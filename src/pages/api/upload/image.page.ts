@@ -18,8 +18,8 @@ export const uploadImage = async (src: string) => {
 
 export default api(async (req, res, _ctx) => {
   if (req.body.src) {
-    const response = await uploadImage(req.body.src);
-    res.status(200).send(response);
+    const result = await uploadImage(req.body.src);
+    res.status(200).send(result);
   } else {
     res.status(500).end();
   }

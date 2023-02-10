@@ -4,7 +4,7 @@
 import { UploadItemFile } from 'src/items/types';
 import storageProvider from './storageProviders/cloudinary';
 
-export const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'artifacts';
+export const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
 export const listAllFiles = async () => {
   throw new Error('not implemented');
@@ -22,12 +22,7 @@ export const getFileUrl = (path: string) => storageProvider.getFileUrl(path);
 
 export const getThumbnailUrl = (path: string) => storageProvider.getThumbnailUrl(path);
 
-export const saveFile = (_file: UploadItemFile) => {
-  throw new Error('not implemented');
-};
-
-// export const saveFile = (file: UploadItemFile) =>
-//   storageProvider.saveFile(file.bytes!, `${ARTIFACTS_PATH}/${file.storagePath}`);
+export const saveFile = (file: UploadItemFile) => storageProvider.saveFile(file);
 
 export const deleteFile = async (_path: string) => {
   throw new Error('not implemented');

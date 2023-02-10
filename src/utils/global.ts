@@ -22,8 +22,6 @@ export const getSimpleRandomKey = () => Math.random().toString(36).substring(2, 
 
 export const getFileTypeByText = (type: string): FileType => {
   switch (type) {
-    case FileType.thumbnail:
-      return FileType.thumbnail;
     case FileType.instruction:
       return FileType.instruction;
     case FileType.scheme:

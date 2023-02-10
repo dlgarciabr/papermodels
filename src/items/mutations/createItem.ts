@@ -23,8 +23,7 @@ export const CreateItemValidation = z.object({
   files: z.array(
     z.object({
       storagePath: z.string(),
-      artifactType: zFileTypeEnum,
-      index: z.number()
+      artifactType: zFileTypeEnum
     })
   )
 });
@@ -37,8 +36,7 @@ export default resolver.pipe(resolver.zod(CreateItemValidation), resolver.author
       files: {
         create: input.files.map((file) => ({
           storagePath: file.storagePath,
-          artifactType: file.artifactType,
-          index: file.index
+          artifactType: file.artifactType
         }))
       }
     }

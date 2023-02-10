@@ -137,17 +137,15 @@ export const Dropzone = (props: DropzoneProps) => {
               aria-labelledby='radio-group-file-type-label'
               defaultValue={file.artifactType}
               name='radio-group-file-type'>
-              {Object.keys(FileType)
-                .filter((key) => key !== FileType.thumbnail)
-                .map((typeKey) => (
-                  <FormControlLabel
-                    key={getSimpleRandomKey()}
-                    value={typeKey}
-                    control={<Radio size='small' />}
-                    label={typeKey}
-                    onClick={() => handleClickRadioType(file, typeKey)}
-                  />
-                ))}
+              {Object.keys(FileType).map((typeKey) => (
+                <FormControlLabel
+                  key={getSimpleRandomKey()}
+                  value={typeKey}
+                  control={<Radio size='small' />}
+                  label={typeKey}
+                  onClick={() => handleClickRadioType(file, typeKey)}
+                />
+              ))}
             </RadioGroup>
             <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
           </>

@@ -11,8 +11,7 @@ export const UpdateItemValidation = z.object({
     z.object({
       id: z.number(),
       storagePath: z.string(),
-      artifactType: zFileTypeEnum,
-      index: z.number()
+      artifactType: zFileTypeEnum
     })
   )
 });
@@ -28,8 +27,8 @@ export default resolver.pipe(resolver.zod(UpdateItemValidation), resolver.author
           // Appears to be a prisma bug,
           // because `|| 0` shouldn't be needed
           where: { id: file.id },
-          create: { storagePath: file.storagePath, artifactType: file.artifactType, index: file.index },
-          update: { storagePath: file.storagePath, artifactType: file.artifactType, index: file.index }
+          create: { storagePath: file.storagePath, artifactType: file.artifactType },
+          update: { storagePath: file.storagePath, artifactType: file.artifactType }
         }))
       }
     },

@@ -645,10 +645,6 @@ describe('Item viewing', () => {
       categoryId: 1,
       files: [
         {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
         }
@@ -684,10 +680,6 @@ describe('Item viewing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -733,10 +725,6 @@ describe('Item viewing', () => {
       categoryId: 1,
       files: [
         {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
         },
@@ -780,14 +768,6 @@ describe('Item viewing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abcde.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'

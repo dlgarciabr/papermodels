@@ -35,14 +35,8 @@ const seed = async () => {
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: [
             {
-              index: 0,
               storagePath: '1/vet_clinic_scheme_1.jpg',
               artifactType: FileType.scheme
-            },
-            {
-              index: 0,
-              storagePath: '1/vet_clinic_thumbnail_2.png',
-              artifactType: FileType.thumbnail
             }
           ]
         },
@@ -76,13 +70,7 @@ const seed = async () => {
           licenseType: 'MIT',
           files: [
             {
-              index: 0,
               storagePath: '2/hospital_preview_1.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 0,
-              storagePath: '2/hospital_preview_1_thumb.jpg',
               artifactType: FileType.preview
             }
           ]
@@ -104,36 +92,18 @@ const seed = async () => {
           author: 'Tod Jason',
           authorLink: 'https://google.com',
           files: [
-            {
-              index: 0,
-              storagePath: '3/alcazar_of_segovia_preview_1.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 0,
-              storagePath: '3/alcazar_of_segovia_preview_1_thumb.jpg',
-              artifactType: FileType.thumbnail
-            },
-            {
-              index: 1,
-              storagePath: '3/alcazar_of_segovia_preview_2.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 1,
-              storagePath: '3/alcazar_of_segovia_preview_2_thumb.jpg',
-              artifactType: FileType.thumbnail
-            },
-            {
-              index: 2,
-              storagePath: '3/alcazar_of_segovia_preview_3.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 2,
-              storagePath: '3/alcazar_of_segovia_preview_3_thumb.jpg',
-              artifactType: FileType.thumbnail
-            }
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_1.jpg',
+            //   artifactType: FileType.preview
+            // },
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_2.jpg',
+            //   artifactType: FileType.preview
+            // },
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_3.jpg',
+            //   artifactType: FileType.preview
+            // },
           ]
         }
       ]
