@@ -69,10 +69,10 @@ const seed = async () => {
           assemblyTime: new Decimal(1),
           licenseType: 'MIT',
           files: [
-            {
-              storagePath: '2/hospital_preview_1.jpg',
-              artifactType: FileType.preview
-            }
+            // {
+            //   storagePath: '2/hospital_preview_1.jpg',
+            //   artifactType: FileType.preview
+            // }
           ]
         }
       ]

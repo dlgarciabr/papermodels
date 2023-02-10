@@ -1,4 +1,4 @@
-import { Suspense, useState, useContext } from 'react';
+import { useState, useContext, Suspense } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ import deleteItemFile from 'src/items/mutations/deleteItemFile';
 import getCategories from 'src/categories/queries/getCategories';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import Loading from 'src/core/components/Loading';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -202,7 +203,7 @@ export const EditItem = () => {
 const EditItemPage = () => {
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Loading />}>
         <EditItem />
       </Suspense>
       <p>
