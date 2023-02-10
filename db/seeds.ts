@@ -259,7 +259,8 @@ const seed = async () => {
         }
       ]`,
       descriptionSelector: 'article > div> div > div > p',
-      previewImagesSelector: 'div > div > div > img.caption'
+      previewImagesSelector: 'div > div > div > img.caption',
+      ignoreExpressions: `["Paper Diorama"]`
     }
   ];
 

@@ -5,6 +5,18 @@ import { UploadItemFile } from 'src/items/types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
+// const setup = {
+// }
+
+const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
+  if (setupIgnoreExpressions) {
+    const expressionsToIgnore: string[] = JSON.parse(setupIgnoreExpressions);
+    const regex = new RegExp('\\b' + expressionsToIgnore.join('|') + '\\b', 'gi');
+    return text.replace(regex, '');
+  }
+  return text;
+};
+
 const processIntegration = async () => {
   const integrationList = (await db.integrationItem.findMany({
     where: {
@@ -34,9 +46,9 @@ const processIntegration = async () => {
 
         const pageContent = await fetchPageAsString(integrationItem.url);
 
-        let description;
+        let description = '';
         if (integrationItem.setup.descriptionSelector) {
-          description = getTextFromNodeAsString(pageContent, integrationItem.setup.descriptionSelector);
+          description = getTextFromNodeAsString(pageContent, integrationItem.setup.descriptionSelector) || '';
         }
 
         let dificulty;
@@ -49,8 +61,8 @@ const processIntegration = async () => {
 
         const item = await db.item.create({
           data: {
-            name: integrationItem.name,
-            description,
+            name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
+            description: removeExpressions(description, integrationItem.setup.ignoreExpressions).trim(),
             dificulty,
             assemblyTime,
             categoryId: integrationItem.categoryId,

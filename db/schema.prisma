@@ -132,6 +132,7 @@ model IntegrationSetup {
   categoryBinding       String
   descriptionSelector   String?
   previewImagesSelector String
+  ignoreExpressions     String?
   integrationItems      IntegrationItem[]
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt

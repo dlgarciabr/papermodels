@@ -18,6 +18,7 @@ const Integration = () => {
     itemUrlSelector: '',
     previewImagesSelector: '',
     categorySelector: '',
+    ignoreExpressions: '',
     categoryBinding: '',
     descriptionSelector: null,
     createdAt: new Date(),
