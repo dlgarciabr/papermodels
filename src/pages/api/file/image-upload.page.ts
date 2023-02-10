@@ -2,6 +2,14 @@
 import { api } from 'src/blitz-server';
 import { UploadApiOptions, v2 as cloudinary } from 'cloudinary';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '5mb'
+    }
+  }
+};
+
 export const uploadImage = async (src: string, path: string) => {
   cloudinary.config({
     secure: true
