@@ -22,10 +22,6 @@ export const getFileUrl = (path: string) => storageProvider.getFileUrl(path);
 
 export const getThumbnailUrl = (path: string) => storageProvider.getThumbnailUrl(path);
 
-export const saveFile = (file: UploadItemFile) => storageProvider.saveFile(file);
+export const saveFile = (file: UploadItemFile) => storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.item.id}`);
 
-export const deleteFile = async (_path: string) => {
-  throw new Error('not implemented');
-};
-
-// export const deleteFile = async (path: string) => await storageProvider.deleteFile(path);
+export const deleteFile = async (path: string) => storageProvider.deleteFile(path);

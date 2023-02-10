@@ -2,7 +2,7 @@
 import db, { FileType, IntegrationItem, IntegrationItemStatus, IntegrationSetup, ItemStatus } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { uploadImage } from '../upload/image.page';
+import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
 const processIntegration = async () => {
@@ -19,6 +19,8 @@ const processIntegration = async () => {
   if (integrationList.length > 0) {
     console.log(`[IntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
     console.log(`[IntegrationJOB] ${new Date().toISOString()} - Item integration process started.`);
+
+    const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     for await (const integrationItem of integrationList) {
       try {
@@ -60,7 +62,7 @@ const processIntegration = async () => {
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            const response = await uploadImage(src);
+            const response = await uploadImage(src, `${ARTIFACTS_PATH}/${item.id}`);
             const file: UploadItemFile = {
               storagePath: `${response.public_id}.${response.format}`,
               item: { ...item, files: [] },
@@ -78,8 +80,7 @@ const processIntegration = async () => {
           data: images.map((file) => ({
             storagePath: file.storagePath,
             artifactType: file.artifactType,
-            itemId: item.id,
-            index: 0 //TODO remove property from schema
+            itemId: item.id
           }))
         });
 
@@ -121,8 +122,6 @@ export default api(async (_req, res, _ctx) => {
 |                        Starting Item integration job...                         |
 ===================================================================================
 `);
-
   await processIntegration();
-  // await db.$queryRaw`SELECT 1`;
   res.status(200).send({});
 });

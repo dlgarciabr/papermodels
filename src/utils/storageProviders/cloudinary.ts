@@ -21,19 +21,19 @@ const getThumbnailUrl = (path: string) => {
   return image.toURL();
 };
 
-export const saveFile = async (file: UploadItemFile) => {
+export const saveFile = async (file: UploadItemFile, path: string) => {
   if (file.bytes) {
     const bytesAsBase64 = Buffer.from(file.bytes).toString('base64');
-    const url = `data:image/jpeg;base64,${bytesAsBase64}`;
+    const src = `data:image/jpeg;base64,${bytesAsBase64}`;
     const antiCSRFToken = getAntiCSRFToken();
-    const response = await fetch(`${location.origin}/api/upload/image`, {
+    const response = await fetch(`${location.origin}/api/file/image-upload`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         'anti-csrf': antiCSRFToken
       },
-      body: JSON.stringify({ src: url })
+      body: JSON.stringify({ src, path })
     });
     const result = await response.json();
     return result;
@@ -41,10 +41,29 @@ export const saveFile = async (file: UploadItemFile) => {
   throw new Error('parameter contains no bytes');
 };
 
+export const deleteFile = async (path: string) => {
+  if (path) {
+    const antiCSRFToken = getAntiCSRFToken();
+    const response = await fetch(`${location.origin}/api/file/delete`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'anti-csrf': antiCSRFToken
+      },
+      body: JSON.stringify({ src: path.split('.')[0] })
+    });
+    const result = await response.json();
+    return result;
+  }
+  throw new Error('parameter contains no path');
+};
+
 const cloudinary = {
   getFileUrl,
   getThumbnailUrl,
-  saveFile
+  saveFile,
+  deleteFile
 };
 
 export default cloudinary;

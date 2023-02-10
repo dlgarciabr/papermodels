@@ -85,7 +85,6 @@ export const EditItem = () => {
   );
 
   const [updateItemMutation] = useMutation(updateItem);
-  // const [updateItemFileMutation] = useMutation(updateItemFile);
   const [createItemFileMutation] = useMutation(createItemFile);
   const [deleteItemFileMutation] = useMutation(deleteItemFile);
 
@@ -98,7 +97,7 @@ export const EditItem = () => {
       return;
     }
     try {
-      const uploadedFiles = await uploadFiles(filesToUpload);
+      const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
       showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();

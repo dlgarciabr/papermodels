@@ -3,6 +3,9 @@
 import db from 'db';
 import { api } from 'src/blitz-server';
 
+/**
+ * @deprecated
+ */
 export default api(async (_req, res, _ctx) => {
   console.log(`
 ===================================================================================
