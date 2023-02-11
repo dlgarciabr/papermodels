@@ -39,6 +39,8 @@
     "firebase": "9.15.0",
     "formik": "2.2.9",
     "next": "12.2.5",
+    "playwright-aws-lambda": "^0.5.2",
+    "playwright-core": "npm:playwright-chromium@1.1.1",
     "prisma": "4.6.0",
     "puppeteer-serverless": "2.0.0",
     "react": "18.2.0",
