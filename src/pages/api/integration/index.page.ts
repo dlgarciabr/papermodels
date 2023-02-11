@@ -4,9 +4,12 @@ import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
+import { JSDOM } from 'jsdom';
 
-// const setup = {
-// }
+const setup = {
+  schemesSelector: 'div.card-body > div > div > a.download-on-click',
+  instructionsSelector: ''
+};
 
 const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
   if (setupIgnoreExpressions) {
@@ -84,9 +87,15 @@ const processIntegration = async () => {
             images.push(file);
           } else {
             throw new Error(`Error integrating image ${node}`);
-            //TODO handle error
           }
         }
+
+        //TODO click on selector to download
+        const {
+          window: { document }
+        } = new JSDOM(pageContent);
+        const schemesAction = document.querySelector(setup.schemesSelector) as any;
+        schemesAction.click();
 
         await db.itemFile.createMany({
           data: images.map((file) => ({
