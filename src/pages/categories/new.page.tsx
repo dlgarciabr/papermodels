@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useMutation } from '@blitzjs/rpc';
 import { showToast } from 'src/core/components/Toast';
 import Layout from 'src/core/layouts/Layout';
-import createCategory, { CreateCategoryValidation } from 'src/categories/mutations/createCategory';
+import createCategory from 'src/categories/mutations/createCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { CreateCategoryValidation } from 'src/categories/schemas';
 
 const NewCategoryPage = () => {
   const router = useContext(RouterContext);
