@@ -2,7 +2,8 @@ import { api } from 'src/blitz-server';
 // import puppeteer from 'puppeteer-serverless';
 // import chromium from "chrome-aws-lambda"
 // import playwright from "playwright-core"
-import { chromium } from 'playwright-core';
+import chromium from 'chrome-aws-lambda';
+import playwright from 'playwright-core';
 import path from 'path';
 import fs from 'fs';
 
@@ -12,7 +13,12 @@ export default api(async (req, res, _ctx) => {
   if (req.method === 'GET') {
     try {
       // const browser = await puppeteer.launch({});
-      const browser = await chromium.launch({ headless: true });
+      const browser = await playwright.chromium.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath,
+        headless: chromium.headless
+      });
+      // const browser = await chromium.launch({ headless: true });
       const context = await browser.newContext();
       // const browser = await chromium.launch({
       //   args: chromium.args,
