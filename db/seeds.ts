@@ -1,5 +1,5 @@
 import { Decimal } from '@prisma/client/runtime';
-import db, { FileType, IntegrationItemStatus } from 'db';
+import db, { FileType, ItemStatus } from 'db';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -10,13 +10,20 @@ import db, { FileType, IntegrationItemStatus } from 'db';
 const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Category_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationItem_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;
 
   const categories = [
     {
-      name: 'Service buildings',
+      name: 'Misc.',
+      items: []
+    },
+    {
+      name: 'Buildings',
       items: [
         {
           name: 'Veterinary  clinic',
@@ -24,19 +31,30 @@ const seed = async () => {
           dificulty: 1,
           assemblyTime: new Decimal(0.5),
           licenseType: 'MIT',
+          status: ItemStatus.enable,
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: [
             {
-              index: 0,
               storagePath: '1/vet_clinic_scheme_1.jpg',
               artifactType: FileType.scheme
-            },
-            {
-              index: 0,
-              storagePath: '1/vet_clinic_thumbnail_2.png',
-              artifactType: FileType.thumbnail
             }
           ]
+        },
+        {
+          name: 'Pharmacy',
+          description: '',
+          dificulty: 1,
+          status: ItemStatus.enable,
+          assemblyTime: new Decimal(1),
+          files: []
+        },
+        {
+          name: 'Market',
+          description: '',
+          dificulty: 1,
+          status: ItemStatus.enable,
+          assemblyTime: new Decimal(1),
+          files: []
         }
       ]
     },
@@ -47,19 +65,14 @@ const seed = async () => {
           name: 'Hospital',
           description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           licenseType: 'MIT',
           files: [
-            {
-              index: 0,
-              storagePath: '2/hospital_preview_1.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 0,
-              storagePath: '2/hospital_preview_1_thumb.jpg',
-              artifactType: FileType.preview
-            }
+            // {
+            //   storagePath: '2/hospital_preview_1.jpg',
+            //   artifactType: FileType.preview
+            // }
           ]
         }
       ]
@@ -72,42 +85,25 @@ const seed = async () => {
           description:
             'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
           dificulty: 5,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(12),
           licenseType: 'MIT',
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           author: 'Tod Jason',
           authorLink: 'https://google.com',
           files: [
-            {
-              index: 0,
-              storagePath: '3/alcazar_of_segovia_preview_1.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 0,
-              storagePath: '3/alcazar_of_segovia_preview_1_thumb.jpg',
-              artifactType: FileType.thumbnail
-            },
-            {
-              index: 1,
-              storagePath: '3/alcazar_of_segovia_preview_2.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 1,
-              storagePath: '3/alcazar_of_segovia_preview_2_thumb.jpg',
-              artifactType: FileType.thumbnail
-            },
-            {
-              index: 2,
-              storagePath: '3/alcazar_of_segovia_preview_3.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              index: 2,
-              storagePath: '3/alcazar_of_segovia_preview_3_thumb.jpg',
-              artifactType: FileType.thumbnail
-            }
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_1.jpg',
+            //   artifactType: FileType.preview
+            // },
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_2.jpg',
+            //   artifactType: FileType.preview
+            // },
+            // {
+            //   storagePath: '3/alcazar_of_segovia_preview_3.jpg',
+            //   artifactType: FileType.preview
+            // },
           ]
         }
       ]
@@ -119,6 +115,7 @@ const seed = async () => {
           name: 'Speedboat',
           description: 'A fast racing speed boat',
           dificulty: 2,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(3),
           licenseTypeLink: 'https://opensource.org/licenses/MIT',
           files: []
@@ -132,6 +129,7 @@ const seed = async () => {
           name: 'Oporto Metro',
           description: 'A two wagon metro of Oporto city',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -144,6 +142,7 @@ const seed = async () => {
           name: 'F-14 Tomcat',
           description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
           dificulty: 1,
+          status: ItemStatus.disable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -156,18 +155,20 @@ const seed = async () => {
           name: 'Mercedes Class A',
           description: 'The small solution of a city car presented by Mercedes',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
       ]
     },
     {
-      name: 'Houses & residential apartments',
+      name: 'Houses & Apartments',
       items: [
         {
           name: 'Farm House',
           description: 'A nice farm house',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -180,25 +181,7 @@ const seed = async () => {
           name: 'Jaguar',
           description: '',
           dificulty: 1,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
-      ]
-    },
-    {
-      name: 'Stores',
-      items: [
-        {
-          name: 'Pharmacy',
-          description: '',
-          dificulty: 1,
-          assemblyTime: new Decimal(1),
-          files: []
-        },
-        {
-          name: 'Market',
-          description: '',
-          dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
@@ -211,22 +194,28 @@ const seed = async () => {
           name: 'Oak',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
       ]
     },
     {
-      name: 'Miscelaneus',
+      name: 'Origami',
       items: [
         {
           name: 'Origami bird',
           description: '',
           dificulty: 1,
+          status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
           files: []
         }
       ]
+    },
+    {
+      name: 'Work Machines',
+      items: []
     }
   ];
 
@@ -236,7 +225,7 @@ const seed = async () => {
         name,
         description: name,
         items: {
-          create: items.map((item) => ({
+          create: items!.map((item) => ({
             ...item,
             files: {
               create: item.files.map((file) => ({
@@ -249,41 +238,35 @@ const seed = async () => {
     });
   }
 
-  // const integrationSetups = [
-  //   {
-  //     name: 'test item',
-  //     node: '<div></div>',
-  //     status: IntegrationItemStatus.pending,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date()
-  //   }
-  // ];
-
-  // for await (const integrationItem of integrationItems) {
-  //   await db.integrationItem.create({
-  //     data: {
-  //       ...integrationItem
-  //     }
-  //   });
-  // }
-
-  const integrationItems = [
+  const integrationSetups = [
     {
-      name: 'test item',
-      node: '<div></div>',
-      status: IntegrationItemStatus.pending,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      name: 'Papermau Exclusive',
+      domain: 'https://papermau.blogspot.com/search/label/exclusive',
+      itemUrlSelector: 'div > b > a',
+      categorySelector: '',
+      categoryBinding: '',
+      previewImagesSelector: ''
+    },
+    {
+      name: 'Paperdiorama machines',
+      domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
+      itemUrlSelector: 'article > div > h2 > a',
+      categorySelector: 'p.post-category > a',
+      categoryBinding: `[
+        {
+          "systemCategoryName": "Work Machines",
+          "pageCategoryName": "Work Machines"
+        }
+      ]`,
+      descriptionSelector: 'article > div> div > div > p',
+      previewImagesSelector: 'div > div > div > img.caption',
+      ignoreExpressions: `["Paper Diorama"]`
     }
   ];
 
-  for await (const integrationItem of integrationItems) {
-    await db.integrationItem.create({
-      data: {
-        ...integrationItem
-      }
-    });
-  }
+  await db.integrationSetup.createMany({
+    data: integrationSetups
+  });
 };
 
 export default seed;

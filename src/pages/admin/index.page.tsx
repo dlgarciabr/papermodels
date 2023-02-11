@@ -50,6 +50,7 @@ const UserInfo = () => {
 };
 
 const Admin: BlitzPage = () => {
+  const currentUser = useCurrentUser();
   return (
     <Layout title='Home'>
       <div className='container'>
@@ -62,18 +63,20 @@ const Admin: BlitzPage = () => {
               <UserInfo />
             </Suspense>
           </div>
-          <div>
-            <p>
-              <Link href='/categories'>
-                <a>categories</a>
-              </Link>
-            </p>
-            <p>
-              <Link href='/items'>
-                <a>items</a>
-              </Link>
-            </p>
-          </div>
+          {currentUser && (
+            <div>
+              <p>
+                <Link href='/categories'>
+                  <a>categories</a>
+                </Link>
+              </p>
+              <p>
+                <Link href='/items'>
+                  <a>items</a>
+                </Link>
+              </p>
+            </div>
+          )}
         </main>
 
         <style jsx global>{`

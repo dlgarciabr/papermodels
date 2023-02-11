@@ -10,14 +10,21 @@ import { DropzoneProps } from './types';
 export const Dropzone = (props: DropzoneProps) => {
   const [dropedFiles, setDropedFiles] = useState<UploadItemFile[]>([]);
 
-  const onDrop = (acceptedFiles: UploadItemFile[]) => {
-    const filesToAdd = acceptedFiles.map((file) => {
-      file.tempId = getSimpleRandomKey();
+  const onDrop = async (acceptedFiles: File[]) => {
+    const filesToAdd: UploadItemFile[] = [];
+
+    for await (const file of acceptedFiles) {
+      let uploadPreview = '';
       if (file.type.indexOf('image') >= 0) {
-        file.uploadPreview = URL.createObjectURL(file);
+        uploadPreview = URL.createObjectURL(file);
       }
-      return file;
-    });
+      filesToAdd.push({
+        storagePath: file.name,
+        tempId: getSimpleRandomKey(),
+        uploadPreview,
+        bytes: await file.arrayBuffer()
+      } as UploadItemFile);
+    }
 
     const newFileList = [...filesToAdd, ...dropedFiles];
     setDropedFiles(newFileList);
@@ -34,6 +41,7 @@ export const Dropzone = (props: DropzoneProps) => {
     onDrop
   });
 
+  // TODO remove to a css file
   const baseStyle = {
     flex: 1,
     display: 'flex',
@@ -49,19 +57,19 @@ export const Dropzone = (props: DropzoneProps) => {
     outline: 'none',
     transition: 'border .24s ease-in-out'
   };
-
+  // TODO remove to a css file
   const focusedStyle = {
     borderColor: '#2196f3'
   };
-
+  // TODO remove to a css file
   const acceptStyle = {
     borderColor: '#00e676'
   };
-
+  // TODO remove to a css file
   const rejectStyle = {
     borderColor: '#ff1744'
   };
-
+  // TODO remove to a css file
   const thumbsContainer = {
     display: 'flex',
     flexDirection: 'row',
@@ -120,7 +128,7 @@ export const Dropzone = (props: DropzoneProps) => {
           key={getSimpleRandomKey()}
           index={index}
           src={file.uploadPreview}
-          altText={file.name}
+          altText={file.storagePath}
           className={
             props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
           }>
@@ -129,17 +137,15 @@ export const Dropzone = (props: DropzoneProps) => {
               aria-labelledby='radio-group-file-type-label'
               defaultValue={file.artifactType}
               name='radio-group-file-type'>
-              {Object.keys(FileType)
-                .filter((key) => key !== FileType.thumbnail)
-                .map((typeKey) => (
-                  <FormControlLabel
-                    key={getSimpleRandomKey()}
-                    value={typeKey}
-                    control={<Radio size='small' />}
-                    label={typeKey}
-                    onClick={() => handleClickRadioType(file, typeKey)}
-                  />
-                ))}
+              {Object.keys(FileType).map((typeKey) => (
+                <FormControlLabel
+                  key={getSimpleRandomKey()}
+                  value={typeKey}
+                  control={<Radio size='small' />}
+                  label={typeKey}
+                  onClick={() => handleClickRadioType(file, typeKey)}
+                />
+              ))}
             </RadioGroup>
             <button onClick={() => removeFileFromUploadList(file.tempId)}>remove</button>
           </>

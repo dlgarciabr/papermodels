@@ -12,6 +12,7 @@ import update__ModelName__ from 'src/__modelNamesPath__/mutations/update__ModelN
 import { __ModelName__Form, FORM_ERROR } from 'src/__modelNamesPath__/components/__ModelName__Form';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import Loading from 'src/core/components/Loading';
 
 export const Edit__ModelName__ = () => {
   const router = useRouter();
@@ -74,7 +75,7 @@ const Edit__ModelName__Page = () => {
 
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Loading />}>
         <Edit__ModelName__ />
       </Suspense>
 

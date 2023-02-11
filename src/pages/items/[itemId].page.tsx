@@ -12,7 +12,7 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { invoke } from '@blitzjs/rpc';
 
 import { IImageData, IThumbnailsData } from './types';
-import { getFilePath } from 'src/utils/fileStorage';
+import { getFileUrl, getThumbnailUrl } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithFiles } from 'types';
@@ -111,7 +111,7 @@ export const Item = () => {
 
   const setupThumbnails = (item: ItemWithFiles) => {
     const thumbnails = item.files
-      .filter((file) => file.artifactType === FileType.thumbnail)
+      .filter((file) => file.artifactType === FileType.preview)
       .map((file) => ({
         storagePath: file.storagePath
       }));
@@ -123,7 +123,7 @@ export const Item = () => {
 
   const loadMainImage = async (storagePath: string) => {
     setImageData({ loading: true });
-    const url = await getFilePath(storagePath);
+    const url = getFileUrl(storagePath);
     const response = await fetch(url, { method: 'GET' });
     const blob = await response.blob();
     const urlCreator = window.URL || window.webkitURL;
@@ -176,7 +176,7 @@ export const Item = () => {
 
   const loadThumbnailUrls = async () => {
     for await (const item of thumbnailsData.items) {
-      const url = await getFilePath(item.storagePath);
+      const url = getThumbnailUrl(item.storagePath);
       item.finalUrl = url;
       setThumbnailsData({
         ...thumbnailsData,

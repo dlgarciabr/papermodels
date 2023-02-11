@@ -114,18 +114,26 @@ const mockDefaultAllQueries = () => {
     return { default: resolver };
   });
 
-  vi.mock('src/items/mutations/createItem', () => {
+  vi.mock('src/items/mutations/createItem', async () => {
+    const actual = (await vi.importActual('src/items/mutations/createItem')) as {};
     const resolver = vi.fn() as any;
     resolver._resolverType = 'query';
     resolver._routePath = '/api/rpc/createItem';
-    return { default: resolver };
+    return {
+      ...actual,
+      default: resolver
+    };
   });
 
-  vi.mock('src/categories/mutations/createCategory', () => {
+  vi.mock('src/categories/mutations/createCategory', async () => {
+    const actual = (await vi.importActual('src/categories/mutations/createCategory')) as {};
     const resolver = vi.fn() as any;
     resolver._resolverType = 'query';
     resolver._routePath = '/api/rpc/createCategory';
-    return { default: resolver };
+    return {
+      ...actual,
+      default: resolver
+    };
   });
 
   vi.mock('src/categories/queries/getCategories', () => {

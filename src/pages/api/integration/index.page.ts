@@ -1,33 +1,148 @@
 /* istanbul ignore file -- @preserve */
-// import db, { IntegrationItemStatus } from 'db';
+import db, { FileType, IntegrationItem, IntegrationItemStatus, IntegrationSetup, ItemStatus } from 'db';
 import { api } from 'src/blitz-server';
-// import { JSDOM } from 'jsdom';
+import { UploadItemFile } from 'src/items/types';
+import { uploadImage } from '../file/image-upload.page';
+import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
+import { JSDOM } from 'jsdom';
 
-// const readPageItemList = async () => {
-//   const url = 'https://papermau.blogspot.com/';
-//   const querySelector = 'div>b>a';
-//   const param = 'href';
+const setup = {
+  schemesSelector: 'div.card-body > div > div > a.download-on-click',
+  instructionsSelector: ''
+};
 
-//   const pageResponse = await fetch(url);
-//   const pageContent = await pageResponse.text();
-//   const document = new JSDOM(pageContent);
-//   const selection = document.window.document.querySelectorAll(querySelector);
-//   await db.integrationItem.createMany({
-//     data: Array.from(selection).map((node: any) => ({
-//       reference: node[param],
-//       status: IntegrationItemStatus.feeding
-//     }))
-//   });
-// }
+const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
+  if (setupIgnoreExpressions) {
+    const expressionsToIgnore: string[] = JSON.parse(setupIgnoreExpressions);
+    const regex = new RegExp('\\b' + expressionsToIgnore.join('|') + '\\b', 'gi');
+    return text.replace(regex, '');
+  }
+  return text;
+};
+
+const processIntegration = async () => {
+  const integrationList = (await db.integrationItem.findMany({
+    where: {
+      status: IntegrationItemStatus.pending
+    },
+    take: 1,
+    include: {
+      setup: true
+    }
+  })) as (IntegrationItem & { setup: IntegrationSetup })[];
+
+  if (integrationList.length > 0) {
+    console.log(`[IntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
+    console.log(`[IntegrationJOB] ${new Date().toISOString()} - Item integration process started.`);
+
+    const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+
+    for await (const integrationItem of integrationList) {
+      try {
+        console.log(`[IntegrationJOB] Integrating item '${integrationItem.name}'...`);
+        await db.integrationItem.update({
+          where: { id: integrationItem.id },
+          data: {
+            status: IntegrationItemStatus.running
+          }
+        });
+
+        const pageContent = await fetchPageAsString(integrationItem.url);
+
+        let description = '';
+        if (integrationItem.setup.descriptionSelector) {
+          description = getTextFromNodeAsString(pageContent, integrationItem.setup.descriptionSelector) || '';
+        }
+
+        let dificulty;
+        let assemblyTime;
+
+        const previewImageNodes = executeSelectorAllOnHtmlText(
+          pageContent,
+          integrationItem.setup.previewImagesSelector
+        );
+
+        const item = await db.item.create({
+          data: {
+            name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
+            description: removeExpressions(description, integrationItem.setup.ignoreExpressions).trim(),
+            dificulty,
+            assemblyTime,
+            categoryId: integrationItem.categoryId,
+            status: ItemStatus.integrating
+          }
+        });
+
+        const images: UploadItemFile[] = [];
+        for await (const node of previewImageNodes) {
+          const src = node.getAttribute('src');
+          if (src) {
+            const response = await uploadImage(src, `${ARTIFACTS_PATH}/${item.id}`);
+            const file: UploadItemFile = {
+              storagePath: `${response.public_id}.${response.format}`,
+              item: { ...item, files: [] },
+              artifactType: FileType.preview,
+              tempId: ''
+            };
+            images.push(file);
+          } else {
+            throw new Error(`Error integrating image ${node}`);
+          }
+        }
+
+        //TODO click on selector to download
+        const {
+          window: { document }
+        } = new JSDOM(pageContent);
+        const schemesAction = document.querySelector(setup.schemesSelector) as any;
+        schemesAction.click();
+
+        await db.itemFile.createMany({
+          data: images.map((file) => ({
+            storagePath: file.storagePath,
+            artifactType: file.artifactType,
+            itemId: item.id
+          }))
+        });
+
+        await db.item.update({
+          where: { id: item.id },
+          data: {
+            status: ItemStatus.enable
+          }
+        });
+
+        await db.integrationItem.update({
+          where: { id: integrationItem.id },
+          data: {
+            status: IntegrationItemStatus.done
+          }
+        });
+      } catch (error) {
+        console.log(`[IntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
+        console.log(error);
+        await db.integrationItem.update({
+          where: { id: integrationItem.id },
+          data: {
+            error: error.message,
+            status: IntegrationItemStatus.error
+          }
+        });
+      }
+    }
+
+    console.log(`[IntegrationJOB] ${new Date().toISOString()} Item integration process finished.`);
+  } else {
+    console.log(`[IntegrationJOB] No items to integrate!`);
+  }
+};
 
 export default api(async (_req, res, _ctx) => {
   console.log(`
 ===================================================================================
-|                        Collecting items for integration                         |
+|                        Starting Item integration job...                         |
 ===================================================================================
 `);
-
-  // await processIntegration();
-  // await db.$queryRaw`SELECT 1`;
+  await processIntegration();
   res.status(200).send({});
 });

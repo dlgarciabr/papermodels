@@ -1,12 +1,39 @@
 import { JSDOM } from 'jsdom';
 
-export const readPageNodes = async (url: string, querySelector: string) => {
-  const pageResponse = await fetch(url);
-  const pageContent = await pageResponse.text();
-  const document = new JSDOM(pageContent);
-  const selection = document.window.document.querySelectorAll(querySelector);
-  const nodes = Array.from(selection).map((node: any) => ({
-    node: node.outerHTML
-  }));
-  return nodes;
+export const fetchPageAsString = async (url: string) => {
+  const pageContent = await (await fetch(url)).text();
+  return pageContent;
+};
+
+export const executeSelectorOnHtmlText = (content: string, querySelector: string) => {
+  const { window } = new JSDOM(content);
+  return window.document.querySelector(querySelector);
+};
+
+export const executeSelectorAllOnHtmlText = (content: string, querySelector: string) => {
+  const { window } = new JSDOM(content);
+  return window.document.querySelectorAll(querySelector);
+};
+
+export const readPageNodesAsString = (pageContent: string, querySelector: string) => {
+  const selection = executeSelectorAllOnHtmlText(pageContent, querySelector);
+  return Array.from(selection).map((node) => node.outerHTML);
+};
+
+export const readPageUrlsFromNodes = (nodesAsString: string[]) => {
+  return nodesAsString.map((node) => executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'));
+};
+
+export const readPageUrls = async (url: string, querySelector: string) => {
+  const pageContent = await fetchPageAsString(url);
+  const nodes = readPageNodesAsString(pageContent, querySelector);
+  return nodes.map((node) => executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'));
+};
+
+export const getTextFromNodeAsString = (content: string, querySelector: string) => {
+  const node = executeSelectorOnHtmlText(content, querySelector);
+  if (node) {
+    return node.textContent;
+  }
+  return null;
 };

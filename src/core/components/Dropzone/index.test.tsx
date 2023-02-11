@@ -39,8 +39,7 @@ describe('Dropzone', () => {
   test('User drops an image file', async () => {
     // arrange
     const fileName = 'test.png';
-    const file = new File([], fileName, { type: 'image/png' });
-
+    const file = { arrayBuffer: () => new ArrayBuffer(0), name: fileName };
     const files = mockData([file]);
 
     render(<Dropzone {...globalOptions} />);
@@ -59,8 +58,7 @@ describe('Dropzone', () => {
   test('User drops an pdf file', async () => {
     // arrange
     const fileName = 'test.pdf';
-    const file = new File([], fileName, { type: 'application/pdf' });
-
+    const file = { arrayBuffer: () => new ArrayBuffer(0), name: fileName, type: 'application/pdf' };
     const files = mockData([file]);
 
     const { container } = render(<Dropzone {...globalOptions} />);
@@ -78,7 +76,6 @@ describe('Dropzone', () => {
   test('User try to drop an invalid type file ', async () => {
     // arrange
     const file = new File([], 'test.zip', { type: 'application/zip' });
-
     const files = mockData([file]);
 
     render(<Dropzone {...globalOptions} />);
@@ -94,7 +91,7 @@ describe('Dropzone', () => {
     ).toBeInTheDocument();
   });
 
-  test('User drops a file and extended handlers are called ', async () => {
+  test('User drops a file and extended handlers are called', async () => {
     // arrange
     const onDropedFilesChange = vi.fn();
     const onDrop = vi.fn();
@@ -103,8 +100,7 @@ describe('Dropzone', () => {
       onDrop
     };
 
-    const file = new File([], 'test.png', { type: 'image/png' });
-
+    const file = { arrayBuffer: () => new ArrayBuffer(0), name: '', type: 'image/png' };
     const files = mockData([file]);
 
     render(<Dropzone {...dropzoneOptions} />);
@@ -121,7 +117,7 @@ describe('Dropzone', () => {
 
   test('User drops a file and remove it', async () => {
     // arrange
-    const file = new File([], 'test.png', { type: 'image/png' });
+    const file = { arrayBuffer: async () => new ArrayBuffer(0), name: 'test.png', type: 'image/png' };
     const files = mockData([file]);
     const onDropedFilesChange = vi.fn();
 
@@ -145,7 +141,7 @@ describe('Dropzone', () => {
 
   test('User drops a file and choose artifact radio type', async () => {
     // arrange
-    const file = new File([], 'test.png', { type: 'image/png' });
+    const file = { arrayBuffer: async () => new ArrayBuffer(0), name: 'test.png', type: 'image/png' };
     const files = mockData([file]);
     const onDropedFilesChange = vi.fn();
 
@@ -179,7 +175,7 @@ describe('Dropzone', () => {
   test('User drops a file and thumbnail error is activated', async () => {
     // arrange
     const fileName = 'test.png';
-    const file = new File([], fileName, { type: 'image/png' });
+    const file = { arrayBuffer: async () => new ArrayBuffer(0), name: fileName, type: 'image/png' };
     const files = mockData([file]);
 
     let validateFiles = false;

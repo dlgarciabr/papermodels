@@ -75,6 +75,12 @@ model Category {
   items       Item[]
 }
 
+enum ItemStatus {
+  integrating
+  enable
+  disable
+}
+
 model Item {
   id              Int        @id @default(autoincrement())
   createdAt       DateTime   @default(now())
@@ -84,8 +90,9 @@ model Item {
   category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId      Int
   files           ItemFile[]
-  dificulty       Int
-  assemblyTime    Decimal
+  status          ItemStatus @default(disable)
+  dificulty       Int?
+  assemblyTime    Decimal?
   author          String?
   authorLink      String?
   licenseType     String?
@@ -96,12 +103,10 @@ enum FileType {
   instruction
   preview
   scheme
-  thumbnail
 }
 
 model ItemFile {
   id           Int      @id @default(autoincrement())
-  index        Int
   storagePath  String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -118,20 +123,30 @@ enum IntegrationItemStatus {
   error
 }
 
-model IntegrationItem {
-  id        Int                   @id @default(autoincrement())
-  name      String
-  node      String
-  status    IntegrationItemStatus
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  error     String?
+model IntegrationSetup {
+  id                    Int               @id @default(autoincrement())
+  name                  String
+  domain                String
+  itemUrlSelector       String
+  categorySelector      String
+  categoryBinding       String
+  descriptionSelector   String?
+  previewImagesSelector String
+  ignoreExpressions     String?
+  integrationItems      IntegrationItem[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 }
 
-model IntegrationSetup {
-  id        Int      @id @default(autoincrement())
-  domain    String
-  selector  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model IntegrationItem {
+  id         Int                   @id @default(autoincrement())
+  name       String
+  url        String                @unique
+  status     IntegrationItemStatus
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  setup      IntegrationSetup      @relation(fields: [setupId], references: [id])
+  setupId    Int
+  categoryId Int
+  error      String?
 }

@@ -174,7 +174,8 @@ describe('Item creating', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable'
     };
 
     const createItemMutation = vi.fn();
@@ -287,7 +288,8 @@ describe('Item changing', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable'
     };
 
     const modifiedItem = {
@@ -498,6 +500,12 @@ describe('Item changing', () => {
       } as ItemFile)
     ]);
 
+    vi.mocked(global.fetch).mockResolvedValue({
+      blob: vi.fn().mockResolvedValue({
+        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0))
+      })
+    } as any);
+
     const { rerender } = render(<EditItemPage />);
 
     // act
@@ -637,10 +645,6 @@ describe('Item viewing', () => {
       categoryId: 1,
       files: [
         {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
         }
@@ -676,10 +680,6 @@ describe('Item viewing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -725,10 +725,6 @@ describe('Item viewing', () => {
       categoryId: 1,
       files: [
         {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
         },
@@ -773,14 +769,6 @@ describe('Item viewing', () => {
       categoryId: 1,
       files: [
         {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abcde.jpg'
-        },
-        {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
         }
@@ -795,7 +783,7 @@ describe('Item viewing', () => {
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
     // vi.mock('src/utils/fileStorage/getFilePath', () => 'http://localhost:3000/testUrl2');
-    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValue('http://localhost:3000/testUrl2');
+    vi.spyOn(fileStorage, 'getFileUrl').mockResolvedValue('http://localhost:3000/testUrl2');
     // getFilePath  = vi.fn();
 
     setupUseQueryReturn(item);

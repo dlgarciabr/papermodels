@@ -1,9 +1,10 @@
 import { FileType } from 'db';
 
-export type UploadItemFile = File & {
+export type UploadItemFile = {
   storagePath: string;
   tempId: string;
-  uploadPreview: string;
-  artifactType: FileType;
   item: Item;
+  uploadPreview?: string;
+  artifactType: FileType;
+  bytes?: ArrayBuffer;
 };
