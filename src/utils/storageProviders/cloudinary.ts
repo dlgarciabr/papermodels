@@ -21,10 +21,14 @@ const getThumbnailUrl = (path: string) => {
   return image.toURL();
 };
 
+export const convertBytesToBase64 = (bytes: ArrayBuffer) => {
+  const bytesAsBase64 = Buffer.from(bytes).toString('base64');
+  return `data:image/jpeg;base64,${bytesAsBase64}`;
+};
+
 export const saveFile = async (file: UploadItemFile, path: string) => {
   if (file.bytes) {
-    const bytesAsBase64 = Buffer.from(file.bytes).toString('base64');
-    const src = `data:image/jpeg;base64,${bytesAsBase64}`;
+    const src = convertBytesToBase64(file.bytes);
     const antiCSRFToken = getAntiCSRFToken();
     const response = await fetch(`${location.origin}/api/file/image-upload`, {
       method: 'POST',

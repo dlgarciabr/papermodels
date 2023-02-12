@@ -50,14 +50,14 @@ const processIntegration = async () => {
   })) as (ItemIntegration & { setup: IntegrationSetup })[];
 
   if (integrationList.length > 0) {
-    console.log(`[IntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
-    console.log(`[IntegrationJOB] ${new Date().toISOString()} - Item integration process started.`);
+    console.log(`[ItemIntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
+    console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} - Item integration process started.`);
 
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     for await (const integrationItem of integrationList) {
       try {
-        console.log(`[IntegrationJOB] Integrating item '${integrationItem.name}'...`);
+        console.log(`[ItemIntegrationJOB] Integrating item '${integrationItem.name}'...`);
         await db.itemIntegration.update({
           where: { id: integrationItem.id },
           data: {
@@ -80,7 +80,7 @@ const processIntegration = async () => {
           integrationItem.setup.previewImagesSelector
         );
 
-        console.log(`[IntegrationJOB] Persisting item '${integrationItem.name}'...`);
+        console.log(`[ItemIntegrationJOB] Persisting item '${integrationItem.name}'...`);
         const item = await db.item.create({
           data: {
             name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
@@ -92,12 +92,12 @@ const processIntegration = async () => {
           }
         });
 
-        console.log(`[IntegrationJOB] Extracting preview images...`);
+        console.log(`[ItemIntegrationJOB] Extracting preview images...`);
         const files: UploadItemFile[] = [];
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            console.log(`[IntegrationJOB] Uploading preview image ${src}...`);
+            console.log(`[ItemIntegrationJOB] Uploading preview image ${src}...`);
             const response = await uploadImage(src, `${ARTIFACTS_PATH}/${item.id}`);
             const file: UploadItemFile = {
               storagePath: `${response.public_id}.${response.format}`,
@@ -139,7 +139,7 @@ const processIntegration = async () => {
           }
         });
 
-        console.log(`[IntegrationJOB] Persisting files...`);
+        console.log(`[ItemIntegrationJOB] Persisting files...`);
 
         await db.itemFile.createMany({
           data: files.map((file) => ({
@@ -163,7 +163,7 @@ const processIntegration = async () => {
           }
         });
       } catch (error) {
-        console.log(`[IntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
+        console.log(`[ItemIntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
         console.log(error);
         await db.itemIntegration.update({
           where: { id: integrationItem.id },
@@ -175,16 +175,16 @@ const processIntegration = async () => {
       }
     }
 
-    console.log(`[IntegrationJOB] ${new Date().toISOString()} Item integration process finished.`);
+    console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item fist stage integration process finished.`);
   } else {
-    console.log(`[IntegrationJOB] No items to integrate!`);
+    console.log(`[ItemIntegrationJOB] No items to integrate!`);
   }
 };
 
 export default api(async (_req, res, _ctx) => {
   console.log(`
 ===================================================================================
-|                        Starting Item integration job...                         |
+|                     Initializing Item integration job...                        |
 ===================================================================================
 `);
   await processIntegration();
