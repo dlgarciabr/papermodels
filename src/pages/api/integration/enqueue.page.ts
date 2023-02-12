@@ -1,5 +1,5 @@
 /* istanbul ignore file -- @preserve */
-import db, { IntegrationItemStatus } from 'db';
+import db, { ItemIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
 
 import { fetchPageAsString, getTextFromNodeAsString, readPageNodesAsString, readPageUrlsFromNodes } from './util';
@@ -17,7 +17,7 @@ export default api(async (req, res, _ctx) => {
 
     if (pageUrls.length > 0) {
       const existingUrls = (
-        await db.integrationItem.findMany({
+        await db.itemIntegration.findMany({
           where: {
             url: {
               in: pageUrls
@@ -44,7 +44,7 @@ export default api(async (req, res, _ctx) => {
 
       const categories = await db.category.findMany();
 
-      await db.integrationItem.createMany({
+      await db.itemIntegration.createMany({
         data: sanitizedUrls.map((url) => {
           const currentNode = pageNodes.find((node) => node.includes(url));
           const name = getTextFromNodeAsString(currentNode!, '*') || url;
@@ -52,7 +52,7 @@ export default api(async (req, res, _ctx) => {
           return {
             name,
             url,
-            status: IntegrationItemStatus.pending,
+            status: ItemIntegrationStatus.pending,
             setupId: req.body.setupId,
             categoryId: categories.find((category) => category.name === categoryName)?.id || 1
           };

@@ -6,7 +6,8 @@ const basicValidation = {
   itemUrlSelector: z.string(),
   previewImagesSelector: z.string(),
   categorySelector: z.string(),
-  categoryBinding: z.string()
+  categoryBinding: z.string(),
+  schemesSelector: z.string()
 };
 
 export const CreateIntegrationSetupValidation = z.object({

@@ -82,15 +82,16 @@ enum ItemStatus {
 }
 
 model Item {
-  id              Int        @id @default(autoincrement())
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   name            String
   description     String
-  category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId      Int
   files           ItemFile[]
-  status          ItemStatus @default(disable)
+  fileIntegration FileIntegration[]
+  status          ItemStatus        @default(disable)
   dificulty       Int?
   assemblyTime    Decimal?
   author          String?
@@ -115,8 +116,7 @@ model ItemFile {
   itemId       Int
 }
 
-enum IntegrationItemStatus {
-  feeding
+enum ItemIntegrationStatus {
   pending
   running
   done
@@ -132,21 +132,42 @@ model IntegrationSetup {
   categoryBinding       String
   descriptionSelector   String?
   previewImagesSelector String
+  schemesSelector       String
   ignoreExpressions     String?
-  integrationItems      IntegrationItem[]
+  integrationItems      ItemIntegration[]
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 }
 
-model IntegrationItem {
+model ItemIntegration {
   id         Int                   @id @default(autoincrement())
   name       String
   url        String                @unique
-  status     IntegrationItemStatus
+  status     ItemIntegrationStatus
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
   setup      IntegrationSetup      @relation(fields: [setupId], references: [id])
   setupId    Int
   categoryId Int
   error      String?
+}
+
+enum FileIntegrationStatus {
+  pending
+  running
+  done
+  error
+}
+
+model FileIntegration {
+  id              Int                   @id @default(autoincrement())
+  itemId          Int
+  item            Item                  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  selector        String
+  url             String                @unique
+  status          FileIntegrationStatus
+  integrationType FileType
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  error           String?
 }

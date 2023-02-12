@@ -5,10 +5,14 @@ export const uploadFiles = async (files: UploadItemFile[]) => {
   const uploadedFiles: UploadItemFile[] = [];
   for await (const file of files) {
     const response = await saveFile(file);
-    uploadedFiles.push({
-      ...file,
-      storagePath: `${response.public_id}.${response.format}`
-    });
+    if (response.public_id) {
+      uploadedFiles.push({
+        ...file,
+        storagePath: `${response.public_id}.${response.format}`
+      });
+    } else {
+      throw Error(response);
+    }
   }
   return uploadedFiles;
 };

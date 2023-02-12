@@ -21,6 +21,7 @@ const Integration = () => {
     ignoreExpressions: '',
     categoryBinding: '',
     descriptionSelector: null,
+    schemesSelector: '',
     createdAt: new Date(),
     updatedAt: new Date()
   });
