@@ -7,7 +7,7 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getItem from 'src/items/queries/getItem';
-import updateItem, { UpdateItemValidation } from 'src/items/mutations/updateItem';
+import updateItem from 'src/items/mutations/updateItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
@@ -22,6 +22,7 @@ import getCategories from 'src/categories/queries/getCategories';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
+import { UpdateItemValidation } from 'src/items/schemas';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (

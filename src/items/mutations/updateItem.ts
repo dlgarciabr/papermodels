@@ -1,20 +1,6 @@
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
-import { z } from 'zod';
-import { basicValidation } from './createItem';
-import { zFileTypeEnum } from './createItemFile';
-
-export const UpdateItemValidation = z.object({
-  ...basicValidation,
-  id: z.number(),
-  files: z.array(
-    z.object({
-      id: z.number(),
-      storagePath: z.string(),
-      artifactType: zFileTypeEnum
-    })
-  )
-});
+import { UpdateItemValidation } from '../schemas';
 
 export default resolver.pipe(resolver.zod(UpdateItemValidation), resolver.authorize(), async ({ id, ...data }) => {
   const item = await db.item.update({

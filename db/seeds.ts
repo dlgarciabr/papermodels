@@ -10,12 +10,13 @@ import db, { FileType, ItemStatus } from 'db';
 const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Category_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
-  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationItem_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemIntegration_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
-  await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationItem\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\" CASCADE;`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"FileIntegration\" CASCADE;`;
 
   const categories = [
     {
@@ -245,7 +246,8 @@ const seed = async () => {
       itemUrlSelector: 'div > b > a',
       categorySelector: '',
       categoryBinding: '',
-      previewImagesSelector: ''
+      previewImagesSelector: '',
+      schemesSelector: ''
     },
     {
       name: 'Paperdiorama machines',
@@ -260,7 +262,8 @@ const seed = async () => {
       ]`,
       descriptionSelector: 'article > div> div > div > p',
       previewImagesSelector: 'div > div > div > img.caption',
-      ignoreExpressions: `["Paper Diorama"]`
+      ignoreExpressions: `["Paper Diorama"]`,
+      schemesSelector: 'div.card-body > div > div > a.download-on-click'
     }
   ];
 

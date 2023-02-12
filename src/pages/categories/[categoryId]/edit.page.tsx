@@ -7,10 +7,11 @@ import { useParam } from '@blitzjs/next';
 
 import Layout from 'src/core/layouts/Layout';
 import getCategory from 'src/categories/queries/getCategory';
-import updateCategory, { UpdateCategoryValidation } from 'src/categories/mutations/updateCategory';
+import updateCategory from 'src/categories/mutations/updateCategory';
 import { CategoryForm, FORM_ERROR } from 'src/categories/components/CategoryForm';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { UpdateCategoryValidation } from 'src/categories/schemas';
 
 export const EditCategory = () => {
   const router = useContext(RouterContext);

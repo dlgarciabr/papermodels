@@ -6,9 +6,10 @@ import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
 import logout from 'src/auth/mutations/logout';
 import logo from 'public/images/logo.png';
 import { useMutation } from '@blitzjs/rpc';
-import { Routes, BlitzPage } from '@blitzjs/next';
+import { Routes } from '@blitzjs/next';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
+import Loading from 'src/core/components/Loading';
 
 /*
  * This file is just for a pleasant getting started page for your new app.
@@ -49,7 +50,7 @@ const UserInfo = () => {
   }
 };
 
-const Admin: BlitzPage = () => {
+const Admin = () => {
   const currentUser = useCurrentUser();
   return (
     <Layout title='Home'>
@@ -216,4 +217,19 @@ const Admin: BlitzPage = () => {
   );
 };
 
-export default Admin;
+const AdminPage = () => {
+  return (
+    <div>
+      <Suspense fallback={<Loading />}>
+        <Admin />
+      </Suspense>
+      <p>
+        <Link href={Routes.ItemsPage()}>
+          <a>Back to List</a>
+        </Link>
+      </p>
+    </div>
+  );
+};
+
+export default AdminPage;

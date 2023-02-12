@@ -1,6 +1,6 @@
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
-import { UpdateIntegrationSetupValidation } from './validations';
+import { UpdateIntegrationSetupValidation } from '../schema';
 
 export default resolver.pipe(
   resolver.zod(UpdateIntegrationSetupValidation),
