@@ -111,35 +111,7 @@ const processIntegration = async () => {
           }
         }
 
-        // const downloadedFile = await downloadFileFromClick(integrationItem.url, setup.schemesSelector);
-
-        // const downloadedFileWraper: UploadItemFile = {
-        //   storagePath: '',
-        //   item: { ...item, files: [] },
-        //   artifactType: FileType.scheme,
-        //   tempId: '',
-        //   bytes: downloadedFile
-        // };
-
-        // const uploadedFiles = await uploadFiles([downloadedFileWraper]);
-
-        // if (uploadFiles.length > 0) {
-        //   files.push(uploadedFiles[0]!);
-        // }
-
-        //TODO save scheme file on integration table
-
-        await db.fileIntegration.create({
-          data: {
-            itemId: item.id,
-            selector: integrationItem.setup.schemesSelector,
-            integrationType: FileType.scheme,
-            url: integrationItem.url,
-            status: FileIntegrationStatus.pending
-          }
-        });
-
-        console.log(`[ItemIntegrationJOB] Persisting files...`);
+        console.log(`[ItemIntegrationJOB] Persisting preview files...`);
 
         await db.itemFile.createMany({
           data: files.map((file) => ({
@@ -149,19 +121,32 @@ const processIntegration = async () => {
           }))
         });
 
-        await db.item.update({
-          where: { id: item.id },
+        // await db.item.update({
+        //   where: { id: item.id },
+        //   data: {
+        //     status: ItemStatus.enable
+        //   }
+        // });
+
+        console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
+
+        await db.fileIntegration.create({
           data: {
-            status: ItemStatus.enable
+            itemId: item.id,
+            selector: integrationItem.setup.schemesSelector,
+            itemIntegrationId: integrationItem.id,
+            integrationType: FileType.scheme,
+            url: integrationItem.url,
+            status: FileIntegrationStatus.pending
           }
         });
 
-        await db.itemIntegration.update({
-          where: { id: integrationItem.id },
-          data: {
-            status: ItemIntegrationStatus.done
-          }
-        });
+        // await db.itemIntegration.update({
+        //   where: { id: integrationItem.id },
+        //   data: {
+        //     status: ItemIntegrationStatus.done
+        //   }
+        // });
       } catch (error) {
         console.log(`[ItemIntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
         console.log(error);

@@ -4,7 +4,7 @@ import { chromium } from 'playwright-core';
 import path from 'path';
 import fs from 'fs';
 import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
-import { FileIntegration, FileIntegrationStatus, FileType } from '@prisma/client';
+import { FileIntegration, FileIntegrationStatus, FileType, ItemIntegrationStatus, ItemStatus } from '@prisma/client';
 import db from 'db';
 import { convertBytesToBase64 } from 'src/utils/storageProviders/cloudinary';
 import { uploadImage } from '../file/image-upload.page';
@@ -49,6 +49,13 @@ export default api(async (req, res, _ctx) => {
           //TODO
         }
       }
+
+      // await db.itemIntegration.update({
+      //   where: { id: integrationItem.id },
+      //   data: {
+      //     status: ItemIntegrationStatus.done
+      //   }
+      // });
 
       res.status(200).send({});
     } catch (error) {
@@ -95,7 +102,36 @@ const processSchemeType = async (fileIntegration: FileIntegration) => {
 
   console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} has successifully finished!`);
 
-  // TODO update item integration if the file is the last one to be integrated
+  const filesToIntegrate = await db.fileIntegration.findMany({
+    where: {
+      // itemIntegrationId: fileIntegration.itemIntegrationId
+      AND: [
+        {
+          itemIntegrationId: fileIntegration.itemIntegrationId
+        },
+        {
+          status: FileIntegrationStatus.pending
+        }
+      ]
+    }
+  });
+
+  if (filesToIntegrate.length === 0) {
+    await db.itemIntegration.update({
+      where: { id: fileIntegration.itemIntegrationId },
+      data: {
+        status: ItemIntegrationStatus.done
+      }
+    });
+
+    await db.item.update({
+      where: { id: fileIntegration.itemId },
+      data: {
+        status: ItemStatus.enable
+      }
+    });
+    console.log(`[FileIntegrationJOB] Item integration ${fileIntegration.itemId} has successifully finished!`);
+  }
 };
 
 const downloadFileFromClick = async (fileIntegration: FileIntegration) => {
