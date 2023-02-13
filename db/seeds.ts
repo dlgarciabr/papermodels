@@ -13,6 +13,7 @@ const seed = async () => {
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemIntegration_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemFile\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\" CASCADE;`;
@@ -68,12 +69,28 @@ const seed = async () => {
           dificulty: 1,
           status: ItemStatus.enable,
           assemblyTime: new Decimal(1),
-          licenseType: 'MIT',
+          licenseType: '',
           files: [
-            // {
-            //   storagePath: '2/hospital_preview_1.jpg',
-            //   artifactType: FileType.preview
-            // }
+            {
+              storagePath: 'papermodel_test/4/jxt34bqa1edbjchtotkd.pdf',
+              artifactType: FileType.scheme
+            },
+            {
+              storagePath: 'papermodel_test/4/zhoznsqsiqcbdsl2pfta.jpg',
+              artifactType: FileType.preview
+            },
+            {
+              storagePath: 'papermodel_test/4/ptkzjkeagc9wsus0s8jy.jpg',
+              artifactType: FileType.preview
+            },
+            {
+              storagePath: 'papermodel_test/4/gepqjo1blhjycliynppk.jpg',
+              artifactType: FileType.preview
+            },
+            {
+              storagePath: 'papermodel_test/4/u1sd8jwko61icvfdjrzn.pdf',
+              artifactType: FileType.instruction
+            }
           ]
         }
       ]

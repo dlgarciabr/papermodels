@@ -12,10 +12,7 @@ import { UploadItemFile } from 'src/items/types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
-// const downloadPath = path.resolve('./download');
-
 // const setup = {
-//   schemesSelector: 'div.card-body > div > div > a.download-on-click',
 //   instructionsSelector: ''
 // };
 
@@ -28,17 +25,23 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
   return text;
 };
 
-// const checkDownloadFinished = async () => {
-//   process.stdout.write('.');
-//   const files = fs.readdirSync(downloadPath);
-//   if (files.length === 0 || files[0]!.indexOf('crdownload') > 0) {
-//     await new Promise((resolve) => setTimeout(resolve, 1000));
-//     return checkDownloadFinished();
-//   }
-//   return true;
-// };
+const processItemIntegration = async () => {
+  console.log(`
+===================================================================================
+|                     Initializing Item integration job...                        |
+===================================================================================
+`);
+  const runningIntegrations = await db.itemIntegration.findMany({
+    where: {
+      status: ItemIntegrationStatus.running
+    }
+  });
 
-const processIntegration = async () => {
+  if (runningIntegrations.length > 0) {
+    console.log('[ItemIntegrationJOB] Another Item integration job is running, aborting...');
+    return;
+  }
+
   const integrationList = (await db.itemIntegration.findMany({
     where: {
       status: ItemIntegrationStatus.pending
@@ -50,10 +53,12 @@ const processIntegration = async () => {
   })) as (ItemIntegration & { setup: IntegrationSetup })[];
 
   if (integrationList.length > 0) {
-    console.log(`[ItemIntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} - Item integration process started.`);
+    console.log(`[ItemIntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
 
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+
+    const errors: { integrationItem: number; error: Error }[] = [];
 
     for await (const integrationItem of integrationList) {
       try {
@@ -81,16 +86,30 @@ const processIntegration = async () => {
         );
 
         console.log(`[ItemIntegrationJOB] Persisting item '${integrationItem.name}'...`);
-        const item = await db.item.create({
-          data: {
-            name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
-            description: removeExpressions(description, integrationItem.setup.ignoreExpressions).trim(),
-            dificulty,
-            assemblyTime,
-            categoryId: integrationItem.categoryId,
-            status: ItemStatus.integrating
+
+        let item;
+
+        try {
+          item = await db.item.create({
+            data: {
+              name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
+              description: removeExpressions(description, integrationItem.setup.ignoreExpressions).trim(),
+              dificulty,
+              assemblyTime,
+              categoryId: integrationItem.categoryId,
+              status: ItemStatus.integrating
+            }
+          });
+        } catch (error) {
+          const itemExists = error.message.indexOf('Unique constraint failed on the fields: (`name`)') > 0;
+          if (itemExists) {
+            //just ignore repeated item and do not stop the whole process
+            console.log(`[ItemIntegrationJOB] Item '${integrationItem.name}' alread exists, being ignored...`);
+            continue;
+          } else {
+            throw error;
           }
-        });
+        }
 
         console.log(`[ItemIntegrationJOB] Extracting preview images...`);
         const files: UploadItemFile[] = [];
@@ -141,12 +160,12 @@ const processIntegration = async () => {
           }
         });
 
-        // await db.itemIntegration.update({
-        //   where: { id: integrationItem.id },
-        //   data: {
-        //     status: ItemIntegrationStatus.done
-        //   }
-        // });
+        await db.itemIntegration.update({
+          where: { id: integrationItem.id },
+          data: {
+            status: ItemIntegrationStatus.pendingFiles
+          }
+        });
       } catch (error) {
         console.log(`[ItemIntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
         console.log(error);
@@ -157,21 +176,27 @@ const processIntegration = async () => {
             status: ItemIntegrationStatus.error
           }
         });
+        errors.push({ integrationItem: integrationItem.id, error });
       }
     }
 
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item fist stage integration process finished.`);
+
+    if (errors.length > 0) {
+      return { message: 'error', errors };
+    } else {
+      return { message: 'ok' };
+    }
   } else {
     console.log(`[ItemIntegrationJOB] No items to integrate!`);
   }
 };
 
-export default api(async (_req, res, _ctx) => {
-  console.log(`
-===================================================================================
-|                     Initializing Item integration job...                        |
-===================================================================================
-`);
-  await processIntegration();
-  res.status(200).send({});
+export default api(async (req, res, _ctx) => {
+  if (req.method === 'POST') {
+    const processReturn = await processItemIntegration();
+    res.status(200).send(processReturn);
+  } else {
+    res.status(501).send({});
+  }
 });

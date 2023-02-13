@@ -89,6 +89,39 @@ const Integration = () => {
     setLoading(false);
   };
 
+  const runItemsIntegration = async () => {
+    try {
+      const antiCSRFToken = getAntiCSRFToken();
+      const response = await fetch(`${location.origin}/api/integration`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'anti-csrf': antiCSRFToken
+        }
+      });
+      console.log('runItemsIntegration', response);
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
+  const runFilesIntegration = async () => {
+    try {
+      const antiCSRFToken = getAntiCSRFToken();
+      await fetch(`${location.origin}/api/integration/files`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'anti-csrf': antiCSRFToken
+        }
+      });
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
   const handleSelectSetup = (id: number) => {
     const selectedSetup = integrationSetups.find((setup) => setup.id === id);
     setSelectedSetup(selectedSetup!);
@@ -152,6 +185,12 @@ const Integration = () => {
             </Button>
             <Button onClick={() => enqueue()} disabled={loading}>
               Enqueue
+            </Button>
+            <Button onClick={() => runItemsIntegration()} disabled={loading}>
+              Run Items integration
+            </Button>
+            <Button onClick={() => runFilesIntegration()} disabled={loading}>
+              Run Files integration
             </Button>
           </Grid>
         </Grid>

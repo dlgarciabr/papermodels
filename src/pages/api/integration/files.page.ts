@@ -18,7 +18,7 @@ export default api(async (req, res, _ctx) => {
 |                       Initializing Files integration job...                     |
 ===================================================================================
 `);
-  if (req.method === 'GET') {
+  if (req.method === 'POST') {
     try {
       console.log('[FileIntegrationJOB] Cleaning last download cache...');
       const chachedFilesToRemove = fs.readdirSync(downloadPath);
@@ -34,7 +34,7 @@ export default api(async (req, res, _ctx) => {
         where: {
           status: FileIntegrationStatus.pending
         },
-        take: 1
+        take: 5
       });
 
       for await (const fileIntegration of integrationList) {
@@ -100,7 +100,7 @@ const processSchemeType = async (fileIntegration: FileIntegration) => {
     }
   });
 
-  console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} has successifully finished!`);
+  console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} has successfully finished!`);
 
   const filesToIntegrate = await db.fileIntegration.findMany({
     where: {
@@ -130,7 +130,7 @@ const processSchemeType = async (fileIntegration: FileIntegration) => {
         status: ItemStatus.enable
       }
     });
-    console.log(`[FileIntegrationJOB] Item integration ${fileIntegration.itemId} has successifully finished!`);
+    console.log(`[FileIntegrationJOB] Item integration ${fileIntegration.itemId} has successfully finished!`);
   }
 };
 
