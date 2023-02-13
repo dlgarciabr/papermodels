@@ -76,7 +76,9 @@ const processItemIntegration = async (simulation: boolean = false) => {
     console.log(
       `[ItemIntegrationJOB] ${new Date().toISOString()} - Item integration${simulationLabel}process started.`
     );
-    console.log(`[ItemIntegrationJOB] ${integrationList.length} item(s) to be integrated found!`);
+    console.log(
+      `[ItemIntegrationJOB] ${integrationList.length} item(s) to be ${simulation ? 'simulated' : 'integrated'} found!`
+    );
 
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
@@ -116,11 +118,10 @@ const processItemIntegration = async (simulation: boolean = false) => {
           previewImageNodes = [...previewImageNodes, ...Array.from(nodes)];
         });
 
-        console.log(`[ItemIntegrationJOB] Persisting item '${integrationItem.name}'...`);
-
         let item;
 
         if (!simulation) {
+          console.log(`[ItemIntegrationJOB] Persisting item '${integrationItem.name}'...`);
           try {
             item = await db.item.create({
               data: {
@@ -232,10 +233,11 @@ const processItemIntegration = async (simulation: boolean = false) => {
 };
 
 export default api(async (req, res, _ctx) => {
-  if (req.method === 'POST') {
-    const processReturn = await processItemIntegration();
-    res.status(200).send(processReturn);
-  } else {
-    res.status(501).send({});
-  }
+  // if (req.method === 'POST') {
+  const simulation = !!req.query.simulation;
+  const processReturn = await processItemIntegration(simulation);
+  res.status(200).send(processReturn);
+  // } else {
+  //   res.status(501).send({});
+  // }
 });

@@ -1,7 +1,7 @@
 import { getAntiCSRFToken } from '@blitzjs/auth';
 import { invoke } from '@blitzjs/rpc';
 import { Button, Container, Grid, TextField } from '@mui/material';
-import { IntegrationSetup } from '@prisma/client';
+import { IntegrationLog, IntegrationSetup } from '@prisma/client';
 import Head from 'next/head';
 import { ChangeEvent, useEffect, useState } from 'react';
 import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationSetups';
@@ -9,9 +9,10 @@ import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IError } from '../api/integration/types';
 import { getSimpleRandomKey } from 'src/utils/global';
+import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 
 const Integration = () => {
-  const [items, setItems] = useState<any[]>([]);
+  const [logs, setLogs] = useState<IntegrationLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
     id: 0,
@@ -38,40 +39,17 @@ const Integration = () => {
     setIntegrationSetups(integrationSetups);
   };
 
-  const evaluate = async () => {
-    setItems([]);
-    setErrors([]);
+  const feedLog = async () => {
     setLoading(true);
-    try {
-      const antiCSRFToken = getAntiCSRFToken();
-      const response = await fetch(`${location.origin}/api/integration/evaluateSetup`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'anti-csrf': antiCSRFToken
-        },
-        body: JSON.stringify(selectedSetup)
-      });
-      const text = await response.text();
-      const json = JSON.parse(text);
-      if (json.errors) {
-        setErrors(json.errors);
-      } else {
-        setItems(json);
-      }
-    } catch (error) {
-      setErrors([
-        {
-          ...JSON.parse(JSON.stringify(error)),
-          reference: '/api/integration/evaluateSetup'
-        }
-      ]);
-    }
+    const { integrationLogs } = await invoke(getLogs, {
+      orderBy: { reference: 'asc' }
+    });
+    setLogs(integrationLogs);
     setLoading(false);
+    setTimeout(() => feedLog(), 30000);
   };
 
-  const enqueue = async () => {
+  const enqueue = async (simulate: boolean = false) => {
     setErrors([]);
     setLoading(true);
     try {
@@ -83,8 +61,16 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify(selectedSetup)
+        body: JSON.stringify({
+          ...selectedSetup,
+          simulate
+        })
       });
+
+      if (simulate) {
+        await fetch(`${location.origin}/api/integration?simulation=true`);
+        void feedLog();
+      }
     } catch (error) {
       setErrors([
         {
@@ -160,7 +146,11 @@ const Integration = () => {
 
   const columns: GridColDef[] = [{ field: 'id', headerName: 'Url', width: 1000 }];
 
-  const rows = items.length > 0 ? items.map((item) => ({ id: item })) : [];
+  let rows: { id: number; reference: string; value: string }[] = [];
+
+  if (logs.length > 0) {
+    rows = logs.map((log) => ({ id: log.id, reference: log.reference, value: log.value }));
+  }
 
   return (
     <>
@@ -223,8 +213,8 @@ const Integration = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={() => evaluate()} disabled={loading}>
-              Evaluate
+            <Button onClick={() => enqueue(true)} disabled={loading}>
+              Simulate
             </Button>
             <Button onClick={() => enqueue()} disabled={loading}>
               Enqueue
