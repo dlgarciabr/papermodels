@@ -16,3 +16,15 @@ declare module '@blitzjs/auth' {
 export interface ItemWithFiles extends Item {
   files: ItemFile[];
 }
+
+export enum IntegrationSelectorType {
+  LINK = 'LINK',
+  TEXT = 'TEXT',
+  IMG = 'IMG',
+  CLICK = 'CLICK'
+}
+
+export interface IntegrationSelector {
+  type: IntegrationSelectorType;
+  value: string;
+}

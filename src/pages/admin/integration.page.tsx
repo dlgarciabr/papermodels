@@ -7,6 +7,8 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationSetups';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { IError } from '../api/integration/types';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 const Integration = () => {
   const [items, setItems] = useState<any[]>([]);
@@ -26,7 +28,7 @@ const Integration = () => {
     updatedAt: new Date()
   });
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
-  const [message, setMessage] = useState<string>('');
+  const [errors, setErrors] = useState<IError[]>([]);
   const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout>();
 
   const loadSetups = async () => {
@@ -38,7 +40,7 @@ const Integration = () => {
 
   const evaluate = async () => {
     setItems([]);
-    setMessage('');
+    setErrors([]);
     setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
@@ -49,23 +51,28 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify({ url: selectedSetup.domain, querySelector: selectedSetup.itemUrlSelector })
+        body: JSON.stringify(selectedSetup)
       });
       const text = await response.text();
       const json = JSON.parse(text);
-      if (json.error) {
-        setMessage(json.error);
+      if (json.errors) {
+        setErrors(json.errors);
       } else {
         setItems(json);
       }
     } catch (error) {
-      setMessage(error.message);
+      setErrors([
+        {
+          ...JSON.parse(JSON.stringify(error)),
+          reference: '/api/integration/evaluateSetup'
+        }
+      ]);
     }
     setLoading(false);
   };
 
   const enqueue = async () => {
-    setMessage('');
+    setErrors([]);
     setLoading(true);
     try {
       const antiCSRFToken = getAntiCSRFToken();
@@ -76,16 +83,15 @@ const Integration = () => {
           'Content-Type': 'application/json',
           'anti-csrf': antiCSRFToken
         },
-        body: JSON.stringify({
-          url: selectedSetup.domain,
-          querySelector: selectedSetup.itemUrlSelector,
-          setupId: selectedSetup.id,
-          categorySelector: selectedSetup.categorySelector,
-          categoryBinding: JSON.parse(selectedSetup.categoryBinding)
-        })
+        body: JSON.stringify(selectedSetup)
       });
     } catch (error) {
-      setMessage(error.message);
+      setErrors([
+        {
+          ...JSON.parse(JSON.stringify(error)),
+          reference: '/api/integration/enqueue'
+        }
+      ]);
     }
     setLoading(false);
   };
@@ -103,7 +109,12 @@ const Integration = () => {
       });
       console.log('runItemsIntegration', response);
     } catch (error) {
-      setMessage(error.message);
+      setErrors([
+        {
+          ...JSON.parse(JSON.stringify(error)),
+          reference: '/api/integration'
+        }
+      ]);
     }
   };
 
@@ -122,7 +133,12 @@ const Integration = () => {
         setFileIntegrationJob(setTimeout(() => runFilesIntegration(), 60000));
       }
     } catch (error) {
-      setMessage(error.message);
+      setErrors([
+        {
+          ...JSON.parse(JSON.stringify(error)),
+          reference: '/api/integration/files'
+        }
+      ]);
     }
   };
 
@@ -144,7 +160,7 @@ const Integration = () => {
 
   const columns: GridColDef[] = [{ field: 'id', headerName: 'Url', width: 1000 }];
 
-  const rows = items.map((item) => ({ id: item }));
+  const rows = items.length > 0 ? items.map((item) => ({ id: item })) : [];
 
   return (
     <>
@@ -172,18 +188,41 @@ const Integration = () => {
               name='domain'
               onChange={(e) => setParam(e as any)}
             />
+          </Grid>
+          <Grid item xs={6}>
             <TextField
               label='Item url selector'
               value={selectedSetup.itemUrlSelector}
               name='itemUrlSelector'
+              fullWidth
+              multiline
+              rows={6}
               onChange={(e) => setParam(e as any)}
             />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label='Description selector'
+              value={selectedSetup.descriptionSelector}
+              name='descriptionSelector'
+              fullWidth
+              multiline
+              rows={6}
+              onChange={(e) => setParam(e as any)}
+            />
+          </Grid>
+          <Grid item xs={6}>
             <TextField
               label='Preview images selector'
               value={selectedSetup.previewImagesSelector}
               name='previewImagesSelector'
+              fullWidth
+              multiline
+              rows={6}
               onChange={(e) => setParam(e as any)}
             />
+          </Grid>
+          <Grid item xs={12}>
             <Button onClick={() => evaluate()} disabled={loading}>
               Evaluate
             </Button>
@@ -200,7 +239,14 @@ const Integration = () => {
         </Grid>
         <Grid item xs={12}>
           {loading && <p>please wait...</p>}
-          {<p style={{ color: 'red', fontWeight: 'bold' }}>{message}</p>}
+          {errors.map((error) => (
+            <div key={getSimpleRandomKey()}>
+              <p style={{ color: 'red', fontWeight: 'bold' }}>{error.message}</p>
+              <p style={{ color: 'red', marginLeft: '20px' }}>{error.reference}</p>
+              <p style={{ color: 'red', marginLeft: '20px' }}>{error.value}</p>
+              <p style={{ color: 'red', marginLeft: '20px' }}>{error.stack}</p>
+            </div>
+          ))}
           <Box sx={{ height: 400, width: '100%' }}>
             <DataGrid rows={rows} columns={columns} pageSize={5} rowsPerPageOptions={[5]} loading={loading} />
           </Box>

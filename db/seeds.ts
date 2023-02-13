@@ -1,5 +1,6 @@
 import { Decimal } from '@prisma/client/runtime';
 import db, { FileType, ItemStatus } from 'db';
+import { IntegrationSelectorType } from 'types';
 
 /*
  * This seed function is executed when you run `blitz db seed`.
@@ -267,20 +268,153 @@ const seed = async () => {
       schemesSelector: ''
     },
     {
-      name: 'Paperdiorama machines',
+      name: 'Paperdiorama',
+      domain: 'https://www.paperdiorama.com',
+      itemUrlSelector: `[
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "article > div > h2 > a"
+        }
+      ]`,
+      categorySelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "p.post-category > a"
+        }
+      ]`,
+      categoryBinding: `[
+        {
+          "systemCategoryName": "Automobiles",
+          "pageCategoryName": "Cars"
+        }
+      ]`,
+      descriptionSelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "article > div> div > div > p"
+        }
+      ]`,
+      previewImagesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div > div > div > img.caption"
+        }
+      ]`,
+      schemesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.CLICK}",
+          "value": "div.card-body > div > div > a.download-on-click"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > h3 > a"
+        }
+      ]`
+    },
+    {
+      name: 'Paperdiorama machines WM',
       domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
+      itemUrlSelector: `[
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "article > div > h2 > a"
+        }
+      ]`,
+      categorySelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "p.post-category > a"
+        }
+      ]`,
+      categoryBinding: `[
+        {
+          "systemCategoryName": "Work Machines",
+          "pageCategoryName": "Work machines"
+        }
+      ]`,
+      descriptionSelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "article > div> div > div > p"
+        }
+      ]`,
+      previewImagesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div > div > div > img.caption"
+        }
+      ]`,
+      schemesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.CLICK}",
+          "value": "div.card-body > div > div > a.download-on-click"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > h3 > a"
+        }
+      ]`
+    },
+    {
+      name: 'Paperdiorama machines Misc',
+      domain: 'https://www.paperdiorama.com/category/paper-models/misc',
       itemUrlSelector: 'article > div > h2 > a',
       categorySelector: 'p.post-category > a',
       categoryBinding: `[
         {
-          "systemCategoryName": "Work Machines",
-          "pageCategoryName": "Work Machines"
+          "systemCategoryName": "Misc.",
+          "pageCategoryName": "Misc."
         }
       ]`,
       descriptionSelector: 'article > div> div > div > p',
       previewImagesSelector: 'div > div > div > img.caption',
       ignoreExpressions: `["Paper Diorama"]`,
       schemesSelector: 'div.card-body > div > div > a.download-on-click'
+    },
+    {
+      name: 'Paperdiorama machines Cars',
+      domain: 'https://www.paperdiorama.com/category/paper-models/cars',
+      itemUrlSelector: `[
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "article > div > h2 > a"
+        }
+      ]`,
+      categorySelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "p.post-category > a"
+        }
+      ]`,
+      categoryBinding: `[
+        {
+          "systemCategoryName": "Automobiles",
+          "pageCategoryName": "Cars"
+        }
+      ]`,
+      descriptionSelector: `[
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "article > div> div > div > p"
+        }
+      ]`,
+      previewImagesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div > div > div > img.caption"
+        }
+      ]`,
+      schemesSelector: `[
+        {
+          "type":"${IntegrationSelectorType.CLICK}",
+          "value": "div.card-body > div > div > a.download-on-click"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > h3 > a"
+        }
+      ]`,
+      ignoreExpressions: `["Paper Diorama"]`
     }
   ];
 

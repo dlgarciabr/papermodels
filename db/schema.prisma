@@ -122,6 +122,7 @@ enum ItemIntegrationStatus {
   running
   done
   error
+  simulation
 }
 
 model IntegrationSetup {
@@ -159,6 +160,7 @@ enum FileIntegrationStatus {
   running
   done
   error
+  simulation
 }
 
 model FileIntegration {
