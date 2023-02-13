@@ -27,6 +27,7 @@ const Integration = () => {
   });
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [message, setMessage] = useState<string>('');
+  const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout>();
 
   const loadSetups = async () => {
     const { integrationSetups } = await invoke(getIntegrationSetups, {
@@ -117,6 +118,9 @@ const Integration = () => {
           'anti-csrf': antiCSRFToken
         }
       });
+      if (!fileIntegrationJob) {
+        setFileIntegrationJob(setTimeout(() => runFilesIntegration(), 60000));
+      }
     } catch (error) {
       setMessage(error.message);
     }
@@ -189,8 +193,8 @@ const Integration = () => {
             <Button onClick={() => runItemsIntegration()} disabled={loading}>
               Run Items integration
             </Button>
-            <Button onClick={() => runFilesIntegration()} disabled={loading}>
-              Run Files integration
+            <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob}>
+              {fileIntegrationJob ? 'Files integration up' : 'Start Files Integration'}
             </Button>
           </Grid>
         </Grid>

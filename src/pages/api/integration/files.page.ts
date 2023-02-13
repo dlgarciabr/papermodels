@@ -12,6 +12,7 @@ import { UploadItemFile } from 'src/items/types';
 
 const downloadPath = path.resolve('./download');
 
+// TODO extract to node project, modifying DB interactions
 export default api(async (req, res, _ctx) => {
   console.log(`
 ===================================================================================
@@ -37,17 +38,22 @@ export default api(async (req, res, _ctx) => {
         take: 5
       });
 
-      for await (const fileIntegration of integrationList) {
-        console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} initializing.`);
-        switch (fileIntegration.integrationType) {
-          case FileType.scheme:
-            await processSchemeType(fileIntegration);
-          //TODO
-          case FileType.preview:
-          //TODO
-          default:
-          //TODO
+      if (integrationList.length > 0) {
+        console.log(`[FileIntegrationJOB] ${integrationList.length} file(s) to be integrated found!`);
+        for await (const fileIntegration of integrationList) {
+          console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} initializing.`);
+          switch (fileIntegration.integrationType) {
+            case FileType.scheme:
+              await processSchemeType(fileIntegration);
+            //TODO
+            case FileType.preview:
+            //TODO
+            default:
+            //TODO
+          }
         }
+      } else {
+        console.log(`[FileIntegrationJOB] No files to be integrated.`);
       }
 
       // await db.itemIntegration.update({
@@ -59,7 +65,7 @@ export default api(async (req, res, _ctx) => {
 
       res.status(200).send({});
     } catch (error) {
-      res.status(501).send({ error: error.message });
+      res.status(501).send({ message: 'error', error: error.message });
     }
   } else {
     res.status(501).send({});

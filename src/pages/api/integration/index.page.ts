@@ -188,7 +188,7 @@ const processItemIntegration = async () => {
       return { message: 'ok' };
     }
   } else {
-    console.log(`[ItemIntegrationJOB] No items to integrate!`);
+    console.log(`[ItemIntegrationJOB] No items to be integrated!`);
   }
 };
 
