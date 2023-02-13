@@ -144,7 +144,11 @@ const Integration = () => {
     void loadSetups();
   }, []);
 
-  const columns: GridColDef[] = [{ field: 'id', headerName: 'Url', width: 1000 }];
+  const columns: GridColDef[] = [
+    { field: 'id', width: 10 },
+    { field: 'reference', headerName: 'ref', width: 400 },
+    { field: 'value', headerName: 'value', width: 400 }
+  ];
 
   let rows: { id: number; reference: string; value: string }[] = [];
 

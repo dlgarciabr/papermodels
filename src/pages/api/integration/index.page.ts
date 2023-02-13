@@ -36,6 +36,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
 ===================================================================================
 `);
 
+  const overallPreviewPercentage = 100;
+
   if (!simulation) {
     const runningIntegrations = await db.itemIntegration.findMany({
       where: {
@@ -82,26 +84,26 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
-    const errors: { integrationItem: number; error: Error }[] = [];
+    const errors: { itemIntegration: number; error: Error }[] = [];
 
-    for await (const integrationItem of integrationList) {
+    for await (const itemIntegration of integrationList) {
       try {
-        console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${integrationItem.name}'...`);
+        console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
         if (!simulation) {
           await db.itemIntegration.update({
-            where: { id: integrationItem.id },
+            where: { id: itemIntegration.id },
             data: {
               status: ItemIntegrationStatus.running
             }
           });
         }
 
-        const pageContent = await fetchPageAsString(integrationItem.url);
+        const pageContent = await fetchPageAsString(itemIntegration.url);
 
         let description = '';
-        if (integrationItem.setup.descriptionSelector) {
-          const selectors = JSON.parse(integrationItem.setup.descriptionSelector) as IntegrationSelector[];
+        if (itemIntegration.setup.descriptionSelector) {
+          const selectors = JSON.parse(itemIntegration.setup.descriptionSelector) as IntegrationSelector[];
           selectors.forEach((selector) => {
             description = getTextFromNodeAsString(pageContent, selector.value) || '';
           });
@@ -110,7 +112,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
         let dificulty;
         let assemblyTime;
 
-        const previewImagesSelectors = JSON.parse(integrationItem.setup.previewImagesSelector) as IntegrationSelector[];
+        const previewImagesSelectors = JSON.parse(itemIntegration.setup.previewImagesSelector) as IntegrationSelector[];
         let previewImageNodes: Element[] = [];
 
         previewImagesSelectors.forEach((selector) => {
@@ -121,15 +123,15 @@ const processItemIntegration = async (simulation: boolean = false) => {
         let item;
 
         if (!simulation) {
-          console.log(`[ItemIntegrationJOB] Persisting item '${integrationItem.name}'...`);
+          console.log(`[ItemIntegrationJOB] Persisting item '${itemIntegration.name}'...`);
           try {
             item = await db.item.create({
               data: {
-                name: removeExpressions(integrationItem.name, integrationItem.setup.ignoreExpressions).trim(),
-                description: removeExpressions(description, integrationItem.setup.ignoreExpressions).trim(),
+                name: removeExpressions(itemIntegration.name, itemIntegration.setup.ignoreExpressions).trim(),
+                description: removeExpressions(description, itemIntegration.setup.ignoreExpressions).trim(),
                 dificulty,
                 assemblyTime,
-                categoryId: integrationItem.categoryId,
+                categoryId: itemIntegration.categoryId,
                 status: ItemStatus.integrating
               }
             });
@@ -137,7 +139,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
             const itemExists = error.message.indexOf('Unique constraint failed on the fields: (`name`)') > 0;
             if (itemExists) {
               //just ignore repeated item and do not stop the whole process
-              console.log(`[ItemIntegrationJOB] Item '${integrationItem.name}' alread exists, being ignored...`);
+              console.log(`[ItemIntegrationJOB] Item '${itemIntegration.name}' alread exists, being ignored...`);
               continue;
             } else {
               throw error;
@@ -185,38 +187,46 @@ const processItemIntegration = async (simulation: boolean = false) => {
         //   }
         // });
 
-        if (!simulation) {
+        if (simulation) {
+          await db.integrationLog.create({
+            data: {
+              integrationId: itemIntegration.id,
+              reference: 'overallPreviewPercentage',
+              value: String(overallPreviewPercentage)
+            }
+          });
+        } else {
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
 
           await db.fileIntegration.create({
             data: {
               itemId: item.id,
-              selector: integrationItem.setup.schemesSelector,
-              itemIntegrationId: integrationItem.id,
+              selector: itemIntegration.setup.schemesSelector,
+              itemIntegrationId: itemIntegration.id,
               integrationType: FileType.scheme,
-              url: integrationItem.url,
+              url: itemIntegration.url,
               status: FileIntegrationStatus.pending
             }
           });
 
           await db.itemIntegration.update({
-            where: { id: integrationItem.id },
+            where: { id: itemIntegration.id },
             data: {
               status: ItemIntegrationStatus.pendingFiles
             }
           });
         }
       } catch (error) {
-        console.log(`[ItemIntegrationJOB] Error trying to integrate item ${integrationItem.name}!`);
+        console.log(`[ItemIntegrationJOB] Error trying to integrate item ${itemIntegration.name}!`);
         console.log(error);
         await db.itemIntegration.update({
-          where: { id: integrationItem.id },
+          where: { id: itemIntegration.id },
           data: {
             error: error.message,
             status: ItemIntegrationStatus.error
           }
         });
-        errors.push({ integrationItem: integrationItem.id, error });
+        errors.push({ itemIntegration: itemIntegration.id, error });
       }
     }
 
