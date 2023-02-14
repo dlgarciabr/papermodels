@@ -83,6 +83,16 @@ const Integration = () => {
       errors.push('descriptionSelector');
     }
 
+    const categorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
+    if (!categorySelector) {
+      errors.push('categorySelector');
+    }
+
+    const schemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
+    if (!schemesSelector) {
+      errors.push('schemesSelector');
+    }
+
     setFieldErrors(errors);
     return errors;
   };
@@ -146,6 +156,11 @@ const Integration = () => {
       ]);
     }
     setLoading(false);
+  };
+
+  const deleteErrorIntegration = async () => {
+    await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.error });
+    alert('cleaned!');
   };
 
   const runItemsIntegration = async () => {
@@ -307,6 +322,32 @@ const Integration = () => {
                       error={fieldErrors.includes('previewImagesSelector')}
                     />
                   </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Category selector'
+                      value={selectedSetup.categorySelector}
+                      name='categorySelector'
+                      fullWidth
+                      multiline
+                      disabled={true}
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('categorySelector')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Schemes selector'
+                      value={selectedSetup.schemesSelector}
+                      name='schemesSelector'
+                      fullWidth
+                      multiline
+                      disabled={true}
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('schemesSelector')}
+                    />
+                  </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>
@@ -323,6 +364,9 @@ const Integration = () => {
             </Button>
             <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob} variant='outlined'>
               {fileIntegrationJob ? 'Files integration up' : 'Init files integration'}
+            </Button>
+            <Button onClick={() => deleteErrorIntegration()} variant='outlined'>
+              Clean integration w/ error
             </Button>
           </Grid>
         </Grid>

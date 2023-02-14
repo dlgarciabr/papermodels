@@ -14,7 +14,7 @@ const parseCategory = (pageContent: string, categorySelector: string, categoryBi
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const setup = req.body as IntegrationSetup;
-    const simulate = req.body.simulate as boolean;
+    const simulation = req.body.simulate as boolean;
     const pageContent = await fetchPageAsString(setup.domain);
 
     const itemUrlSelectors = JSON.parse(setup.itemUrlSelector) as IntegrationSelector[];
@@ -63,19 +63,20 @@ export default api(async (req, res, _ctx) => {
       data: sanitizedUrls.map((url) => {
         const currentNode = pageNodes.find((node) => node.includes(url));
         const name = getTextFromNodeAsString(currentNode!, '*') || url;
-
         const categorySelectors = JSON.parse(setup.categorySelector) as IntegrationSelector[];
 
         let categoryName = '';
 
         categorySelectors.forEach((selector) => {
-          categoryName = parseCategory(pageContent, selector.value, JSON.parse(req.body.categoryBinding));
+          if (!categoryName) {
+            categoryName = parseCategory(pageContent, selector.value, JSON.parse(req.body.categoryBinding));
+          }
         });
 
         return {
           name,
           url,
-          status: simulate ? ItemIntegrationStatus.simulation : ItemIntegrationStatus.pending,
+          status: simulation ? ItemIntegrationStatus.simulation : ItemIntegrationStatus.pending,
           setupId: setup.id,
           categoryId: categories.find((category) => category.name === categoryName)?.id || 1
         };

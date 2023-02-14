@@ -27,6 +27,13 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
   return text;
 };
 
+enum SimulationReference {
+  hasDescription = 'Has description',
+  descriptionPencentage = ' Description percentage',
+  hasPreviewImages = 'Has preview images',
+  previewImagesPencentage = ' Preview images percentage'
+}
+
 const processItemIntegration = async (simulation: boolean = false) => {
   const simulationLabel = simulation ? ' simulation ' : ' ';
 
@@ -85,7 +92,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
     const errors: { itemIntegration: number; error: Error }[] = [];
 
     for await (const itemIntegration of integrationList) {
-      let previewImagePercentage = 0;
+      let hasPreviewImages = true;
+      let hasDescription = true;
 
       try {
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
@@ -108,6 +116,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
             description = getTextFromNodeAsString(pageContent, selector.value) || '';
           });
         }
+
+        hasDescription = !!description;
 
         let dificulty;
         let assemblyTime;
@@ -165,11 +175,13 @@ const processItemIntegration = async (simulation: boolean = false) => {
             };
             files.push(file);
 
-            previewImagePercentage = previewImagePercentage + 100 / previewImageNodes.length;
+            // previewImagePercentage = previewImagePercentage + (100 / previewImageNodes.length);
           } else {
             // throw new Error(`Error integrating image ${node}`);
           }
         }
+
+        hasPreviewImages = files.length > 0;
 
         if (!simulation) {
           console.log(`[ItemIntegrationJOB] Persisting preview files...`);
@@ -190,12 +202,30 @@ const processItemIntegration = async (simulation: boolean = false) => {
         // });
 
         if (simulation) {
-          await db.integrationLog.create({
-            data: {
-              integrationId: itemIntegration.id,
-              reference: `previewImagePercentage: ${itemIntegration.name}`,
-              value: String(previewImagePercentage)
-            }
+          // await db.fileIntegration.create({
+          //   data: {
+          //     itemId: item.id,
+          //     selector: itemIntegration.setup.schemesSelector,
+          //     itemIntegrationId: itemIntegration.id,
+          //     integrationType: FileType.scheme,
+          //     url: itemIntegration.url,
+          //     status: FileIntegrationStatus.simulation
+          //   }
+          // });
+
+          await db.integrationLog.createMany({
+            data: [
+              {
+                integrationId: itemIntegration.id,
+                reference: `${SimulationReference.hasPreviewImages}: ${itemIntegration.name}`,
+                value: String(hasPreviewImages)
+              },
+              {
+                integrationId: itemIntegration.id,
+                reference: `${SimulationReference.hasDescription}: ${itemIntegration.name}`,
+                value: String(hasDescription)
+              }
+            ]
           });
         } else {
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
@@ -233,20 +263,29 @@ const processItemIntegration = async (simulation: boolean = false) => {
     }
 
     if (simulation && integrationList.length > 0) {
-      let overallPreviewImagePercentace = 0;
       const logs = await db.integrationLog.findMany();
 
-      const percentegeSum = logs.reduce(
-        (accumulator, curr) => accumulator + new Number(curr.value).valueOf(),
-        overallPreviewImagePercentace
+      const containsPreviewImages = logs.filter(
+        (log) => log.reference.startsWith(SimulationReference.hasPreviewImages) && log.value === 'true'
       );
 
-      await db.integrationLog.create({
-        data: {
-          integrationId: integrationList[0]!.id,
-          reference: 'overallPreviewImagePercentace',
-          value: String(percentegeSum / logs.length)
-        }
+      const containsDescription = logs.filter(
+        (log) => log.reference.startsWith(SimulationReference.hasDescription) && log.value === 'true'
+      );
+
+      await db.integrationLog.createMany({
+        data: [
+          {
+            integrationId: integrationList[0]!.id,
+            reference: SimulationReference.previewImagesPencentage,
+            value: `${String((containsPreviewImages.length * 100) / integrationList.length)}%`
+          },
+          {
+            integrationId: integrationList[0]!.id,
+            reference: SimulationReference.descriptionPencentage,
+            value: `${String((containsDescription.length * 100) / integrationList.length)}%`
+          }
+        ]
       });
     }
 
