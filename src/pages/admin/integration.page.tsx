@@ -55,6 +55,15 @@ const Integration = () => {
     setIntegrationSetups(integrationSetups);
   };
 
+  const _validateJson = (text: string) => {
+    try {
+      JSON.parse(text);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const feedLog = async () => {
     setLoading(true);
     const { integrationLogs } = await invoke(getLogs, {
