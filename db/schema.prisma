@@ -181,7 +181,7 @@ model FileIntegration {
 
 model IntegrationLog {
   id            Int             @id @default(autoincrement())
-  integration   ItemIntegration @relation(fields: [integrationId], references: [id])
+  integration   ItemIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int
   reference     String
   value         String

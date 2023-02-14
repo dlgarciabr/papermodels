@@ -1,7 +1,19 @@
 import { getAntiCSRFToken } from '@blitzjs/auth';
-import { invoke } from '@blitzjs/rpc';
-import { Button, Container, Grid, TextField } from '@mui/material';
-import { IntegrationLog, IntegrationSetup } from '@prisma/client';
+import { invoke, useMutation } from '@blitzjs/rpc';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Container,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography
+} from '@mui/material';
+import { IntegrationLog, IntegrationSetup, ItemIntegrationStatus } from '@prisma/client';
 import Head from 'next/head';
 import { ChangeEvent, useEffect, useState } from 'react';
 import getIntegrationSetups from 'src/integration-setups/queries/getIntegrationSetups';
@@ -10,6 +22,8 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IError } from '../api/integration/types';
 import { getSimpleRandomKey } from 'src/utils/global';
 import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
+import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
+import { TbChevronDown } from 'react-icons/tb';
 
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
@@ -23,7 +37,7 @@ const Integration = () => {
     categorySelector: '',
     ignoreExpressions: '',
     categoryBinding: '',
-    descriptionSelector: null,
+    descriptionSelector: '',
     schemesSelector: '',
     createdAt: new Date(),
     updatedAt: new Date()
@@ -31,6 +45,8 @@ const Integration = () => {
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [errors, setErrors] = useState<IError[]>([]);
   const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout>();
+  const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
+  const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
 
   const loadSetups = async () => {
     const { integrationSetups } = await invoke(getIntegrationSetups, {
@@ -46,12 +62,24 @@ const Integration = () => {
     });
     setLogs(integrationLogs);
     setLoading(false);
-    setTimeout(() => feedLog(), 30000);
+    if (!simulationIntegrationJob) {
+      setSimulationIntegrationJob(setTimeout(() => feedLog(), 30000));
+    }
   };
 
   const enqueue = async (simulate: boolean = false) => {
     setErrors([]);
+
+    if (selectedSetup.id === 0) {
+      alert('Select a setup first');
+      return;
+    }
     setLoading(true);
+
+    if (simulate) {
+      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
+    }
+
     try {
       const antiCSRFToken = getAntiCSRFToken();
       await fetch(`${location.origin}/api/integration/enqueue`, {
@@ -144,6 +172,12 @@ const Integration = () => {
     void loadSetups();
   }, []);
 
+  useEffect(() => {
+    if (logs.length > 0) {
+      setSimulationIntegrationJob(null);
+    }
+  }, [logs]);
+
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
     { field: 'reference', headerName: 'ref', width: 400 },
@@ -162,17 +196,22 @@ const Integration = () => {
         <title>Papermodels</title>
       </Head>
       <Container component='main'>
-        <Grid container>
-          <Grid item xs={12}>
-            Setup
-            <select onChange={(e) => handleSelectSetup(Number(e.target.value))}>
-              <option value={-1}>Setups...</option>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <InputLabel id='selected-setup-label'>Setup</InputLabel>
+            <Select
+              labelId='selected-setup-label'
+              id='selectedSetup'
+              value={selectedSetup.id}
+              label='Setup'
+              fullWidth
+              onChange={(e) => handleSelectSetup(Number(e.target.value))}>
               {integrationSetups.map((item) => (
-                <option key={Math.random().toString(36).substring(2, 15)} value={item.id}>
+                <MenuItem key={Math.random().toString(36).substring(2, 15)} value={item.id}>
                   {item.name}
-                </option>
+                </MenuItem>
               ))}
-            </select>
+            </Select>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -183,51 +222,62 @@ const Integration = () => {
               onChange={(e) => setParam(e as any)}
             />
           </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label='Item url selector'
-              value={selectedSetup.itemUrlSelector}
-              name='itemUrlSelector'
-              fullWidth
-              multiline
-              rows={6}
-              onChange={(e) => setParam(e as any)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label='Description selector'
-              value={selectedSetup.descriptionSelector}
-              name='descriptionSelector'
-              fullWidth
-              multiline
-              rows={6}
-              onChange={(e) => setParam(e as any)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label='Preview images selector'
-              value={selectedSetup.previewImagesSelector}
-              name='previewImagesSelector'
-              fullWidth
-              multiline
-              rows={6}
-              onChange={(e) => setParam(e as any)}
-            />
+          <Grid item xs={12}>
+            <Accordion>
+              <AccordionSummary expandIcon={<TbChevronDown />} aria-controls='panel1a-content' id='panel1a-header'>
+                <Typography>Setup details</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Item url selector'
+                      value={selectedSetup.itemUrlSelector}
+                      name='itemUrlSelector'
+                      fullWidth
+                      multiline
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Description selector'
+                      value={selectedSetup.descriptionSelector}
+                      name='descriptionSelector'
+                      fullWidth
+                      multiline
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Preview images selector'
+                      value={selectedSetup.previewImagesSelector}
+                      name='previewImagesSelector'
+                      fullWidth
+                      multiline
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                    />
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={() => enqueue(true)} disabled={loading}>
+            <Button onClick={() => enqueue(true)} disabled={loading || !!simulationIntegrationJob} variant='outlined'>
               Simulate
             </Button>
-            <Button onClick={() => enqueue()} disabled={loading}>
+            <Button onClick={() => enqueue()} disabled={loading} variant='outlined'>
               Enqueue
             </Button>
-            <Button onClick={() => runItemsIntegration()} disabled={loading}>
+            <Button onClick={() => runItemsIntegration()} disabled={loading} variant='outlined'>
               Run Items integration
             </Button>
-            <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob}>
-              {fileIntegrationJob ? 'Files integration up' : 'Start Files Integration'}
+            <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob} variant='outlined'>
+              {fileIntegrationJob ? 'Files integration up' : 'Init files integration'}
             </Button>
           </Grid>
         </Grid>
