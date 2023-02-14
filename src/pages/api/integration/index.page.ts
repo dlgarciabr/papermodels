@@ -36,8 +36,6 @@ const processItemIntegration = async (simulation: boolean = false) => {
 ===================================================================================
 `);
 
-  const overallPreviewPercentage = 100;
-
   if (!simulation) {
     const runningIntegrations = await db.itemIntegration.findMany({
       where: {
@@ -87,6 +85,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
     const errors: { itemIntegration: number; error: Error }[] = [];
 
     for await (const itemIntegration of integrationList) {
+      let previewImagePercentage = 0;
+
       try {
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
@@ -164,8 +164,10 @@ const processItemIntegration = async (simulation: boolean = false) => {
               tempId: ''
             };
             files.push(file);
+
+            previewImagePercentage = previewImagePercentage + 100 / previewImageNodes.length;
           } else {
-            throw new Error(`Error integrating image ${node}`);
+            // throw new Error(`Error integrating image ${node}`);
           }
         }
 
@@ -191,8 +193,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
           await db.integrationLog.create({
             data: {
               integrationId: itemIntegration.id,
-              reference: 'overallPreviewPercentage',
-              value: String(overallPreviewPercentage)
+              reference: `previewImagePercentage: ${itemIntegration.name}`,
+              value: String(previewImagePercentage)
             }
           });
         } else {
@@ -228,6 +230,24 @@ const processItemIntegration = async (simulation: boolean = false) => {
         });
         errors.push({ itemIntegration: itemIntegration.id, error });
       }
+    }
+
+    if (simulation && integrationList.length > 0) {
+      let overallPreviewImagePercentace = 0;
+      const logs = await db.integrationLog.findMany();
+
+      const percentegeSum = logs.reduce(
+        (accumulator, curr) => accumulator + new Number(curr.value).valueOf(),
+        overallPreviewImagePercentace
+      );
+
+      await db.integrationLog.create({
+        data: {
+          integrationId: integrationList[0]!.id,
+          reference: 'overallPreviewImagePercentace',
+          value: String(percentegeSum / logs.length)
+        }
+      });
     }
 
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item first stage integration process finished.`);

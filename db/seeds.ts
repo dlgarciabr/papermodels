@@ -299,6 +299,14 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.IMG}",
           "value": "div > div > div > img.caption"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry-inner > p > img"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry-inner > h2 > a > img"
         }
       ]`,
       schemesSelector: `[
@@ -403,6 +411,14 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.IMG}",
           "value": "div > div > div > img.caption"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry-inner > p > img"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry-inner > h2 > a > img"
         }
       ]`,
       schemesSelector: `[

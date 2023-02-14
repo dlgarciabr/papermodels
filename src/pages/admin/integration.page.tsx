@@ -42,6 +42,7 @@ const Integration = () => {
     createdAt: new Date(),
     updatedAt: new Date()
   });
+  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [errors, setErrors] = useState<IError[]>([]);
   const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout>();
@@ -55,13 +56,35 @@ const Integration = () => {
     setIntegrationSetups(integrationSetups);
   };
 
-  const _validateJson = (text: string) => {
+  const validateJson = (text: string) => {
     try {
       JSON.parse(text);
       return true;
     } catch (error) {
       return false;
     }
+  };
+
+  const validateAllSelectors = () => {
+    setFieldErrors([]);
+    const errors: string[] = [];
+    const itemUrlSelector = validateJson(selectedSetup.itemUrlSelector);
+    if (!itemUrlSelector) {
+      errors.push('itemUrlSelector');
+    }
+
+    const previewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
+    if (!previewImagesSelector) {
+      errors.push('previewImagesSelector');
+    }
+
+    const descriptionSelector = !!selectedSetup.descriptionSelector && validateJson(selectedSetup.descriptionSelector);
+    if (!descriptionSelector) {
+      errors.push('descriptionSelector');
+    }
+
+    setFieldErrors(errors);
+    return errors;
   };
 
   const feedLog = async () => {
@@ -83,6 +106,12 @@ const Integration = () => {
       alert('Select a setup first');
       return;
     }
+
+    if (validateAllSelectors().length > 0) {
+      alert('Review invalid seletor(s)');
+      return;
+    }
+
     setLoading(true);
 
     if (simulate) {
@@ -181,15 +210,16 @@ const Integration = () => {
     void loadSetups();
   }, []);
 
-  useEffect(() => {
-    if (logs.length > 0) {
-      setSimulationIntegrationJob(null);
-    }
-  }, [logs]);
+  // useEffect(() => {
+  //   if (logs.length > 0) {
+  //     clearTimeout(simulationIntegrationJob!);
+  //     setSimulationIntegrationJob(simulationIntegrationJob);
+  //   }
+  // }, [logs]);
 
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
-    { field: 'reference', headerName: 'ref', width: 400 },
+    { field: 'reference', headerName: 'ref', width: 700 },
     { field: 'value', headerName: 'value', width: 400 }
   ];
 
@@ -211,7 +241,7 @@ const Integration = () => {
             <Select
               labelId='selected-setup-label'
               id='selectedSetup'
-              value={selectedSetup.id}
+              value={selectedSetup.id !== 0 ? selectedSetup.id : ''}
               label='Setup'
               fullWidth
               onChange={(e) => handleSelectSetup(Number(e.target.value))}>
@@ -245,8 +275,10 @@ const Integration = () => {
                       name='itemUrlSelector'
                       fullWidth
                       multiline
+                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('itemUrlSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -256,8 +288,10 @@ const Integration = () => {
                       name='descriptionSelector'
                       fullWidth
                       multiline
+                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('descriptionSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -267,8 +301,10 @@ const Integration = () => {
                       name='previewImagesSelector'
                       fullWidth
                       multiline
+                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('previewImagesSelector')}
                     />
                   </Grid>
                 </Grid>
@@ -276,7 +312,7 @@ const Integration = () => {
             </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={() => enqueue(true)} disabled={loading || !!simulationIntegrationJob} variant='outlined'>
+            <Button onClick={() => enqueue(true)} variant='outlined'>
               Simulate
             </Button>
             <Button onClick={() => enqueue()} disabled={loading} variant='outlined'>
