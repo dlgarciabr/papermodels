@@ -147,7 +147,7 @@ model ItemIntegration {
   url              String                @unique
   status           ItemIntegrationStatus
   fileIntegrations FileIntegration[]
-  log              IntegrationLog[]
+  logs             IntegrationLog[]
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   setup            IntegrationSetup      @relation(fields: [setupId], references: [id])

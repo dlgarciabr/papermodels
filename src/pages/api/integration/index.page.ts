@@ -6,7 +6,8 @@ import db, {
   ItemIntegrationStatus,
   IntegrationSetup,
   ItemStatus,
-  FileIntegrationStatus
+  FileIntegrationStatus,
+  IntegrationLog
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
@@ -27,7 +28,7 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
   return text;
 };
 
-enum SimulationReference {
+enum ItemSimulationReference {
   hasDescription = 'Has description',
   descriptionPencentage = ' Description percentage',
   hasPreviewImages = 'Has preview images',
@@ -90,6 +91,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     const errors: { itemIntegration: number; error: Error }[] = [];
+
+    const logs: Partial<IntegrationLog>[] = [];
 
     for await (const itemIntegration of integrationList) {
       let hasPreviewImages = true;
@@ -212,19 +215,20 @@ const processItemIntegration = async (simulation: boolean = false) => {
             }
           });
 
+          logs.push({
+            integrationId: itemIntegration.id,
+            reference: `${ItemSimulationReference.hasPreviewImages}: ${itemIntegration.name}`,
+            value: String(hasPreviewImages)
+          });
+
+          logs.push({
+            integrationId: itemIntegration.id,
+            reference: `${ItemSimulationReference.hasDescription}: ${itemIntegration.name}`,
+            value: String(hasDescription)
+          });
+
           await db.integrationLog.createMany({
-            data: [
-              {
-                integrationId: itemIntegration.id,
-                reference: `${SimulationReference.hasPreviewImages}: ${itemIntegration.name}`,
-                value: String(hasPreviewImages)
-              },
-              {
-                integrationId: itemIntegration.id,
-                reference: `${SimulationReference.hasDescription}: ${itemIntegration.name}`,
-                value: String(hasDescription)
-              }
-            ]
+            data: logs as IntegrationLog[]
           });
         } else {
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
@@ -262,26 +266,24 @@ const processItemIntegration = async (simulation: boolean = false) => {
     }
 
     if (simulation && integrationList.length > 0) {
-      const logs = await db.integrationLog.findMany();
-
       const containsPreviewImages = logs.filter(
-        (log) => log.reference.startsWith(SimulationReference.hasPreviewImages) && log.value === 'true'
+        (log) => log.reference!.startsWith(ItemSimulationReference.hasPreviewImages) && log.value === 'true'
       );
 
       const containsDescription = logs.filter(
-        (log) => log.reference.startsWith(SimulationReference.hasDescription) && log.value === 'true'
+        (log) => log.reference!.startsWith(ItemSimulationReference.hasDescription) && log.value === 'true'
       );
 
       await db.integrationLog.createMany({
         data: [
           {
             integrationId: integrationList[0]!.id,
-            reference: SimulationReference.previewImagesPencentage,
+            reference: ItemSimulationReference.previewImagesPencentage,
             value: `${String((containsPreviewImages.length * 100) / integrationList.length)}%`
           },
           {
             integrationId: integrationList[0]!.id,
-            reference: SimulationReference.descriptionPencentage,
+            reference: ItemSimulationReference.descriptionPencentage,
             value: `${String((containsDescription.length * 100) / integrationList.length)}%`
           }
         ]

@@ -8,6 +8,7 @@ import {
   FileIntegration,
   FileIntegrationStatus,
   FileType,
+  IntegrationLog,
   IntegrationSetup,
   ItemIntegration,
   ItemIntegrationStatus,
@@ -38,6 +39,13 @@ interface IFileIntegration extends FileIntegration {
   itemIntegration: ItemIntegration & { setup: IntegrationSetup };
 }
 
+enum FileSimulationReference {
+  hasSchemeFiles = 'Has scheme files',
+  hasSchemePercentage = ' Has scheme percentege'
+}
+
+let logs: Partial<IntegrationLog>[] = [];
+
 // TODO extract to node project, modifying DB interactions
 export default api(async (req, res, _ctx) => {
   console.log(`
@@ -48,6 +56,7 @@ export default api(async (req, res, _ctx) => {
   // if (req.method === 'POST') {
   try {
     console.log('[FileIntegrationJOB] Cleaning last download cache...');
+    logs = [];
     const chachedFilesToRemove = fs.readdirSync(downloadPath);
     if (chachedFilesToRemove.length > 0) {
       chachedFilesToRemove.forEach((file) => {
@@ -59,7 +68,27 @@ export default api(async (req, res, _ctx) => {
 
     const integrationList = (await db.fileIntegration.findMany({
       where: {
-        status: FileIntegrationStatus.pending
+        OR: [
+          { status: FileIntegrationStatus.pending },
+          {
+            AND: [
+              { status: FileIntegrationStatus.simulation },
+              {
+                itemIntegration: {
+                  log: {
+                    every: {
+                      reference: {
+                        not: {
+                          contains: FileSimulationReference.hasSchemeFiles
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
       },
       take: 5,
       include: {
@@ -75,7 +104,9 @@ export default api(async (req, res, _ctx) => {
       await db.fileIntegration.updateMany({
         where: {
           id: {
-            in: integrationList.map((i) => i.id)
+            in: integrationList
+              .filter((integration) => integration.status === FileIntegrationStatus.pending)
+              .map((i) => i.id)
           }
         },
         data: {
@@ -85,8 +116,6 @@ export default api(async (req, res, _ctx) => {
 
       console.log(`[FileIntegrationJOB] ${integrationList.length} file(s) to be integrated found!`);
       for await (const fileIntegration of integrationList) {
-        console.log(`-----------------------------------------------------------------------------`);
-        console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} initializing.`);
         switch (fileIntegration.integrationType) {
           case FileType.scheme:
             await processSchemeType(fileIntegration);
@@ -96,6 +125,20 @@ export default api(async (req, res, _ctx) => {
           default:
           //TODO
         }
+      }
+
+      if (logs.length > 0) {
+        const containsSchemeFiles = logs.filter(
+          (log) => log.reference!.startsWith(FileSimulationReference.hasSchemeFiles) && log.value === 'true'
+        );
+
+        await db.integrationLog.create({
+          data: {
+            integrationId: integrationList[0]!.itemIntegrationId,
+            reference: FileSimulationReference.hasSchemePercentage,
+            value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
+          }
+        });
       }
     } else {
       console.log(`[FileIntegrationJOB] No files to be integrated.`);
@@ -110,6 +153,7 @@ export default api(async (req, res, _ctx) => {
 
     res.status(200).send({});
   } catch (error) {
+    console.log('Error integrating files', error);
     res.status(501).send({ message: 'error', error: error.message });
   }
   // } else {
@@ -119,6 +163,11 @@ export default api(async (req, res, _ctx) => {
 
 const processSchemeType = async (fileIntegration: IFileIntegration) => {
   try {
+    const simulation = fileIntegration.status === FileIntegrationStatus.simulation;
+    const simulationLabel = simulation ? ' simulation ' : ' ';
+    console.log(`-----------------------------------------------------------------------------`);
+    console.log(`[FileIntegrationJOB] File ${fileIntegration.id} integration${simulationLabel}initializing.`);
+    let hasShemeFiles = true;
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     const selectors = JSON.parse(fileIntegration.itemIntegration.setup.schemesSelector) as IntegrationSelector[];
@@ -137,82 +186,113 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       tempId: ''
     };
 
+    let fileUrls: string[] = [];
+
     if (linkSelector) {
       //try link selector
-      process.stdout.write('[FileIntegrationJOB] Trying to integrate through link selector...');
-      const fileUrl = await readPageUrls(fileIntegration.url, linkSelector.value);
+      process.stdout.write(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
+      fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
 
-      if (fileUrl.length > 0) {
+      if (fileUrls.length > 0) {
         process.stdout.write('found\n');
-        console.log('[FileIntegrationJOB] Uploading file to storage...');
-        const response = await uploadImage(fileUrl[0]!, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
-        file.storagePath = `${response.public_id}.${response.format}`;
+        if (!simulation) {
+          console.log('[FileIntegrationJOB] Uploading file to storage...');
+          const response = await uploadImage(
+            fileUrls[0]!,
+            `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+          );
+          file.storagePath = `${response.public_id}.${response.format}`;
+        }
       } else {
         process.stdout.write('not found!\n');
       }
     }
 
+    let buffer = new ArrayBuffer(0);
+
     if (!file.storagePath && clickSelector) {
       //try click selector
-      console.log('[FileIntegrationJOB] Trying to integrate through click selector...');
-      const buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
+      console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through click selector...`);
+      buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
       const base64Url = convertBytesToBase64(buffer);
-
-      console.log('[FileIntegrationJOB] Uploading file to storage...');
-      const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
-      file.storagePath = `${response.public_id}.${response.format}`;
+      if (!simulation) {
+        console.log('[FileIntegrationJOB] Uploading file to storage...');
+        const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
+        file.storagePath = `${response.public_id}.${response.format}`;
+      }
     }
 
-    console.log('[FileIntegrationJOB] Attaching uploaded file to Item...');
-
-    await db.itemFile.create({
-      data: {
-        storagePath: file.storagePath,
-        artifactType: file.artifactType,
-        itemId: fileIntegration.itemIntegration.itemId!
+    if (fileUrls.length === 0 && buffer.byteLength === 0) {
+      if (simulation) {
+        hasShemeFiles = false;
       }
-    });
+      throw new Error('scheme files not found');
+    }
 
-    await db.fileIntegration.update({
-      where: { id: fileIntegration.id },
-      data: {
-        status: FileIntegrationStatus.done
-      }
-    });
+    if (!simulation) {
+      console.log('[FileIntegrationJOB] Attaching uploaded file to Item...');
 
-    console.log(`[FileIntegrationJOB] File integration ${fileIntegration.id} has successfully finished!`);
+      await db.itemFile.create({
+        data: {
+          storagePath: file.storagePath,
+          artifactType: file.artifactType,
+          itemId: fileIntegration.itemIntegration.itemId!
+        }
+      });
 
-    const filesToIntegrate = await db.fileIntegration.findMany({
-      where: {
-        // itemIntegrationId: fileIntegration.itemIntegrationId
-        AND: [
-          {
-            itemIntegrationId: fileIntegration.itemIntegrationId
-          },
-          {
-            status: FileIntegrationStatus.pending
+      await db.fileIntegration.update({
+        where: { id: fileIntegration.id },
+        data: {
+          status: FileIntegrationStatus.done
+        }
+      });
+
+      const filesToIntegrate = await db.fileIntegration.findMany({
+        where: {
+          AND: [
+            {
+              itemIntegrationId: fileIntegration.itemIntegrationId
+            },
+            {
+              status: FileIntegrationStatus.pending
+            }
+          ]
+        }
+      });
+
+      if (filesToIntegrate.length === 0) {
+        await db.itemIntegration.update({
+          where: { id: fileIntegration.itemIntegrationId },
+          data: {
+            status: ItemIntegrationStatus.done
           }
-        ]
+        });
+
+        await db.item.update({
+          where: { id: fileIntegration.itemIntegration.itemId! },
+          data: {
+            status: ItemStatus.enable
+          }
+        });
+        console.log(
+          `[FileIntegrationJOB] Item integration ${fileIntegration.itemIntegration.itemId} has successfully finished!`
+        );
       }
-    });
+    }
 
-    if (filesToIntegrate.length === 0) {
-      await db.itemIntegration.update({
-        where: { id: fileIntegration.itemIntegrationId },
-        data: {
-          status: ItemIntegrationStatus.done
-        }
-      });
+    console.log(
+      `[FileIntegrationJOB] File integration${simulationLabel}id ${fileIntegration.id} has successfully finished!`
+    );
 
-      await db.item.update({
-        where: { id: fileIntegration.itemIntegration.itemId! },
-        data: {
-          status: ItemStatus.enable
-        }
+    if (simulation) {
+      logs.push({
+        integrationId: fileIntegration.itemIntegrationId,
+        reference: `${FileSimulationReference.hasSchemeFiles}: ${fileIntegration.id}`,
+        value: String(hasShemeFiles)
       });
-      console.log(
-        `[FileIntegrationJOB] Item integration ${fileIntegration.itemIntegration.itemId} has successfully finished!`
-      );
+      await db.integrationLog.createMany({
+        data: logs as IntegrationLog[]
+      });
     }
   } catch (error) {
     console.log('error', error);

@@ -24,6 +24,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
 import { TbChevronDown } from 'react-icons/tb';
+import { IntegrationSelector, IntegrationSelectorType } from 'types';
 
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
@@ -68,28 +69,36 @@ const Integration = () => {
   const validateAllSelectors = () => {
     setFieldErrors([]);
     const errors: string[] = [];
-    const itemUrlSelector = validateJson(selectedSetup.itemUrlSelector);
-    if (!itemUrlSelector) {
+    const hasItemUrlSelector = validateJson(selectedSetup.itemUrlSelector);
+    if (!hasItemUrlSelector) {
       errors.push('itemUrlSelector');
     }
 
-    const previewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
-    if (!previewImagesSelector) {
+    const hasPreviewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
+    if (!hasPreviewImagesSelector) {
       errors.push('previewImagesSelector');
     }
 
-    const descriptionSelector = !!selectedSetup.descriptionSelector && validateJson(selectedSetup.descriptionSelector);
-    if (!descriptionSelector) {
+    const hasDescriptionSelector =
+      !!selectedSetup.descriptionSelector && validateJson(selectedSetup.descriptionSelector);
+    if (!hasDescriptionSelector) {
       errors.push('descriptionSelector');
     }
 
-    const categorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
-    if (!categorySelector) {
+    const hasCategorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
+    if (!hasCategorySelector) {
       errors.push('categorySelector');
     }
 
-    const schemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
-    if (!schemesSelector) {
+    const hasSchemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
+    if (hasSchemesSelector) {
+      const schemeSelectors = JSON.parse(selectedSetup.schemesSelector) as IntegrationSelector[];
+      const linkSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.LINK);
+      const clickSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.CLICK);
+      if (!linkSelector && !clickSelector) {
+        errors.push('schemesSelector');
+      }
+    } else {
       errors.push('schemesSelector');
     }
 
