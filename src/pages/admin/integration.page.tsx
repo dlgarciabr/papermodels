@@ -124,9 +124,9 @@ const Integration = () => {
 
     setLoading(true);
 
-    if (simulate) {
-      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
-    }
+    // if (simulate) {
+    //   await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
+    // }
 
     try {
       const antiCSRFToken = getAntiCSRFToken();

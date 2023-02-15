@@ -31,18 +31,21 @@ export default api(async (req, res, _ctx) => {
       return;
     }
 
-    const existingUrls = (
-      await db.itemIntegration.findMany({
-        where: {
-          url: {
-            in: pageUrls
-          }
-        },
-        select: {
-          url: true
+    await db.itemIntegration.deleteMany({
+      where: {
+        status: ItemIntegrationStatus.simulation
+      }
+    });
+
+    const integrations = await db.itemIntegration.findMany({
+      where: {
+        url: {
+          in: pageUrls
         }
-      })
-    ).map((integrationItem) => integrationItem.url);
+      }
+    });
+
+    const existingUrls = integrations.map((integrationItem) => integrationItem.url);
 
     let sanitizedUrls: string[];
 
@@ -82,6 +85,7 @@ export default api(async (req, res, _ctx) => {
         };
       })
     });
+
     res.status(200).send({ message: 'success' });
   } else {
     res.status(501).send({});

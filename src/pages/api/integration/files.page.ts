@@ -132,7 +132,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
 
     const file: UploadItemFile = {
       storagePath: '',
-      item: { id: fileIntegration.itemId, files: [] },
+      item: { id: fileIntegration.itemIntegration.itemId, files: [] },
       artifactType: fileIntegration.integrationType,
       tempId: ''
     };
@@ -145,7 +145,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       if (fileUrl.length > 0) {
         process.stdout.write('found\n');
         console.log('[FileIntegrationJOB] Uploading file to storage...');
-        const response = await uploadImage(fileUrl[0]!, `${ARTIFACTS_PATH}/${fileIntegration.itemId}`);
+        const response = await uploadImage(fileUrl[0]!, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
         file.storagePath = `${response.public_id}.${response.format}`;
       } else {
         process.stdout.write('not found!\n');
@@ -159,7 +159,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       const base64Url = convertBytesToBase64(buffer);
 
       console.log('[FileIntegrationJOB] Uploading file to storage...');
-      const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemId}`);
+      const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
       file.storagePath = `${response.public_id}.${response.format}`;
     }
 
@@ -169,7 +169,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       data: {
         storagePath: file.storagePath,
         artifactType: file.artifactType,
-        itemId: fileIntegration.itemId
+        itemId: fileIntegration.itemIntegration.itemId!
       }
     });
 
@@ -205,12 +205,14 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       });
 
       await db.item.update({
-        where: { id: fileIntegration.itemId },
+        where: { id: fileIntegration.itemIntegration.itemId! },
         data: {
           status: ItemStatus.enable
         }
       });
-      console.log(`[FileIntegrationJOB] Item integration ${fileIntegration.itemId} has successfully finished!`);
+      console.log(
+        `[FileIntegrationJOB] Item integration ${fileIntegration.itemIntegration.itemId} has successfully finished!`
+      );
     }
   } catch (error) {
     console.log('error', error);

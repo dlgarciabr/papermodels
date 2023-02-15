@@ -202,16 +202,15 @@ const processItemIntegration = async (simulation: boolean = false) => {
         // });
 
         if (simulation) {
-          // await db.fileIntegration.create({
-          //   data: {
-          //     itemId: item.id,
-          //     selector: itemIntegration.setup.schemesSelector,
-          //     itemIntegrationId: itemIntegration.id,
-          //     integrationType: FileType.scheme,
-          //     url: itemIntegration.url,
-          //     status: FileIntegrationStatus.simulation
-          //   }
-          // });
+          await db.fileIntegration.create({
+            data: {
+              selector: itemIntegration.setup.schemesSelector,
+              itemIntegrationId: itemIntegration.id,
+              integrationType: FileType.scheme,
+              url: itemIntegration.url,
+              status: FileIntegrationStatus.simulation
+            }
+          });
 
           await db.integrationLog.createMany({
             data: [
@@ -232,7 +231,6 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
           await db.fileIntegration.create({
             data: {
-              itemId: item.id,
               selector: itemIntegration.setup.schemesSelector,
               itemIntegrationId: itemIntegration.id,
               integrationType: FileType.scheme,
@@ -244,6 +242,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
+              itemId: item.id,
               status: ItemIntegrationStatus.pendingFiles
             }
           });

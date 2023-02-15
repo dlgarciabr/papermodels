@@ -82,22 +82,22 @@ enum ItemStatus {
 }
 
 model Item {
-  id               Int               @id @default(autoincrement())
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  name             String            @unique
-  description      String
-  category         Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId       Int
-  files            ItemFile[]
-  fileIntegrations FileIntegration[]
-  status           ItemStatus        @default(disable)
-  dificulty        Int?
-  assemblyTime     Decimal?
-  author           String?
-  authorLink       String?
-  licenseType      String?
-  licenseTypeLink  String?
+  id              Int               @id @default(autoincrement())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  name            String            @unique
+  description     String
+  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId      Int
+  files           ItemFile[]
+  itemIntegration ItemIntegration[]
+  status          ItemStatus        @default(disable)
+  dificulty       Int?
+  assemblyTime    Decimal?
+  author          String?
+  authorLink      String?
+  licenseType     String?
+  licenseTypeLink String?
 }
 
 enum FileType {
@@ -153,6 +153,8 @@ model ItemIntegration {
   setup            IntegrationSetup      @relation(fields: [setupId], references: [id])
   setupId          Int
   categoryId       Int
+  itemId           Int?
+  item             Item?                 @relation(fields: [itemId], references: [id])
   error            String?
 }
 
@@ -166,8 +168,6 @@ enum FileIntegrationStatus {
 
 model FileIntegration {
   id                Int                   @id @default(autoincrement())
-  itemId            Int
-  item              Item                  @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemIntegrationId Int
   itemIntegration   ItemIntegration       @relation(fields: [itemIntegrationId], references: [id], onDelete: Cascade)
   selector          String
