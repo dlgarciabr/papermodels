@@ -24,7 +24,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
 import { TbChevronDown } from 'react-icons/tb';
-import { IntegrationSelector, IntegrationSelectorType } from 'types';
+import { FileSimulationReference, IntegrationSelector, IntegrationSelectorType } from 'types';
 
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
@@ -46,7 +46,7 @@ const Integration = () => {
   const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [errors, setErrors] = useState<IError[]>([]);
-  const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout>();
+  const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
 
@@ -114,7 +114,7 @@ const Integration = () => {
     setLogs(integrationLogs);
     setLoading(false);
     if (!simulationIntegrationJob) {
-      setSimulationIntegrationJob(setTimeout(() => feedLog(), 30000));
+      setSimulationIntegrationJob(setTimeout(() => feedLog(), 15000));
     }
   };
 
@@ -133,9 +133,11 @@ const Integration = () => {
 
     setLoading(true);
 
-    // if (simulate) {
-    //   await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
-    // }
+    if (simulate) {
+      setLogs([]);
+      void runFilesIntegration();
+      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
+    }
 
     try {
       const antiCSRFToken = getAntiCSRFToken();
@@ -234,12 +236,17 @@ const Integration = () => {
     void loadSetups();
   }, []);
 
-  // useEffect(() => {
-  //   if (logs.length > 0) {
-  //     clearTimeout(simulationIntegrationJob!);
-  //     setSimulationIntegrationJob(simulationIntegrationJob);
-  //   }
-  // }, [logs]);
+  useEffect(() => {
+    const filesIntegrationfinished = logs.some((log) =>
+      log.reference.startsWith(FileSimulationReference.schemePercentage)
+    );
+    if (filesIntegrationfinished) {
+      clearTimeout(simulationIntegrationJob!);
+      clearTimeout(fileIntegrationJob!);
+      setSimulationIntegrationJob(null);
+      setFileIntegrationJob(null);
+    }
+  }, [logs, simulationIntegrationJob]);
 
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
@@ -362,19 +369,22 @@ const Integration = () => {
             </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={() => enqueue(true)} variant='outlined'>
+            <Button onClick={() => enqueue(true)} variant='outlined' disabled={!!simulationIntegrationJob}>
               Simulate
             </Button>
-            <Button onClick={() => enqueue()} disabled={loading} variant='outlined'>
+            <Button onClick={() => enqueue()} disabled={loading || !!simulationIntegrationJob} variant='outlined'>
               Enqueue
             </Button>
-            <Button onClick={() => runItemsIntegration()} disabled={loading} variant='outlined'>
+            <Button
+              onClick={() => runItemsIntegration()}
+              disabled={loading || !!simulationIntegrationJob}
+              variant='outlined'>
               Run Items integration
             </Button>
             <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob} variant='outlined'>
               {fileIntegrationJob ? 'Files integration up' : 'Init files integration'}
             </Button>
-            <Button onClick={() => deleteErrorIntegration()} variant='outlined'>
+            <Button onClick={() => deleteErrorIntegration()} variant='outlined' disabled={!!simulationIntegrationJob}>
               Clean integration w/ error
             </Button>
           </Grid>
@@ -389,8 +399,8 @@ const Integration = () => {
               <p style={{ color: 'red', marginLeft: '20px' }}>{error.stack}</p>
             </div>
           ))}
-          <Box sx={{ height: 400, width: '100%' }}>
-            <DataGrid rows={rows} columns={columns} pageSize={5} rowsPerPageOptions={[5]} loading={loading} />
+          <Box sx={{ height: 650, width: '100%' }}>
+            <DataGrid rows={rows} columns={columns} pageSize={10} rowsPerPageOptions={[10]} loading={loading} />
           </Box>
         </Grid>
       </Container>

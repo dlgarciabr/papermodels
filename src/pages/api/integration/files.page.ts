@@ -19,7 +19,7 @@ import { convertBytesToBase64 } from 'src/utils/storageProviders/cloudinary';
 import { uploadImage } from '../file/image-upload.page';
 import { UploadItemFile } from 'src/items/types';
 import { readPageUrls } from './util';
-import { IntegrationSelector, IntegrationSelectorType } from 'types';
+import { FileSimulationReference, IntegrationSelector, IntegrationSelectorType } from 'types';
 
 const downloadPath = path.resolve('./download');
 
@@ -37,11 +37,6 @@ const downloadPath = path.resolve('./download');
 
 interface IFileIntegration extends FileIntegration {
   itemIntegration: ItemIntegration & { setup: IntegrationSetup };
-}
-
-enum FileSimulationReference {
-  hasSchemeFiles = 'Has scheme files',
-  hasSchemePercentage = ' Has scheme percentege'
 }
 
 let logs: Partial<IntegrationLog>[] = [];
@@ -127,7 +122,7 @@ export default api(async (req, res, _ctx) => {
         }
       }
 
-      if (logs.length > 0) {
+      if (integrationList[0]?.status === FileIntegrationStatus.simulation) {
         const containsSchemeFiles = logs.filter(
           (log) => log.reference!.startsWith(FileSimulationReference.hasSchemeFiles) && log.value === 'true'
         );
@@ -135,7 +130,7 @@ export default api(async (req, res, _ctx) => {
         await db.integrationLog.create({
           data: {
             integrationId: integrationList[0]!.itemIntegrationId,
-            reference: FileSimulationReference.hasSchemePercentage,
+            reference: FileSimulationReference.schemePercentage,
             value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
           }
         });

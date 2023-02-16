@@ -28,3 +28,8 @@ export interface IntegrationSelector {
   type: IntegrationSelectorType;
   value: string;
 }
+
+export enum FileSimulationReference {
+  hasSchemeFiles = 'Has scheme files',
+  schemePercentage = ' Scheme percentege'
+}
