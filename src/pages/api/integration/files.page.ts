@@ -70,12 +70,10 @@ export default api(async (req, res, _ctx) => {
               { status: FileIntegrationStatus.simulation },
               {
                 itemIntegration: {
-                  log: {
+                  logs: {
                     every: {
-                      reference: {
-                        not: {
-                          contains: FileSimulationReference.hasSchemeFiles
-                        }
+                      key: {
+                        not: FileSimulationReference.hasSchemeFiles
                       }
                     }
                   }
@@ -124,13 +122,14 @@ export default api(async (req, res, _ctx) => {
 
       if (integrationList[0]?.status === FileIntegrationStatus.simulation) {
         const containsSchemeFiles = logs.filter(
-          (log) => log.reference!.startsWith(FileSimulationReference.hasSchemeFiles) && log.value === 'true'
+          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
         );
 
         await db.integrationLog.create({
           data: {
             integrationId: integrationList[0]!.itemIntegrationId,
-            reference: FileSimulationReference.schemePercentage,
+            key: FileSimulationReference.schemePercentage,
+            reference: 'Global',
             value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
           }
         });
@@ -285,7 +284,8 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
     if (simulation) {
       fileIntegrationLogs.push({
         integrationId: fileIntegration.itemIntegrationId,
-        reference: `${FileSimulationReference.hasSchemeFiles}: ${fileIntegration.itemIntegration.name}`,
+        key: FileSimulationReference.hasSchemeFiles,
+        reference: fileIntegration.itemIntegration.name,
         value: String(hasShemeFiles)
       });
       logs = [...logs, ...fileIntegrationLogs];
@@ -298,7 +298,8 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       await db.integrationLog.create({
         data: {
           integrationId: fileIntegration.itemIntegrationId,
-          reference: `${FileSimulationReference.error}: ${fileIntegration.itemIntegration.name}`,
+          key: FileSimulationReference.error,
+          reference: fileIntegration.itemIntegration.name,
           value: (error as Error).message
         }
       });

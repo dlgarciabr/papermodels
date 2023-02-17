@@ -109,16 +109,16 @@ const Integration = () => {
   const feedLog = async () => {
     setLoading(true);
     const { integrationLogs } = await invoke(getLogs, {
-      orderBy: { reference: 'asc' }
+      orderBy: { key: 'asc' }
     });
     setLogs(integrationLogs);
-    setLoading(false);
     if (!simulationIntegrationJob) {
       setSimulationIntegrationJob(setTimeout(() => feedLog(), 15000));
     }
   };
 
   const enqueue = async (simulate: boolean = false) => {
+    setLogs([]);
     setErrors([]);
 
     if (selectedSetup.id === 0) {
@@ -131,12 +131,13 @@ const Integration = () => {
       return;
     }
 
-    setLoading(true);
-
     if (simulate) {
-      setLogs([]);
-      void runFilesIntegration();
+      setLoading(true);
       await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
+      void runFilesIntegration();
+      void feedLog();
+    } else {
+      setLoading(true);
     }
 
     try {
@@ -156,7 +157,6 @@ const Integration = () => {
 
       if (simulate) {
         await fetch(`${location.origin}/api/integration?simulation=true`);
-        void feedLog();
       }
     } catch (error) {
       setErrors([
@@ -166,10 +166,10 @@ const Integration = () => {
         }
       ]);
     }
-    setLoading(false);
   };
 
   const deleteErrorIntegration = async () => {
+    runFilesIntegration;
     await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.error });
     alert('cleaned!');
   };
@@ -237,27 +237,32 @@ const Integration = () => {
   }, []);
 
   useEffect(() => {
-    const filesIntegrationfinished = logs.some((log) =>
-      log.reference.startsWith(FileSimulationReference.schemePercentage)
-    );
+    const filesIntegrationfinished = logs.some((log) => log.key === FileSimulationReference.schemePercentage);
     if (filesIntegrationfinished) {
       clearTimeout(simulationIntegrationJob!);
       clearTimeout(fileIntegrationJob!);
       setSimulationIntegrationJob(null);
       setFileIntegrationJob(null);
+      setLoading(false);
     }
-  }, [logs, simulationIntegrationJob]);
+  }, [fileIntegrationJob, logs, simulationIntegrationJob]);
 
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
+    { field: 'key', headerName: 'key', width: 200 },
     { field: 'reference', headerName: 'ref', width: 700 },
-    { field: 'value', headerName: 'value', width: 400 }
+    { field: 'value', headerName: 'value', width: 200 }
   ];
 
-  let rows: { id: number; reference: string; value: string }[] = [];
+  let rows: {
+    id: number;
+    key: string;
+    reference: string;
+    value: string;
+  }[] = [];
 
   if (logs.length > 0) {
-    rows = logs.map((log) => ({ id: log.id, reference: log.reference, value: log.value }));
+    rows = logs.map((log) => ({ id: log.id, key: log.key, reference: log.reference, value: log.value }));
   }
 
   return (

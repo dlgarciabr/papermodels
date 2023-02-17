@@ -183,6 +183,7 @@ model IntegrationLog {
   id            Int             @id @default(autoincrement())
   integration   ItemIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   integrationId Int
+  key           String
   reference     String
   value         String
   createdAt     DateTime        @default(now())

@@ -12,7 +12,6 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  CardActions,
   Button,
   Pagination
 } from '@mui/material';
@@ -42,15 +41,9 @@ const ItemCard = ({ item }: { item: ItemWithFiles }) => {
         <CardMedia image={mainImage} title={mainImage} />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
-            {item.name}
-          </Typography>
-          <Typography variant='body2' color='text.secondary' noWrap>
-            {item.description}
+            {item.name.length <= 66 ? item.name : item.name.substring(0, 63).concat('...')}
           </Typography>
         </CardContent>
-        <CardActions>
-          <Button size='small'>See more</Button>
-        </CardActions>
       </Card>
     </Link>
   );

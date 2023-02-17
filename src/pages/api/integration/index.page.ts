@@ -30,9 +30,9 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
 
 enum ItemSimulationReference {
   hasDescription = 'Has description',
-  descriptionPencentage = ' Description percentage',
+  descriptionPencentage = ' Description %',
   hasPreviewImages = 'Has preview images',
-  previewImagesPencentage = ' Preview images percentage'
+  previewImagesPencentage = ' Preview images %'
 }
 
 const processItemIntegration = async (simulation: boolean = false) => {
@@ -216,13 +216,15 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
           singleIntegrationLogs.push({
             integrationId: itemIntegration.id,
-            reference: `${ItemSimulationReference.hasPreviewImages}: ${itemIntegration.name}`,
+            key: ItemSimulationReference.hasPreviewImages,
+            reference: itemIntegration.name,
             value: String(hasPreviewImages)
           });
 
           singleIntegrationLogs.push({
             integrationId: itemIntegration.id,
-            reference: `${ItemSimulationReference.hasDescription}: ${itemIntegration.name}`,
+            key: ItemSimulationReference.hasDescription,
+            reference: itemIntegration.name,
             value: String(hasDescription)
           });
 
@@ -268,23 +270,25 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
     if (simulation && integrationList.length > 0) {
       const containsPreviewImages = logs.filter(
-        (log) => log.reference!.startsWith(ItemSimulationReference.hasPreviewImages) && log.value === 'true'
+        (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'
       );
 
       const containsDescription = logs.filter(
-        (log) => log.reference!.startsWith(ItemSimulationReference.hasDescription) && log.value === 'true'
+        (log) => log.key === ItemSimulationReference.hasDescription && log.value === 'true'
       );
 
       await db.integrationLog.createMany({
         data: [
           {
             integrationId: integrationList[0]!.id,
-            reference: ItemSimulationReference.previewImagesPencentage,
+            key: ItemSimulationReference.previewImagesPencentage,
+            reference: 'Global',
             value: `${String((containsPreviewImages.length * 100) / integrationList.length)}%`
           },
           {
             integrationId: integrationList[0]!.id,
-            reference: ItemSimulationReference.descriptionPencentage,
+            key: ItemSimulationReference.descriptionPencentage,
+            reference: 'Global',
             value: `${String((containsDescription.length * 100) / integrationList.length)}%`
           }
         ]
