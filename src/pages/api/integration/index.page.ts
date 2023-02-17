@@ -92,9 +92,10 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
     const errors: { itemIntegration: number; error: Error }[] = [];
 
-    const logs: Partial<IntegrationLog>[] = [];
+    let logs: Partial<IntegrationLog>[] = [];
 
     for await (const itemIntegration of integrationList) {
+      const singleIntegrationLogs: Partial<IntegrationLog>[] = [];
       let hasPreviewImages = true;
       let hasDescription = true;
 
@@ -177,8 +178,6 @@ const processItemIntegration = async (simulation: boolean = false) => {
               tempId: ''
             };
             files.push(file);
-
-            // previewImagePercentage = previewImagePercentage + (100 / previewImageNodes.length);
           } else {
             // throw new Error(`Error integrating image ${node}`);
           }
@@ -215,21 +214,23 @@ const processItemIntegration = async (simulation: boolean = false) => {
             }
           });
 
-          logs.push({
+          singleIntegrationLogs.push({
             integrationId: itemIntegration.id,
             reference: `${ItemSimulationReference.hasPreviewImages}: ${itemIntegration.name}`,
             value: String(hasPreviewImages)
           });
 
-          logs.push({
+          singleIntegrationLogs.push({
             integrationId: itemIntegration.id,
             reference: `${ItemSimulationReference.hasDescription}: ${itemIntegration.name}`,
             value: String(hasDescription)
           });
 
           await db.integrationLog.createMany({
-            data: logs as IntegrationLog[]
+            data: singleIntegrationLogs as IntegrationLog[]
           });
+
+          logs = [...logs, ...singleIntegrationLogs];
         } else {
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
 

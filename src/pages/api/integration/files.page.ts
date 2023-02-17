@@ -157,8 +157,9 @@ export default api(async (req, res, _ctx) => {
 });
 
 const processSchemeType = async (fileIntegration: IFileIntegration) => {
+  const simulation = fileIntegration.status === FileIntegrationStatus.simulation;
   try {
-    const simulation = fileIntegration.status === FileIntegrationStatus.simulation;
+    let fileIntegrationLogs: Partial<IntegrationLog>[] = [];
     const simulationLabel = simulation ? ' simulation ' : ' ';
     console.log(`-----------------------------------------------------------------------------`);
     console.log(`[FileIntegrationJOB] File ${fileIntegration.id} integration${simulationLabel}initializing.`);
@@ -190,7 +191,9 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
 
       if (fileUrls.length > 0) {
         process.stdout.write('found\n');
-        if (!simulation) {
+        if (simulation) {
+          file.storagePath = 'simulation';
+        } else {
           console.log('[FileIntegrationJOB] Uploading file to storage...');
           const response = await uploadImage(
             fileUrls[0]!,
@@ -280,31 +283,42 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
     );
 
     if (simulation) {
-      logs.push({
+      fileIntegrationLogs.push({
         integrationId: fileIntegration.itemIntegrationId,
-        reference: `${FileSimulationReference.hasSchemeFiles}: ${fileIntegration.id}`,
+        reference: `${FileSimulationReference.hasSchemeFiles}: ${fileIntegration.itemIntegration.name}`,
         value: String(hasShemeFiles)
       });
+      logs = [...logs, ...fileIntegrationLogs];
       await db.integrationLog.createMany({
-        data: logs as IntegrationLog[]
+        data: fileIntegrationLogs as IntegrationLog[]
       });
     }
   } catch (error) {
-    console.log('error', error);
-    // TODO save error on integration table
-    await db.fileIntegration.update({
-      where: { id: fileIntegration.id },
-      data: {
-        status: FileIntegrationStatus.error
-      }
-    });
-    // await db.itemIntegration.update({
-    //   where: { id: fileIntegration.itemIntegrationId },
-    //   data: {
-    //     status: ItemIntegrationStatus.error,
-    //     error
-    //   }
-    // });
+    if (simulation) {
+      await db.integrationLog.create({
+        data: {
+          integrationId: fileIntegration.itemIntegrationId,
+          reference: `${FileSimulationReference.error}: ${fileIntegration.itemIntegration.name}`,
+          value: (error as Error).message
+        }
+      });
+    } else {
+      console.log('error', error);
+      // TODO save error on integration table
+      await db.fileIntegration.update({
+        where: { id: fileIntegration.id },
+        data: {
+          status: FileIntegrationStatus.error
+        }
+      });
+      // await db.itemIntegration.update({
+      //   where: { id: fileIntegration.itemIntegrationId },
+      //   data: {
+      //     status: ItemIntegrationStatus.error,
+      //     error
+      //   }
+      // });
+    }
   }
 };
 

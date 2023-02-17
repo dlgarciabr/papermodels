@@ -345,6 +345,10 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.TEXT}",
           "value": "article > div> div > div > p"
+        },
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value":"div.entry-inner p:nth-of-type(2)"
         }
       ]`,
       previewImagesSelector: `[
@@ -405,6 +409,10 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.TEXT}",
           "value": "article > div> div > div > p"
+        },
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value":"div.entry-inner p:nth-of-type(2)"
         }
       ]`,
       previewImagesSelector: `[

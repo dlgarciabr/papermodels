@@ -31,5 +31,6 @@ export interface IntegrationSelector {
 
 export enum FileSimulationReference {
   hasSchemeFiles = 'Has scheme files',
-  schemePercentage = ' Scheme percentege'
+  schemePercentage = ' Scheme percentege',
+  error = 'Error ocurred'
 }

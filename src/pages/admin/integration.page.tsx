@@ -208,7 +208,7 @@ const Integration = () => {
         }
       });
       if (!fileIntegrationJob) {
-        setFileIntegrationJob(setTimeout(() => runFilesIntegration(), 60000));
+        setFileIntegrationJob(setTimeout(() => runFilesIntegration(), 30000));
       }
     } catch (error) {
       setErrors([
