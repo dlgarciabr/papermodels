@@ -5,6 +5,9 @@ import { IntegrationSelector } from 'types';
 import { IError } from './types';
 import { fetchPageAsString, getAllSiteUrls, getItemUrlsFromPage } from './util';
 
+/**
+ * @deprecated
+ */
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const errors: IError[] = [];

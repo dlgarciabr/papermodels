@@ -153,10 +153,9 @@ export default api(async (req, res, _ctx) => {
 
           await db.integrationLog.create({
             data: {
-              integrationId: integrationList[0]!.itemIntegrationId,
               key: FileSimulationReference.schemePercentage,
               reference: 'Global',
-              value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
+              value: `${String(Math.round((containsSchemeFiles.length * 100) / integrationList.length))}%`
             }
           });
         }
@@ -379,6 +378,8 @@ const downloadFileFromClick = async (url: string, selector: string) => {
     process.stdout.write('[FileIntegrationJOB] ');
 
     await checkDownloadFinished();
+
+    await Promise.race([checkDownloadFinished(), new Promise((resolve) => setTimeout(() => resolve, 120000))]);
 
     void browser.close();
     console.log(`\n[FileIntegrationJOB] File download has finished!`);

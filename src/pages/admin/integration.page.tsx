@@ -137,7 +137,7 @@ const Integration = () => {
 
     if (simulate) {
       setLoading(true);
-      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.pendingSimulation });
+      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulated });
       void runFilesIntegration();
       void feedLog();
     } else {
@@ -372,6 +372,19 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('schemesSelector')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Category binding'
+                      value={selectedSetup.categoryBinding}
+                      name='categoryBinding'
+                      fullWidth
+                      multiline
+                      disabled={true}
+                      rows={6}
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('categoryBinding')}
                     />
                   </Grid>
                 </Grid>

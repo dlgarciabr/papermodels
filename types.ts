@@ -29,6 +29,16 @@ export interface IntegrationSelector {
   value: string;
 }
 
+export enum ItemSimulationReference {
+  initialQuantity = '  Initial Quantity',
+  descriptionPencentage = ' Description %',
+  previewImagesPencentage = ' Preview images %',
+  categoryPercentage = ' Categories %',
+  hasPreviewImages = 'Has preview images',
+  hasDescription = 'Has description',
+  hasCategory = 'Has category'
+}
+
 export enum FileSimulationReference {
   hasSchemeFiles = 'Has scheme files',
   schemePercentage = ' Scheme %',

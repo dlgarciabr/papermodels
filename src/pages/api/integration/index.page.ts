@@ -11,7 +11,7 @@ import db, {
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { IntegrationSelector } from 'types';
+import { IntegrationSelector, ItemSimulationReference } from 'types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
@@ -27,13 +27,6 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
   }
   return text;
 };
-
-enum ItemSimulationReference {
-  hasDescription = 'Has description',
-  descriptionPencentage = ' Description %',
-  hasPreviewImages = 'Has preview images',
-  previewImagesPencentage = ' Preview images %'
-}
 
 const processItemIntegration = async (simulation: boolean = false) => {
   const simulationLabel = simulation ? ' simulation ' : ' ';
@@ -280,16 +273,14 @@ const processItemIntegration = async (simulation: boolean = false) => {
       await db.integrationLog.createMany({
         data: [
           {
-            integrationId: integrationList[0]!.id,
             key: ItemSimulationReference.previewImagesPencentage,
             reference: 'Global',
-            value: `${String((containsPreviewImages.length * 100) / integrationList.length)}%`
+            value: `${String(Math.round((containsPreviewImages.length * 100) / integrationList.length))}%`
           },
           {
-            integrationId: integrationList[0]!.id,
             key: ItemSimulationReference.descriptionPencentage,
             reference: 'Global',
-            value: `${String((containsDescription.length * 100) / integrationList.length)}%`
+            value: `${String(Math.round((containsDescription.length * 100) / integrationList.length))}%`
           }
         ]
       });
