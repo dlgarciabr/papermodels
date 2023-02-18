@@ -50,6 +50,13 @@ const Integration = () => {
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
 
+  const loadSimulationLogs = async () => {
+    const { integrationLogs } = await invoke(getLogs, {
+      orderBy: { key: 'asc' }
+    });
+    setLogs(integrationLogs);
+  };
+
   const loadSetups = async () => {
     const { integrationSetups } = await invoke(getIntegrationSetups, {
       orderBy: { name: 'asc' }
@@ -108,10 +115,7 @@ const Integration = () => {
 
   const feedLog = async () => {
     setLoading(true);
-    const { integrationLogs } = await invoke(getLogs, {
-      orderBy: { key: 'asc' }
-    });
-    setLogs(integrationLogs);
+    await loadSimulationLogs();
     if (!simulationIntegrationJob) {
       setSimulationIntegrationJob(setTimeout(() => feedLog(), 15000));
     }
@@ -133,7 +137,7 @@ const Integration = () => {
 
     if (simulate) {
       setLoading(true);
-      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulation });
+      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.pendingSimulation });
       void runFilesIntegration();
       void feedLog();
     } else {
@@ -234,6 +238,7 @@ const Integration = () => {
 
   useEffect(() => {
     void loadSetups();
+    void loadSimulationLogs();
   }, []);
 
   useEffect(() => {

@@ -63,25 +63,7 @@ export default api(async (req, res, _ctx) => {
 
     const integrationList = (await db.fileIntegration.findMany({
       where: {
-        OR: [
-          { status: FileIntegrationStatus.pending },
-          {
-            AND: [
-              { status: FileIntegrationStatus.simulation },
-              {
-                itemIntegration: {
-                  logs: {
-                    every: {
-                      key: {
-                        not: FileSimulationReference.hasSchemeFiles
-                      }
-                    }
-                  }
-                }
-              }
-            ]
-          }
-        ]
+        OR: [{ status: FileIntegrationStatus.pending }, { status: FileIntegrationStatus.pendingSimulation }]
       },
       take: 5,
       include: {
@@ -120,19 +102,64 @@ export default api(async (req, res, _ctx) => {
         }
       }
 
-      if (integrationList[0]?.status === FileIntegrationStatus.simulation) {
-        const containsSchemeFiles = logs.filter(
-          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-        );
+      if (integrationList[0]?.status === FileIntegrationStatus.pendingSimulation) {
+        // const containsSchemeFiles = logs.filter(
+        //   (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
+        // );
 
-        await db.integrationLog.create({
+        // await db.integrationLog.create({
+        //   data: {
+        //     integrationId: integrationList[0]!.itemIntegrationId,
+        //     key: FileSimulationReference.schemePercentage,
+        //     reference: 'Global',
+        //     value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
+        //   }
+        // });
+
+        await db.fileIntegration.updateMany({
+          where: {
+            id: {
+              in: integrationList.map((integration) => integration.id)
+            }
+          },
           data: {
-            integrationId: integrationList[0]!.itemIntegrationId,
-            key: FileSimulationReference.schemePercentage,
-            reference: 'Global',
-            value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
+            status: FileIntegrationStatus.simulated
           }
         });
+
+        const pendingSimulations = await db.fileIntegration.findMany({
+          where: {
+            status: FileIntegrationStatus.pendingSimulation
+          },
+          select: {
+            itemIntegration: {
+              select: {
+                logs: true
+              }
+            }
+          }
+        });
+
+        if (pendingSimulations.length === 0) {
+          // const simulatedList = await db.fileIntegration.count({
+          //   where: {
+          //     status: FileIntegrationStatus.simulated
+          //   }
+          // });
+
+          const containsSchemeFiles = logs.filter(
+            (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
+          );
+
+          await db.integrationLog.create({
+            data: {
+              integrationId: integrationList[0]!.itemIntegrationId,
+              key: FileSimulationReference.schemePercentage,
+              reference: 'Global',
+              value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
+            }
+          });
+        }
       }
     } else {
       console.log(`[FileIntegrationJOB] No files to be integrated.`);
@@ -156,7 +183,7 @@ export default api(async (req, res, _ctx) => {
 });
 
 const processSchemeType = async (fileIntegration: IFileIntegration) => {
-  const simulation = fileIntegration.status === FileIntegrationStatus.simulation;
+  const simulation = fileIntegration.status === FileIntegrationStatus.pendingSimulation;
   try {
     let fileIntegrationLogs: Partial<IntegrationLog>[] = [];
     const simulationLabel = simulation ? ' simulation ' : ' ';

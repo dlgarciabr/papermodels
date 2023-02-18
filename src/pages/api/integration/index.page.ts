@@ -62,7 +62,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
   if (simulation) {
     integrationList = (await db.itemIntegration.findMany({
       where: {
-        status: ItemIntegrationStatus.simulation
+        status: ItemIntegrationStatus.pendingSimulation
       },
       include: {
         setup: true
@@ -210,7 +210,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
               itemIntegrationId: itemIntegration.id,
               integrationType: FileType.scheme,
               url: itemIntegration.url,
-              status: FileIntegrationStatus.simulation
+              status: FileIntegrationStatus.pendingSimulation
             }
           });
 

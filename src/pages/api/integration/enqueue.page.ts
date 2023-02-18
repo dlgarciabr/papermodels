@@ -33,7 +33,7 @@ export default api(async (req, res, _ctx) => {
 
     await db.itemIntegration.deleteMany({
       where: {
-        status: ItemIntegrationStatus.simulation
+        status: ItemIntegrationStatus.pendingSimulation
       }
     });
 
@@ -79,7 +79,7 @@ export default api(async (req, res, _ctx) => {
         return {
           name,
           url,
-          status: simulation ? ItemIntegrationStatus.simulation : ItemIntegrationStatus.pending,
+          status: simulation ? ItemIntegrationStatus.pendingSimulation : ItemIntegrationStatus.pending,
           setupId: setup.id,
           categoryId: categories.find((category) => category.name === categoryName)?.id || 1
         };

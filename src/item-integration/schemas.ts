@@ -7,5 +7,6 @@ export const zItemIntegrationStatusEnum = z.enum([
   ItemIntegrationStatus.pending,
   ItemIntegrationStatus.pendingFiles,
   ItemIntegrationStatus.running,
-  ItemIntegrationStatus.simulation
+  ItemIntegrationStatus.pendingSimulation,
+  ItemIntegrationStatus.simulated
 ]);
