@@ -41,16 +41,22 @@ export default api(async (req, res, _ctx) => {
 
     // const pageUrls = readPageUrlsFromNodes(pageNodes) as string[];
 
+    await db.itemIntegration.deleteMany({
+      where: {
+        OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.simulated }]
+      }
+    });
+
+    await db.integrationLog.deleteMany({
+      where: {
+        integrationId: null
+      }
+    });
+
     if (siteUrls.length === 0) {
       res.status(204).end();
       return;
     }
-
-    await db.itemIntegration.deleteMany({
-      where: {
-        status: ItemIntegrationStatus.pendingSimulation
-      }
-    });
 
     const integrations = await db.itemIntegration.findMany({
       where: {
@@ -150,7 +156,7 @@ export default api(async (req, res, _ctx) => {
         {
           key: ItemSimulationReference.categoryPercentage,
           reference: 'Global',
-          value: ((itemsWithCategory.length * 100) / itemsToIntegrate.length).toString()
+          value: `${String((itemsWithCategory.length * 100) / itemsToIntegrate.length)}%`
         }
       ]
     });

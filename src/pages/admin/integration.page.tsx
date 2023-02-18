@@ -155,18 +155,11 @@ const Integration = () => {
       return;
     }
 
-    if (simulate) {
-      setLoading(true);
-      await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.simulated });
-      void runFilesIntegration();
-      void feedLog();
-    } else {
-      setLoading(true);
-    }
+    setLoading(true);
 
     try {
       const antiCSRFToken = getAntiCSRFToken();
-      await fetch(`${location.origin}/api/integration/enqueue`, {
+      const response = await fetch(`${location.origin}/api/integration/enqueue`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -178,8 +171,13 @@ const Integration = () => {
           simulate
         })
       });
-
+      if (response.status === 204) {
+        setLoading(false);
+        return;
+      }
       if (simulate) {
+        void runFilesIntegration();
+        void feedLog();
         await fetch(`${location.origin}/api/integration?simulation=true`);
       }
     } catch (error) {
