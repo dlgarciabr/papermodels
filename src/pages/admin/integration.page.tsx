@@ -26,6 +26,11 @@ import deleteItemIntegrationByStatus from 'src/item-integration/mutations/delete
 import { TbChevronDown } from 'react-icons/tb';
 import { FileSimulationReference, IntegrationSelector, IntegrationSelectorType } from 'types';
 
+interface IIntegrationLogFilter {
+  field: string;
+  value: string;
+}
+
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,12 +54,27 @@ const Integration = () => {
   const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
+  const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
 
-  const loadSimulationLogs = async () => {
-    const { integrationLogs } = await invoke(getLogs, {
-      orderBy: { key: 'asc' }
-    });
-    setLogs(integrationLogs);
+  const loadSimulationLogs = async (filter?: IIntegrationLogFilter) => {
+    if (filter) {
+      if (!filter.field || !filter.value) {
+        alert('fill filters');
+        return;
+      }
+      let where = {};
+      where[filter.field] = { contains: filter.value };
+      const { integrationLogs } = await invoke(getLogs, {
+        orderBy: { key: 'asc' },
+        where
+      });
+      setLogs(integrationLogs);
+    } else {
+      const { integrationLogs } = await invoke(getLogs, {
+        orderBy: { key: 'asc' }
+      });
+      setLogs(integrationLogs);
+    }
   };
 
   const loadSetups = async () => {
@@ -409,6 +429,32 @@ const Integration = () => {
             </Button>
             <Button onClick={() => deleteErrorIntegration()} variant='outlined' disabled={!!simulationIntegrationJob}>
               Clean integration w/ error
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid item container xs={12} spacing={2}>
+          <Grid item xs={5}>
+            <TextField
+              fullWidth
+              label='Field'
+              value={filter.field}
+              onChange={(e) => setFilter({ ...filter, field: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={5}>
+            <TextField
+              fullWidth
+              label='Value'
+              value={filter.value}
+              onChange={(e) => setFilter({ ...filter, value: e.target.value })}
+            />
+          </Grid>
+          <Grid item xs={2}>
+            <Button onClick={() => loadSimulationLogs(filter)} variant='outlined'>
+              filter
+            </Button>
+            <Button onClick={() => loadSimulationLogs()} variant='outlined'>
+              clear
             </Button>
           </Grid>
         </Grid>
