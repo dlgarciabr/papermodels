@@ -261,6 +261,7 @@ const seed = async () => {
   const integrationSetups = [
     {
       name: 'Papermau Exclusive',
+      key: '',
       domain: 'https://papermau.blogspot.com/search/label/exclusive',
       itemUrlSelector: 'div > b > a',
       categorySelector: '',
@@ -270,6 +271,7 @@ const seed = async () => {
     },
     {
       name: 'Paperdiorama',
+      key: 'paperdiorama',
       domain: 'https://www.paperdiorama.com',
       itemUrlSelector: `[
         {
@@ -322,6 +324,7 @@ const seed = async () => {
     },
     {
       name: 'Paperdiorama machines WM',
+      key: 'paperdiorama',
       domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
       itemUrlSelector: `[
         {
@@ -370,6 +373,7 @@ const seed = async () => {
     },
     {
       name: 'Paperdiorama machines Misc',
+      key: 'paperdiorama',
       domain: 'https://www.paperdiorama.com/category/paper-models/misc',
       itemUrlSelector: 'article > div > h2 > a',
       categorySelector: 'p.post-category > a',
@@ -386,6 +390,7 @@ const seed = async () => {
     },
     {
       name: 'Paperdiorama machines Cars',
+      key: 'paperdiorama',
       domain: 'https://www.paperdiorama.com/category/paper-models/cars',
       itemUrlSelector: `[
         {

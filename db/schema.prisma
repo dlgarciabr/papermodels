@@ -129,6 +129,7 @@ enum ItemIntegrationStatus {
 model IntegrationSetup {
   id                    Int               @id @default(autoincrement())
   name                  String
+  key                   String
   domain                String
   itemUrlSelector       String
   categorySelector      String

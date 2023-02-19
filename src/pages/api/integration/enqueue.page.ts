@@ -29,7 +29,7 @@ export default api(async (req, res, _ctx) => {
     //   pageNodes = [...pageNodes, ...nodes];
     // });
 
-    const siteSanitizedUrls = await getAllSiteUrls(setup.domain, setup.name);
+    const siteSanitizedUrls = await getAllSiteUrls(setup.domain, setup.key);
     let siteUrls: any[] = [];
 
     for await (const url of siteSanitizedUrls.slice(0, siteSanitizedUrls.length / 10)) {

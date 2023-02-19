@@ -39,14 +39,12 @@ export const getTextFromNodeAsString = (content: string, querySelector: string) 
   return null;
 };
 
-export const getAllSiteUrls = async (url: string, domainName: string): Promise<string[]> => {
+export const getAllSiteUrls = async (url: string, key: string): Promise<string[]> => {
   let siteSanitizedUrls: string[] = [];
 
-  const allLinks = (await readPageUrls(url, 'a')) as string[];
+  const allUrls = (await readPageUrls(url, 'a')) as string[];
 
-  const removedNonDomainName = allLinks.filter(
-    (link) => !!link && link.toLowerCase().indexOf(domainName.toLowerCase()) > 0
-  );
+  const removedNonDomainName = allUrls.filter((link) => !!link && link.toLowerCase().indexOf(key.toLowerCase()) > 0);
   const uniqueLinks = Array.from(new Set(removedNonDomainName));
 
   siteSanitizedUrls = [...uniqueLinks];

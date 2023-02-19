@@ -43,6 +43,7 @@ const Integration = () => {
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
     id: 0,
     name: '',
+    key: '',
     domain: '',
     itemUrlSelector: '',
     previewImagesSelector: '',
@@ -320,6 +321,17 @@ const Integration = () => {
                 </MenuItem>
               ))}
             </Select>
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label='Setup key'
+              value={selectedSetup.key}
+              name='key'
+              fullWidth
+              disabled={true}
+              onChange={(e) => setParam(e as any)}
+              error={fieldErrors.includes('key')}
+            />
           </Grid>
           <Grid item xs={12}>
             <TextField
