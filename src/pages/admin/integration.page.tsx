@@ -24,7 +24,13 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
 import { TbChevronDown } from 'react-icons/tb';
-import { FileSimulationReference, IntegrationSelector, IntegrationSelectorType } from 'types';
+import {
+  FileSimulationReference,
+  IntegrationProcessingType,
+  IntegrationSelector,
+  IntegrationSelectorType,
+  ItemSimulationReference
+} from 'types';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -141,7 +147,7 @@ const Integration = () => {
     }
   };
 
-  const enqueue = async (simulate: boolean = false) => {
+  const processSetup = async (type: IntegrationProcessingType) => {
     setLogs([]);
     setErrors([]);
 
@@ -168,16 +174,18 @@ const Integration = () => {
         },
         body: JSON.stringify({
           ...selectedSetup,
-          simulate
+          type
         })
       });
       if (response.status === 204) {
         setLoading(false);
         return;
       }
-      if (simulate) {
-        void runFilesIntegration();
+      if (type === IntegrationProcessingType.SIMULATION || type === IntegrationProcessingType.READ_URLS) {
         void feedLog();
+      }
+      if (type === IntegrationProcessingType.SIMULATION) {
+        void runFilesIntegration();
         await fetch(`${location.origin}/api/integration?simulation=true`);
       }
     } catch (error) {
@@ -260,7 +268,9 @@ const Integration = () => {
   }, []);
 
   useEffect(() => {
-    const filesIntegrationfinished = logs.some((log) => log.key === FileSimulationReference.schemePercentage);
+    const filesIntegrationfinished = logs.some(
+      (log) => log.key === FileSimulationReference.schemePercentage || log.key === ItemSimulationReference.url
+    );
     if (filesIntegrationfinished) {
       clearTimeout(simulationIntegrationJob!);
       clearTimeout(fileIntegrationJob!);
@@ -272,9 +282,9 @@ const Integration = () => {
 
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
-    { field: 'key', headerName: 'key', width: 200 },
-    { field: 'reference', headerName: 'ref', width: 700 },
-    { field: 'value', headerName: 'value', width: 200 }
+    { field: 'key', headerName: 'key', width: 150 },
+    { field: 'reference', headerName: 'ref', width: 500 },
+    { field: 'value', headerName: 'value', width: 450 }
   ];
 
   let rows: {
@@ -410,21 +420,36 @@ const Integration = () => {
             </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button onClick={() => enqueue(true)} variant='outlined' disabled={!!simulationIntegrationJob}>
+            <Button
+              onClick={() => processSetup(IntegrationProcessingType.READ_URLS)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
+              Read URLs
+            </Button>
+            <Button
+              onClick={() => processSetup(IntegrationProcessingType.SIMULATION)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
               Simulate
             </Button>
-            <Button onClick={() => enqueue()} disabled={loading || !!simulationIntegrationJob} variant='outlined'>
+            <Button
+              onClick={() => processSetup(IntegrationProcessingType.INTEGRATION)}
+              disabled={loading || !!simulationIntegrationJob}
+              variant='outlined'>
               Enqueue
             </Button>
             <Button
-              onClick={() => runItemsIntegration()}
-              disabled={loading || !!simulationIntegrationJob}
+              onClick={() => {
+                void runFilesIntegration();
+                void runItemsIntegration();
+              }}
+              disabled={loading || !!simulationIntegrationJob || !!fileIntegrationJob}
               variant='outlined'>
-              Run Items integration
+              Run integrations
             </Button>
-            <Button onClick={() => runFilesIntegration()} disabled={!!fileIntegrationJob} variant='outlined'>
+            {/* <Button onClick={() => { void runFilesIntegration(); void runItemsIntegration(); }} disabled={!!fileIntegrationJob} variant='outlined'>
               {fileIntegrationJob ? 'Files integration up' : 'Init files integration'}
-            </Button>
+            </Button> */}
             <Button onClick={() => deleteErrorIntegration()} variant='outlined' disabled={!!simulationIntegrationJob}>
               Clean integration w/ error
             </Button>

@@ -1,7 +1,7 @@
 /* istanbul ignore file -- @preserve */
 import db, { IntegrationSetup, ItemIntegration, ItemIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
-import { IntegrationSelector, ItemSimulationReference } from 'types';
+import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference } from 'types';
 
 import { fetchPageAsString, getAllSiteUrls, getItemUrlsFromPage, getTextFromNodeAsString } from './util';
 
@@ -18,7 +18,7 @@ const parseCategory = (pageContent: string, categorySelector: string, categoryBi
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const setup = req.body as IntegrationSetup;
-    const simulation = req.body.simulate as boolean;
+    const type = req.body.type as IntegrationProcessingType;
 
     // const pageContent = await fetchPageAsString(setup.domain);
 
@@ -55,6 +55,25 @@ export default api(async (req, res, _ctx) => {
 
     if (siteUrls.length === 0) {
       res.status(204).end();
+      return;
+    }
+
+    if (type === IntegrationProcessingType.READ_URLS) {
+      await db.integrationLog.createMany({
+        data: [
+          {
+            key: ItemSimulationReference.initialQuantity,
+            reference: 'Global',
+            value: siteUrls.length.toString()
+          },
+          ...siteUrls.map((url) => ({
+            key: ItemSimulationReference.url,
+            reference: 'Global',
+            value: url
+          }))
+        ]
+      });
+      res.status(200).end();
       return;
     }
 
@@ -102,7 +121,10 @@ export default api(async (req, res, _ctx) => {
       itemsToIntegrate.push({
         name,
         url,
-        status: simulation ? ItemIntegrationStatus.pendingSimulation : ItemIntegrationStatus.pending,
+        status:
+          type === IntegrationProcessingType.SIMULATION
+            ? ItemIntegrationStatus.pendingSimulation
+            : ItemIntegrationStatus.pending,
         setupId: setup.id,
         categoryId: categories.find((category) => category.name === categoryName)?.id || 1,
         hasCategory: !!categoryName

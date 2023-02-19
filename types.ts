@@ -24,6 +24,12 @@ export enum IntegrationSelectorType {
   CLICK = 'CLICK'
 }
 
+export enum IntegrationProcessingType {
+  INTEGRATION,
+  READ_URLS,
+  SIMULATION
+}
+
 export interface IntegrationSelector {
   type: IntegrationSelectorType;
   value: string;
@@ -31,6 +37,7 @@ export interface IntegrationSelector {
 
 export enum ItemSimulationReference {
   initialQuantity = '  Initial Quantity',
+  url = '  Url',
   descriptionPencentage = ' Description %',
   previewImagesPencentage = ' Preview images %',
   categoryPercentage = ' Categories %',
