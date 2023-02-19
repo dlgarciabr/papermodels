@@ -30,6 +30,7 @@ export default api(async (req, res, _ctx) => {
     // });
 
     const siteSanitizedUrls = await getAllSiteUrls(setup.domain, setup.key);
+
     let siteUrls: any[] = [];
 
     for await (const url of siteSanitizedUrls.slice(0, siteSanitizedUrls.length / 10)) {

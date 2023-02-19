@@ -31,6 +31,9 @@ import {
   IntegrationSelectorType,
   ItemSimulationReference
 } from 'types';
+import { MdContentCopy } from 'react-icons/md';
+import { ToastType } from 'src/core/components/Toast/types.d';
+import { showToast } from 'src/core/components/Toast';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -281,11 +284,32 @@ const Integration = () => {
     }
   }, [fileIntegrationJob, logs, simulationIntegrationJob]);
 
+  const sendToClipboard = async (value: string) => {
+    await navigator.clipboard.writeText(value);
+    showToast(ToastType.INFO, 'text sent to clipboard.');
+  };
+
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
     { field: 'key', headerName: 'key', width: 150 },
-    { field: 'reference', headerName: 'ref', width: 500 },
-    { field: 'value', headerName: 'value', width: 450 }
+    { field: 'reference', headerName: 'ref', width: 450 },
+    { field: 'value', headerName: 'value', width: 450 },
+    {
+      field: 'actions',
+      headerName: '',
+      sortable: false,
+      width: 50,
+      renderCell: (params) => {
+        return (
+          <div
+            className='d-flex justify-content-between align-items-center'
+            style={{ cursor: 'pointer' }}
+            onClick={() => sendToClipboard(params.row.value)}>
+            <MdContentCopy />
+          </div>
+        );
+      }
+    }
   ];
 
   let rows: {
