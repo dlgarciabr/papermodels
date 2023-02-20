@@ -54,10 +54,6 @@ const processIntegration = async () => {
   }
 
   console.log(`[UrlIntegrationJOB] Updating urls to readingDone...`);
-  console.log(
-    '',
-    urlIntegrationsToProcess.map((integration) => integration.id)
-  );
 
   await db.urlIntegration.updateMany({
     where: {
@@ -82,17 +78,40 @@ export default api(async (req, res, _ctx) => {
     `);
     await processIntegration();
 
-    const qty = await db.integrationLog.count({
+    console.log(`[UrlIntegrationJOB] Cleaning duplicated registries...`);
+
+    const urlIntegrationUrls = (
+      await db.integrationLog.findMany({
+        where: {
+          key: ItemSimulationReference.url
+        }
+      })
+    ).map((integrationLog) => integrationLog.value);
+
+    const uniqueItemUrls = Array.from(new Set(urlIntegrationUrls));
+
+    await db.integrationLog.deleteMany({
       where: {
         key: ItemSimulationReference.url
       }
     });
+
+    console.log(`[UrlIntegrationJOB] Uploading final logs...`);
+
+    const createReturn = await db.integrationLog.createMany({
+      data: uniqueItemUrls.map((url) => ({
+        key: ItemSimulationReference.url,
+        reference: 'Global',
+        value: url
+      }))
+    });
+
     await db.integrationLog.createMany({
       data: [
         {
           key: ItemSimulationReference.initialQuantity,
           reference: 'Global',
-          value: qty.toString()
+          value: createReturn.count.toString()
         }
       ]
     });
