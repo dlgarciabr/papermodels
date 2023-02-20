@@ -1,9 +1,9 @@
 /* istanbul ignore file -- @preserve */
-import db, { IntegrationSetup, ItemIntegrationStatus, UrlIntegrationStatus } from 'db';
+import db, { UrlIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
-import { IntegrationProcessingType } from 'types';
+import { IntegrationSelector, ItemSimulationReference } from 'types';
 
-import { getAllSiteUrls } from './util';
+import { getItemUrlsFromPage } from './util';
 
 // const parseCategory = (pageContent: string, categorySelector: string, categoryBinding: any[]): string | null => {
 //   try {
@@ -15,78 +15,106 @@ import { getAllSiteUrls } from './util';
 //   }
 // };
 
+const processIntegration = async () => {
+  const urlIntegrationsToProcess = await db.urlIntegration.findMany({
+    where: {
+      status: UrlIntegrationStatus.readingPending
+    },
+    include: {
+      setup: true
+    },
+    take: 10
+  });
+
+  if (urlIntegrationsToProcess.length === 0) {
+    return;
+  }
+
+  let itemsUrls: any[] = [];
+
+  for await (const urlIntegration of urlIntegrationsToProcess) {
+    console.log(`[UrlIntegrationJOB] Reading URL ${urlIntegration.url}...`);
+    const itemUrlSelectors = JSON.parse(urlIntegration.setup.itemUrlSelector) as IntegrationSelector[];
+    const urls = await getItemUrlsFromPage(urlIntegration.url, itemUrlSelectors);
+    itemsUrls = [...itemsUrls, ...urls];
+  }
+
+  itemsUrls = Array.from(new Set(itemsUrls));
+
+  console.log(`[UrlIntegrationJOB] Found ${itemsUrls.length} item(s).`);
+
+  if (itemsUrls.length > 0) {
+    await db.integrationLog.createMany({
+      data: itemsUrls.map((url) => ({
+        key: ItemSimulationReference.url,
+        reference: 'Global',
+        value: url
+      }))
+    });
+  }
+
+  console.log(`[UrlIntegrationJOB] Updating urls to readingDone...`);
+  console.log(
+    '',
+    urlIntegrationsToProcess.map((integration) => integration.id)
+  );
+
+  await db.urlIntegration.updateMany({
+    where: {
+      id: {
+        in: urlIntegrationsToProcess.map((integration) => integration.id)
+      }
+    },
+    data: {
+      status: UrlIntegrationStatus.readingDone
+    }
+  });
+
+  await processIntegration();
+};
+
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
-    const setup = req.body as IntegrationSetup;
-    const type = req.body.type as IntegrationProcessingType;
+    console.log(`
+===================================================================================
+|                     Initializing Site URLs processing job...                     |
+===================================================================================
+    `);
+    await processIntegration();
 
-    if (!setup) {
-      res.status(500).send({ message: 'IntegrationSetup not defined' });
-      return;
-    }
-
-    if (!type) {
-      res.status(500).send({ message: 'IntegrationProcessingType not defined' });
-      return;
-    }
-
-    // const itemUrlSelectors = JSON.parse(setup.itemUrlSelector) as IntegrationSelector[];
-    // let pageNodes: string[] = [];
-
-    const siteSanitizedUrls = await getAllSiteUrls(setup.domain, setup.key);
-
-    // let itemsUrls: any[] = [];
-
-    await db.integrationLog.deleteMany({
+    const qty = await db.integrationLog.count({
       where: {
-        integrationId: null
+        key: ItemSimulationReference.url
       }
     });
-
-    await db.itemIntegration.deleteMany({
-      where: {
-        OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.simulated }]
-      }
-    });
-
-    if (type === IntegrationProcessingType.READ_URLS) {
-      await db.urlIntegration.deleteMany({
-        where: {
-          OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.readingDone }]
+    await db.integrationLog.createMany({
+      data: [
+        {
+          key: ItemSimulationReference.initialQuantity,
+          reference: 'Global',
+          value: qty.toString()
         }
-      });
+      ]
+    });
+    console.log(`[UrlIntegrationJOB] Site URLs processing job finished`);
+    res.status(200).end();
 
-      await db.urlIntegration.createMany({
-        data: siteSanitizedUrls.map((url) => ({
-          status: UrlIntegrationStatus.readingPending,
-          url,
-          setupId: setup.id
-        }))
-      });
-    }
+    // await db.itemIntegration.deleteMany({
+    //   where: {
+    //     OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.simulated }]
+    //   }
+    // });
 
-    // if (itemsUrls.length === 0) {
-    //   res.status(204).end();
-    //   return;
-    // }
+    // await db.integrationLog.deleteMany({
+    //   where: {
+    //     integrationId: null
+    //   }
+    // });
 
     // if (type === IntegrationProcessingType.READ_URLS) {
-    //   await db.integrationLog.createMany({
-    //     data: [
-    //       {
-    //         key: ItemSimulationReference.initialQuantity,
-    //         reference: 'Global',
-    //         value: itemsUrls.length.toString()
-    //       },
-    //       ...itemsUrls.map((url) => ({
-    //         key: ItemSimulationReference.url,
-    //         reference: 'Global',
-    //         value: url
-    //       }))
-    //     ]
-    //   });
-    //   res.status(200).end();
-    //   return;
+
+    // res.status(200).end();
+    // return;
     // }
 
     // const integrations = await db.itemIntegration.findMany({
@@ -195,7 +223,7 @@ export default api(async (req, res, _ctx) => {
     //   ]
     // });
 
-    res.status(200).send({ message: 'success' });
+    // res.status(200).send({ message: 'success' });
   } else {
     res.status(501).send({});
   }

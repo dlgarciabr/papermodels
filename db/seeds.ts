@@ -20,6 +20,7 @@ const seed = async () => {
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"FileIntegration\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationLog\" CASCADE;`;
+  await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\" CASCADE;`;
 
   const categories = [
     {

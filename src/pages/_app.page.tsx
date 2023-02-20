@@ -26,7 +26,7 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
 const runIntegration = async () => {
   if (typeof location !== 'undefined') {
     try {
-      await fetch(`${location.origin}/api/integration`);
+      //await fetch(`${location.origin}/api/integration`);
     } finally {
       setTimeout(() => runIntegration(), 240000);
     }

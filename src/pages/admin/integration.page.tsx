@@ -188,6 +188,9 @@ const Integration = () => {
       if (type === IntegrationProcessingType.SIMULATION || type === IntegrationProcessingType.READ_URLS) {
         void feedLog();
       }
+      if (type === IntegrationProcessingType.READ_URLS) {
+        void runUrlsIntegration();
+      }
       if (type === IntegrationProcessingType.SIMULATION) {
         void runFilesIntegration();
         await fetch(`${location.origin}/api/integration?simulation=true`);
@@ -225,6 +228,27 @@ const Integration = () => {
         {
           ...JSON.parse(JSON.stringify(error)),
           reference: '/api/integration'
+        }
+      ]);
+    }
+  };
+
+  const runUrlsIntegration = async () => {
+    try {
+      const antiCSRFToken = getAntiCSRFToken();
+      await fetch(`${location.origin}/api/integration/urls`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'anti-csrf': antiCSRFToken
+        }
+      });
+    } catch (error) {
+      setErrors([
+        {
+          ...JSON.parse(JSON.stringify(error)),
+          reference: '/api/integration/urls'
         }
       ]);
     }
@@ -272,10 +296,12 @@ const Integration = () => {
   }, []);
 
   useEffect(() => {
-    const filesIntegrationfinished = logs.some(
-      (log) => log.key === FileSimulationReference.schemePercentage || log.key === ItemSimulationReference.url
+    const integrationFinished = logs.some(
+      (log) =>
+        log.key === FileSimulationReference.schemePercentage ||
+        (log.key === ItemSimulationReference.initialQuantity && log.reference === 'Global')
     );
-    if (filesIntegrationfinished) {
+    if (integrationFinished) {
       clearTimeout(simulationIntegrationJob!);
       clearTimeout(fileIntegrationJob!);
       setSimulationIntegrationJob(null);

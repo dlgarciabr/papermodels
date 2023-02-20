@@ -116,6 +116,15 @@ model ItemFile {
   itemId       Int
 }
 
+enum UrlIntegrationStatus {
+  readingPending
+  readingDone
+  simulationPending
+  simulationDone
+  pending
+  done
+}
+
 enum ItemIntegrationStatus {
   pending
   pendingFiles
@@ -139,8 +148,19 @@ model IntegrationSetup {
   schemesSelector       String
   ignoreExpressions     String?
   integrationItems      ItemIntegration[]
+  urlIntegrations       UrlIntegration[]
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
+}
+
+model UrlIntegration {
+  id        Int                  @id @default(autoincrement())
+  url       String               @unique
+  status    UrlIntegrationStatus
+  setup     IntegrationSetup     @relation(fields: [setupId], references: [id])
+  setupId   Int
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 }
 
 model ItemIntegration {
