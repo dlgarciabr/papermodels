@@ -33,7 +33,7 @@ export default api(async (req, res, _ctx) => {
     // const itemUrlSelectors = JSON.parse(setup.itemUrlSelector) as IntegrationSelector[];
     // let pageNodes: string[] = [];
 
-    const siteSanitizedUrls = await getAllSiteUrls(setup.domain, setup.key);
+    const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
 
     // let itemsUrls: any[] = [];
 
@@ -49,45 +49,35 @@ export default api(async (req, res, _ctx) => {
       }
     });
 
-    if (type === IntegrationProcessingType.READ_URLS) {
-      await db.urlIntegration.deleteMany({
-        where: {
-          OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.readingDone }]
-        }
-      });
+    await db.urlIntegration.deleteMany({
+      where: {
+        OR: [
+          { status: UrlIntegrationStatus.readingPending },
+          { status: UrlIntegrationStatus.readingDone },
+          { status: UrlIntegrationStatus.simulationPending },
+          { status: UrlIntegrationStatus.simulationDone }
+        ]
+      }
+    });
 
+    if (type === IntegrationProcessingType.READ_URLS) {
       await db.urlIntegration.createMany({
-        data: siteSanitizedUrls.map((url) => ({
-          status: UrlIntegrationStatus.readingPending,
+        data: uniqueSiteUrls.map((url) => ({
+          status: UrlIntegrationStatus.readingPending, //TODO rename enum property
+          url,
+          setupId: setup.id
+        }))
+      });
+    } else if (type === IntegrationProcessingType.SIMULATION) {
+      //TODO rename enum property
+      await db.urlIntegration.createMany({
+        data: uniqueSiteUrls.map((url) => ({
+          status: UrlIntegrationStatus.simulationPending,
           url,
           setupId: setup.id
         }))
       });
     }
-
-    // if (itemsUrls.length === 0) {
-    //   res.status(204).end();
-    //   return;
-    // }
-
-    // if (type === IntegrationProcessingType.READ_URLS) {
-    //   await db.integrationLog.createMany({
-    //     data: [
-    //       {
-    //         key: ItemSimulationReference.initialQuantity,
-    //         reference: 'Global',
-    //         value: itemsUrls.length.toString()
-    //       },
-    //       ...itemsUrls.map((url) => ({
-    //         key: ItemSimulationReference.url,
-    //         reference: 'Global',
-    //         value: url
-    //       }))
-    //     ]
-    //   });
-    //   res.status(200).end();
-    //   return;
-    // }
 
     // const integrations = await db.itemIntegration.findMany({
     //   where: {

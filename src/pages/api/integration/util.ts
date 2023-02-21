@@ -1,5 +1,6 @@
 import { JSDOM } from 'jsdom';
-import { IntegrationSelector } from 'types';
+
+//TODO evaluate which function is not being used
 
 export const fetchPageAsString = async (url: string) => {
   const pageContent = await (await fetch(url)).text();
@@ -11,6 +12,14 @@ export const executeSelectorOnHtmlText = (content: string, querySelector: string
   return window.document.querySelector(querySelector);
 };
 
+/**
+ * Execute a document.querySelectorAll command on a expecific page received as string
+ * using JSDOM
+ *
+ * @param content The page content to be searched
+ * @param querySelector The query selector to be used
+ * @returns
+ */
 export const executeSelectorAllOnHtmlText = (content: string, querySelector: string) => {
   const { window } = new JSDOM(content);
   return window.document.querySelectorAll(querySelector);
@@ -39,21 +48,17 @@ export const getTextFromNodeAsString = (content: string, querySelector: string) 
   return null;
 };
 
+/**
+ * Extract all URLs from a specific domain
+ *
+ * @param url
+ * @param key
+ * @returns a unique list of URLs
+ */
 export const getAllSiteUrls = async (url: string, key: string): Promise<string[]> => {
   const allUrls = (await readPageUrls(url, 'a')) as string[];
   const removedNonDomainName = allUrls.filter((link) => !!link && link.toLowerCase().indexOf(key.toLowerCase()) > 0);
   const uniqueUrls = Array.from(new Set(removedNonDomainName));
   const siteSanitizedUrls = [...uniqueUrls];
   return siteSanitizedUrls;
-};
-
-export const getItemUrlsFromPage = async (pageUrl: string, selectors: IntegrationSelector[]): Promise<string[]> => {
-  let pageUrls: string[] = [];
-
-  for await (const selector of selectors) {
-    const urls = (await readPageUrls(pageUrl, selector.value)) as string[];
-    pageUrls = [...pageUrls, ...urls];
-  }
-
-  return pageUrls;
 };
