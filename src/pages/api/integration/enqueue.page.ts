@@ -60,24 +60,40 @@ export default api(async (req, res, _ctx) => {
       }
     });
 
-    if (type === IntegrationProcessingType.READ_URLS) {
-      await db.urlIntegration.createMany({
-        data: uniqueSiteUrls.map((url) => ({
-          status: UrlIntegrationStatus.readingPending, //TODO rename enum property
-          url,
-          setupId: setup.id
-        }))
-      });
-    } else if (type === IntegrationProcessingType.SIMULATION) {
-      //TODO rename enum property
-      await db.urlIntegration.createMany({
-        data: uniqueSiteUrls.map((url) => ({
-          status: UrlIntegrationStatus.simulationPending,
-          url,
-          setupId: setup.id
-        }))
-      });
+    // if (type === IntegrationProcessingType.READ_URLS) {
+    //   await db.urlIntegration.createMany({
+    //     data: uniqueSiteUrls.map((url) => ({
+    //       status: UrlIntegrationStatus.readingPending, //TODO rename enum property
+    //       url,
+    //       setupId: setup.id
+    //     }))
+    //   });
+    // } else if (type === IntegrationProcessingType.SIMULATION) {
+    //   await db.urlIntegration.createMany({
+    //     data: uniqueSiteUrls.map((url) => ({
+    //       status: UrlIntegrationStatus.simulationPending,//TODO rename enum property
+    //       url,
+    //       setupId: setup.id
+    //     }))
+    //   });
+    // }
+    let status;
+    switch (type) {
+      case IntegrationProcessingType.READ_URLS:
+        status = UrlIntegrationStatus.readingPending; //TODO rename enum property
+        break;
+      case IntegrationProcessingType.SIMULATION:
+        status = UrlIntegrationStatus.simulationPending; //TODO rename enum property
+        break;
     }
+
+    await db.urlIntegration.createMany({
+      data: uniqueSiteUrls.map((url) => ({
+        status,
+        url,
+        setupId: setup.id
+      }))
+    });
 
     // const integrations = await db.itemIntegration.findMany({
     //   where: {

@@ -187,8 +187,6 @@ const Integration = () => {
       }
       if (type === IntegrationProcessingType.SIMULATION || type === IntegrationProcessingType.READ_URLS) {
         void feedLog();
-      }
-      if (type === IntegrationProcessingType.READ_URLS) {
         void runUrlsIntegration();
       }
       if (type === IntegrationProcessingType.SIMULATION) {

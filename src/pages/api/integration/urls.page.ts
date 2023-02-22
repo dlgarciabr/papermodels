@@ -71,12 +71,12 @@ const extractPageItem = async (
 };
 
 const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
-  console.log(`[UrlIntegrationJOB] Discovering item category...`);
+  console.log(`[UrlIntegrationJOB] Creating IntegrationItem for ${pageItem.name} ...`);
   const categoryBindingObject = JSON.parse(setup.categoryBinding) as any[];
 
   let categoryName: string | null = categoryBindingObject.find(
     (cat) => cat.pageCategoryName.toLowerCase() === pageItem.categoryName?.toLowerCase()
-  ).systemCategoryName;
+  )?.systemCategoryName;
 
   const status =
     type === IntegrationProcessingType.SIMULATION
@@ -195,12 +195,12 @@ const processIntegration = async () => {
     }
   }
 
-  console.log(`[UrlIntegrationJOB] Updating urls to readingDone...`);
-
   const nextStatus =
     urlIntegrationsToProcess[0]?.status === UrlIntegrationStatus.readingPending
       ? UrlIntegrationStatus.readingDone
       : UrlIntegrationStatus.simulationDone;
+
+  console.log(`[UrlIntegrationJOB] Updating UrlIntegrations status to ${nextStatus}...`);
 
   await db.urlIntegration.updateMany({
     where: {
@@ -213,7 +213,8 @@ const processIntegration = async () => {
     }
   });
 
-  await processIntegration();
+  //TODO uncomment to full processing
+  // await processIntegration();
 };
 
 export default api(async (req, res, _ctx) => {
@@ -248,15 +249,15 @@ export default api(async (req, res, _ctx) => {
 
     const integrationStatus = await db.urlIntegration.findFirst({
       where: {
-        OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+        OR: [{ status: UrlIntegrationStatus.readingDone }, { status: UrlIntegrationStatus.simulationDone }]
       },
       select: {
         status: true
       }
     });
 
-    if (integrationStatus?.status === UrlIntegrationStatus.readingPending) {
-      console.log(`[UrlIntegrationJOB] Uploading final logs...`);
+    if (integrationStatus?.status === UrlIntegrationStatus.readingDone) {
+      console.log(`[UrlIntegrationJOB] Saving final logs...`);
 
       const createReturn = await db.integrationLog.createMany({
         data: uniqueItemUrls.map((url) => ({
@@ -275,7 +276,7 @@ export default api(async (req, res, _ctx) => {
           }
         ]
       });
-    } else if (integrationStatus?.status === UrlIntegrationStatus.simulationPending) {
+    } else if (integrationStatus?.status === UrlIntegrationStatus.simulationDone) {
       // const integrations = await db.itemIntegration.findMany({
       //   where: {
       //     AND: [
@@ -294,7 +295,8 @@ export default api(async (req, res, _ctx) => {
       // let sanitizedSiteUrls: string[];
       // if (existingUrls.length === 0) {
       //   sanitizedSiteUrls = [...uniqueItemUrls];
-      // } else {
+      // } else
+
       //   sanitizedSiteUrls = uniqueItemUrls.filter((pageUrl) => !existingUrls.some((existingUrl) => pageUrl === existingUrl));
       // }
       // const categories = await db.category.findMany();
@@ -329,6 +331,31 @@ export default api(async (req, res, _ctx) => {
       //   });
       // }
       // })
+
+      console.log(`[UrlIntegrationJOB] Saving final logs...`);
+
+      const itemIntegrationsCreated = await db.itemIntegration.findMany({
+        where: {
+          status: ItemIntegrationStatus.pendingSimulation
+        }
+      });
+
+      const itemsWithCategory = itemIntegrationsCreated.filter((item) => item.categoryId !== 1);
+
+      await db.integrationLog.createMany({
+        data: [
+          {
+            key: ItemSimulationReference.initialQuantity,
+            reference: 'Global',
+            value: itemIntegrationsCreated.length.toString()
+          },
+          {
+            key: ItemSimulationReference.categoryPercentage,
+            reference: 'Global',
+            value: `${String(Math.round((itemsWithCategory.length * 100) / itemIntegrationsCreated.length))}%`
+          }
+        ]
+      });
     }
 
     console.log(`[UrlIntegrationJOB] Site URLs processing job finished`);
