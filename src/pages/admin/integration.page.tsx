@@ -196,7 +196,6 @@ const Integration = () => {
       }
       if (type === IntegrationProcessingType.SIMULATION) {
         void runFilesIntegration();
-        // await fetch(`${location.origin}/api/integration?simulation=true`);
       }
     } catch (error) {
       setErrors([
@@ -349,15 +348,12 @@ const Integration = () => {
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
     { field: 'key', headerName: 'key', width: 150 },
-    // { field: 'reference', headerName: 'ref', width: 450 },
-    // { field: 'value', headerName: 'value', width: 450 },
     {
       field: 'reference',
       headerName: 'ref',
       sortable: false,
       width: 450,
       renderCell: (params) => {
-        console.log(params);
         return (
           <Grid container>
             <Grid item xs={11}>
@@ -368,7 +364,7 @@ const Integration = () => {
                 className='d-flex justify-content-between align-items-center'
                 style={{ cursor: 'pointer' }}
                 onClick={() => sendToClipboard(params.row.reference)}>
-                <MdContentCopy />
+                <MdContentCopy title='Copy to clipboard' />
               </div>
             </Grid>
           </Grid>
@@ -391,7 +387,7 @@ const Integration = () => {
                 className='d-flex justify-content-between align-items-center'
                 style={{ cursor: 'pointer' }}
                 onClick={() => sendToClipboard(params.row.value)}>
-                <MdContentCopy />
+                <MdContentCopy title='Copy to clipboard' />
               </div>
             </Grid>
           </Grid>
