@@ -35,6 +35,7 @@ import { MdContentCopy } from 'react-icons/md';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { showToast } from 'src/core/components/Toast';
 import getSystemParameters from 'src/system-parameter/queries/getSystemParameters';
+import { shortenTextWithEllipsis } from 'src/utils/string';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -210,7 +211,7 @@ const Integration = () => {
   const deleteErrorIntegration = async () => {
     runFilesIntegration;
     await deleteItemIntegrationMutation({ status: ItemIntegrationStatus.error });
-    alert('cleaned!');
+    showToast(ToastType.SUCCESS, 'Errors cleaned!');
   };
 
   const runItemsIntegration = async () => {
@@ -348,21 +349,52 @@ const Integration = () => {
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
     { field: 'key', headerName: 'key', width: 150 },
-    { field: 'reference', headerName: 'ref', width: 450 },
-    { field: 'value', headerName: 'value', width: 450 },
+    // { field: 'reference', headerName: 'ref', width: 450 },
+    // { field: 'value', headerName: 'value', width: 450 },
     {
-      field: 'actions',
-      headerName: '',
+      field: 'reference',
+      headerName: 'ref',
       sortable: false,
-      width: 50,
+      width: 450,
+      renderCell: (params) => {
+        console.log(params);
+        return (
+          <Grid container>
+            <Grid item xs={11}>
+              {shortenTextWithEllipsis(params.row.reference, 50)}
+            </Grid>
+            <Grid item>
+              <div
+                className='d-flex justify-content-between align-items-center'
+                style={{ cursor: 'pointer' }}
+                onClick={() => sendToClipboard(params.row.reference)}>
+                <MdContentCopy />
+              </div>
+            </Grid>
+          </Grid>
+        );
+      }
+    },
+    {
+      field: 'value',
+      headerName: 'value',
+      sortable: false,
+      width: 450,
       renderCell: (params) => {
         return (
-          <div
-            className='d-flex justify-content-between align-items-center'
-            style={{ cursor: 'pointer' }}
-            onClick={() => sendToClipboard(params.row.value)}>
-            <MdContentCopy />
-          </div>
+          <Grid container>
+            <Grid item xs={11}>
+              {shortenTextWithEllipsis(params.row.value, 50)}
+            </Grid>
+            <Grid item>
+              <div
+                className='d-flex justify-content-between align-items-center'
+                style={{ cursor: 'pointer' }}
+                onClick={() => sendToClipboard(params.row.value)}>
+                <MdContentCopy />
+              </div>
+            </Grid>
+          </Grid>
         );
       }
     }
