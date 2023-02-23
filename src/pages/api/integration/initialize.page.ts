@@ -74,6 +74,12 @@ export default api(async (req, res, _ctx) => {
       }
     });
 
+    await db.itemIntegration.deleteMany({
+      where: {
+        status: ItemIntegrationStatus.error
+      }
+    });
+
     let status;
     switch (type) {
       case IntegrationProcessingType.READ_URLS:

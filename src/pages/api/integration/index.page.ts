@@ -209,6 +209,7 @@ const processItemIntegration = async () => {
         // });
 
         if (isSimulation) {
+          console.log(`[ItemIntegrationJOB] Persisting Scheme FileIntegration...`);
           await db.fileIntegration.create({
             data: {
               selector: itemIntegration.setup.schemesSelector,
@@ -219,6 +220,7 @@ const processItemIntegration = async () => {
             }
           });
 
+          console.log(`[ItemIntegrationJOB] Persisting Logs...`);
           singleIntegrationLogs.push({
             integrationId: itemIntegration.id,
             key: ItemSimulationReference.hasPreviewImages,
@@ -239,10 +241,10 @@ const processItemIntegration = async () => {
 
           logs = [...logs, ...singleIntegrationLogs];
 
+          console.log(`[ItemIntegrationJOB] Updating ItemIntegration status...`);
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
-              itemId: item.id,
               status: ItemIntegrationStatus.simulated
             }
           });
