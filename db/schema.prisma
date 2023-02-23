@@ -213,3 +213,9 @@ model IntegrationLog {
   updatedAt     DateTime         @updatedAt
   error         String?
 }
+
+model SystemParameter {
+  id    Int    @id @default(autoincrement())
+  key   String
+  value String
+}

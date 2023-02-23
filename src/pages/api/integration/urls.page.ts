@@ -102,6 +102,14 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
 };
 
 const processIntegration = async () => {
+  const partialTypeParam = await db.systemParameter.findFirst({
+    where: {
+      key: 'IntegrationProcessingPartialType'
+    }
+  });
+
+  const isPartial = eval(partialTypeParam!.value);
+
   const urlIntegrationsToProcess = await db.urlIntegration.findMany({
     where: {
       OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
@@ -213,8 +221,9 @@ const processIntegration = async () => {
     }
   });
 
-  //TODO uncomment to full processing
-  // await processIntegration();
+  if (!isPartial) {
+    await processIntegration();
+  }
 };
 
 export default api(async (req, res, _ctx) => {

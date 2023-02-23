@@ -5,6 +5,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Checkbox,
   Container,
   Grid,
   InputLabel,
@@ -25,7 +26,6 @@ import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
 import { TbChevronDown } from 'react-icons/tb';
 import {
-  FileSimulationReference,
   IntegrationProcessingType,
   IntegrationSelector,
   IntegrationSelectorType,
@@ -34,6 +34,7 @@ import {
 import { MdContentCopy } from 'react-icons/md';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { showToast } from 'src/core/components/Toast';
+import getSystemParameters from 'src/system-parameter/queries/getSystemParameters';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -65,6 +66,8 @@ const Integration = () => {
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
   const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
+  const [partial, setPartial] = useState<boolean>(false);
+  // const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
 
   const loadSimulationLogs = async (filter?: IIntegrationLogFilter) => {
     if (filter) {
@@ -169,7 +172,7 @@ const Integration = () => {
 
     try {
       const antiCSRFToken = getAntiCSRFToken();
-      const response = await fetch(`${location.origin}/api/integration/enqueue`, {
+      const response = await fetch(`${location.origin}/api/integration/initialize`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -178,7 +181,8 @@ const Integration = () => {
         },
         body: JSON.stringify({
           ...selectedSetup,
-          type
+          type,
+          partial
         })
       });
       if (response.status === 204) {
@@ -191,7 +195,7 @@ const Integration = () => {
       }
       if (type === IntegrationProcessingType.SIMULATION) {
         void runFilesIntegration();
-        await fetch(`${location.origin}/api/integration?simulation=true`);
+        // await fetch(`${location.origin}/api/integration?simulation=true`);
       }
     } catch (error) {
       setErrors([
@@ -294,18 +298,46 @@ const Integration = () => {
   }, []);
 
   useEffect(() => {
-    const integrationFinished = logs.some(
-      (log) =>
-        log.key === FileSimulationReference.schemePercentage ||
-        (log.key === ItemSimulationReference.initialQuantity && log.reference === 'Global')
-    );
-    if (integrationFinished) {
-      clearTimeout(simulationIntegrationJob!);
-      clearTimeout(fileIntegrationJob!);
-      setSimulationIntegrationJob(null);
-      setFileIntegrationJob(null);
-      setLoading(false);
-    }
+    void (async () => {
+      const { systemParameters } = await invoke(getSystemParameters, {
+        orderBy: { key: 'asc' },
+        where: {
+          key: 'IntegrationProcessingType'
+        }
+      });
+
+      if (systemParameters.length > 0) {
+        const type = systemParameters[0]?.value as IntegrationProcessingType;
+
+        let integrationFinished: boolean = false;
+
+        switch (type) {
+          case IntegrationProcessingType.READ_URLS:
+            integrationFinished =
+              logs.some((log) => log.key === ItemSimulationReference.initialQuantity) &&
+              logs.some((log) => log.reference === 'Global' && log.key === ItemSimulationReference.url);
+            break;
+          case IntegrationProcessingType.SIMULATION:
+            integrationFinished =
+              logs.some((log) => log.key === ItemSimulationReference.initialQuantity) &&
+              logs.some((log) => log.key === ItemSimulationReference.categoryPercentage) &&
+              logs.some((log) => log.key === ItemSimulationReference.descriptionPencentage) &&
+              logs.some((log) => log.key === ItemSimulationReference.previewImagesPencentage) &&
+              logs.filter((log) => log.reference === 'Global').length === 4;
+            break;
+          case IntegrationProcessingType.INTEGRATION:
+            break;
+        }
+
+        if (integrationFinished) {
+          clearTimeout(simulationIntegrationJob!);
+          clearTimeout(fileIntegrationJob!);
+          setSimulationIntegrationJob(null);
+          setFileIntegrationJob(null);
+          setLoading(false);
+        }
+      }
+    })();
   }, [fileIntegrationJob, logs, simulationIntegrationJob]);
 
   const sendToClipboard = async (value: string) => {
@@ -404,7 +436,6 @@ const Integration = () => {
                       name='itemUrlSelector'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('itemUrlSelector')}
@@ -417,7 +448,6 @@ const Integration = () => {
                       name='descriptionSelector'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('descriptionSelector')}
@@ -430,7 +460,6 @@ const Integration = () => {
                       name='previewImagesSelector'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('previewImagesSelector')}
@@ -443,7 +472,6 @@ const Integration = () => {
                       name='categorySelector'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('categorySelector')}
@@ -456,7 +484,6 @@ const Integration = () => {
                       name='schemesSelector'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('schemesSelector')}
@@ -469,7 +496,6 @@ const Integration = () => {
                       name='categoryBinding'
                       fullWidth
                       multiline
-                      disabled={true}
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('categoryBinding')}
@@ -492,6 +518,8 @@ const Integration = () => {
               disabled={!!simulationIntegrationJob}>
               Simulate
             </Button>
+            <Checkbox checked={partial} onClick={() => setPartial(!partial)} />
+            Partial
             <Button
               onClick={() => processSetup(IntegrationProcessingType.INTEGRATION)}
               disabled={loading || !!simulationIntegrationJob}

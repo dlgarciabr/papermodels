@@ -11,7 +11,7 @@ import db, {
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { IntegrationSelector, ItemSimulationReference } from 'types';
+import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference } from 'types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
@@ -28,31 +28,43 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
   return text;
 };
 
-const processItemIntegration = async (simulation: boolean = false) => {
-  const simulationLabel = simulation ? ' simulation ' : ' ';
+const processItemIntegration = async () => {
+  const paramProcessingType = await db.systemParameter.findFirst({
+    where: {
+      key: 'IntegrationProcessingType'
+    }
+  });
+
+  if (!paramProcessingType) {
+    console.log(`[ItemIntegrationJOB] Nothing to be done, quiting!`);
+    return { message: 'ok' };
+  }
+
+  const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
+
+  const isSimulation = type === IntegrationProcessingType.SIMULATION;
+  const simulationLabel = isSimulation ? ' simulation ' : ' ';
 
   console.log(`
 ===================================================================================
-|                     Initializing Item integration${simulationLabel}job...                        |
+|                     Initializing Item integration job...                        |
 ===================================================================================
 `);
 
-  if (!simulation) {
-    const runningIntegrations = await db.itemIntegration.findMany({
-      where: {
-        status: ItemIntegrationStatus.running
-      }
-    });
-
-    if (runningIntegrations.length > 0) {
-      console.log('[ItemIntegrationJOB] Another Item integration job is running, aborting...');
-      return;
+  const runningIntegrations = await db.itemIntegration.findMany({
+    where: {
+      status: ItemIntegrationStatus.running
     }
+  });
+
+  if (runningIntegrations.length > 0) {
+    console.log('[ItemIntegrationJOB] Another Item integration job is running, aborting...');
+    return;
   }
 
   let integrationList: (ItemIntegration & { setup: IntegrationSetup })[] = [];
 
-  if (simulation) {
+  if (isSimulation) {
     integrationList = (await db.itemIntegration.findMany({
       where: {
         status: ItemIntegrationStatus.pendingSimulation
@@ -78,7 +90,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
       `[ItemIntegrationJOB] ${new Date().toISOString()} - Item integration${simulationLabel}process started.`
     );
     console.log(
-      `[ItemIntegrationJOB] ${integrationList.length} item(s) to be ${simulation ? 'simulated' : 'integrated'} found!`
+      `[ItemIntegrationJOB] ${integrationList.length} item(s) to be ${isSimulation ? 'simulated' : 'integrated'} found!`
     );
 
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
@@ -95,7 +107,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
       try {
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
-        if (!simulation) {
+        if (!isSimulation) {
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
@@ -129,7 +141,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
         let item;
 
-        if (!simulation) {
+        if (!isSimulation) {
           console.log(`[ItemIntegrationJOB] Persisting item '${itemIntegration.name}'...`);
           try {
             item = await db.item.create({
@@ -160,7 +172,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
           const src = node.getAttribute('src');
           if (src) {
             let response = {} as UploadApiResponse;
-            if (!simulation) {
+            if (!isSimulation) {
               console.log(`[ItemIntegrationJOB] Uploading preview image ${src}...`);
               response = await uploadImage(src, `${ARTIFACTS_PATH}/${item.id}`);
             }
@@ -178,7 +190,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
         hasPreviewImages = files.length > 0;
 
-        if (!simulation) {
+        if (!isSimulation) {
           console.log(`[ItemIntegrationJOB] Persisting preview files...`);
           await db.itemFile.createMany({
             data: files.map((file) => ({
@@ -196,7 +208,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
         //   }
         // });
 
-        if (simulation) {
+        if (isSimulation) {
           await db.fileIntegration.create({
             data: {
               selector: itemIntegration.setup.schemesSelector,
@@ -226,6 +238,14 @@ const processItemIntegration = async (simulation: boolean = false) => {
           });
 
           logs = [...logs, ...singleIntegrationLogs];
+
+          await db.itemIntegration.update({
+            where: { id: itemIntegration.id },
+            data: {
+              itemId: item.id,
+              status: ItemIntegrationStatus.simulated
+            }
+          });
         } else {
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
 
@@ -261,7 +281,7 @@ const processItemIntegration = async (simulation: boolean = false) => {
       }
     }
 
-    if (simulation && integrationList.length > 0) {
+    if (isSimulation && integrationList.length > 0) {
       const containsPreviewImages = logs.filter(
         (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'
       );
@@ -300,8 +320,8 @@ const processItemIntegration = async (simulation: boolean = false) => {
 
 export default api(async (req, res, _ctx) => {
   // if (req.method === 'POST') {
-  const simulation = !!req.query.simulation;
-  const processReturn = await processItemIntegration(simulation);
+
+  const processReturn = await processItemIntegration();
   res.status(200).send(processReturn);
   // } else {
   //   res.status(501).send({});

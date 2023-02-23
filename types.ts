@@ -25,9 +25,9 @@ export enum IntegrationSelectorType {
 }
 
 export enum IntegrationProcessingType {
-  INTEGRATION,
-  READ_URLS,
-  SIMULATION
+  INTEGRATION = 'INTEGRATION',
+  READ_URLS = 'READ_URLS',
+  SIMULATION = 'SIMULATION'
 }
 
 export interface IntegrationSelector {
