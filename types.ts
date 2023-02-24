@@ -36,7 +36,8 @@ export interface IntegrationSelector {
 }
 
 export enum ItemSimulationReference {
-  initialQuantity = '  Initial Quantity',
+  initialQuantity = '   Initial Quantity',
+  totalTime = '   Total time',
   url = '  Url',
   descriptionPencentage = ' Description %',
   previewImagesPencentage = ' Preview images %',

@@ -39,6 +39,7 @@
     "browser-image-resizer": "2.4.1",
     "chrome-aws-lambda": "^6",
     "cloudinary": "1.33.0",
+    "date-fns": "2.29.3",
     "firebase": "9.15.0",
     "formik": "2.2.9",
     "lodash": "4.17.21",

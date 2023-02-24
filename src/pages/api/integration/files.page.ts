@@ -53,7 +53,6 @@ export default api(async (req, res, _ctx) => {
 |                       Initializing Files integration job...                     |
 ===================================================================================
 `);
-  // if (req.method === 'POST') {
   try {
     const runningIntegrations = await db.fileIntegration.findMany({
       where: {
@@ -155,19 +154,6 @@ export default api(async (req, res, _ctx) => {
       });
 
       if (isSimulation) {
-        // const containsSchemeFiles = logs.filter(
-        //   (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-        // );
-
-        // await db.integrationLog.create({
-        //   data: {
-        //     integrationId: integrationList[0]!.itemIntegrationId,
-        //     key: FileSimulationReference.schemePercentage,
-        //     reference: 'Global',
-        //     value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
-        //   }
-        // });
-
         const pendingSimulations = await db.fileIntegration.findMany({
           where: {
             status: FileIntegrationStatus.pendingSimulation
@@ -183,11 +169,6 @@ export default api(async (req, res, _ctx) => {
 
         if (pendingSimulations.length === 0) {
           console.log(`[FileIntegrationJOB] Persisting Logs...`);
-          // const simulatedList = await db.fileIntegration.count({
-          //   where: {
-          //     status: FileIntegrationStatus.simulated
-          //   }
-          // });
 
           const containsSchemeFiles = logs.filter(
             (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
@@ -206,21 +187,11 @@ export default api(async (req, res, _ctx) => {
       console.log(`[FileIntegrationJOB] No files to be integrated.`);
     }
 
-    // await db.itemIntegration.update({
-    //   where: { id: integrationItem.id },
-    //   data: {
-    //     status: ItemIntegrationStatus.done
-    //   }
-    // });
-
     res.status(200).send({});
   } catch (error) {
     console.log('Error integrating files', error);
     res.status(501).send({ message: 'error', error: error.message });
   }
-  // } else {
-  //   res.status(501).send({});
-  // }
 });
 
 const processSchemeType = async (fileIntegration: IFileIntegration) => {

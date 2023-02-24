@@ -8,7 +8,6 @@ import {
   Checkbox,
   Container,
   Grid,
-  InputLabel,
   MenuItem,
   Select,
   TextField,
@@ -37,6 +36,9 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import { showToast } from 'src/core/components/Toast';
 import getSystemParameters from 'src/system-parameter/queries/getSystemParameters';
 import { shortenTextWithEllipsis } from 'src/utils/string';
+import updateIntegrationSetup from 'src/integration-setups/mutations/updateIntegrationSetup';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
+import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -69,7 +71,14 @@ const Integration = () => {
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
   const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
   const [partial, setPartial] = useState<boolean>(false);
-  // const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
+  const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
+  const [createIntegrationLogMutation] = useMutation(createIntegrationLog);
+  const [startTime, setStartTime] = useState<Date>(new Date());
+
+  const updateSelector = async () => {
+    await updateIntegrationSetupMutation(selectedSetup);
+    showToast(ToastType.SUCCESS, 'Selector updated!');
+  };
 
   const loadSimulationLogs = async (filter?: IIntegrationLogFilter) => {
     if (filter) {
@@ -152,13 +161,14 @@ const Integration = () => {
     setLoading(true);
     await loadSimulationLogs();
     if (!simulationIntegrationJob) {
-      setSimulationIntegrationJob(setTimeout(() => feedLog(), 30000));
+      setSimulationIntegrationJob(setTimeout(() => feedLog(), 15000));
     }
   };
 
   const processSetup = async (type: IntegrationProcessingType) => {
     setLogs([]);
     setErrors([]);
+    setStartTime(new Date());
 
     if (selectedSetup.id === 0) {
       alert('Select a setup first');
@@ -166,7 +176,7 @@ const Integration = () => {
     }
 
     if (validateAllSelectors().length > 0) {
-      alert('Review invalid seletor(s)');
+      showToast(ToastType.ERROR, 'Review invalid seletor(s)');
       return;
     }
 
@@ -337,6 +347,31 @@ const Integration = () => {
           setSimulationIntegrationJob(null);
           setFileIntegrationJob(null);
           setLoading(false);
+
+          if (!logs.some((log) => log.reference === ItemSimulationReference.totalTime)) {
+            let duration = 0;
+            let rest = 0;
+            const diff = differenceInSeconds(new Date(), startTime);
+            if (diff >= 60) {
+              duration = Math.round(diff / 60);
+              rest = diff % 60;
+            }
+
+            const log = {
+              key: ItemSimulationReference.totalTime,
+              reference: 'Global',
+              value: `${duration}:${rest}`
+            };
+
+            await createIntegrationLogMutation({
+              ...log
+            });
+
+            logs.splice(0, 0, {
+              ...log,
+              id: 0
+            } as IntegrationLog);
+          }
         }
       }
     })();
@@ -417,12 +452,13 @@ const Integration = () => {
       <Container component='main'>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <InputLabel id='selected-setup-label'>Setup</InputLabel>
+            {/* <InputLabel id='selected-setup-label'>Setup</InputLabel> */}
             <Select
-              labelId='selected-setup-label'
+              // labelId='selected-setup-label'
               id='selectedSetup'
               value={selectedSetup.id !== 0 ? selectedSetup.id : ''}
               label='Setup'
+              name='selectedSetup'
               fullWidth
               onChange={(e) => handleSelectSetup(Number(e.target.value))}>
               {integrationSetups.map((item) => (
@@ -455,7 +491,14 @@ const Integration = () => {
           <Grid item xs={12}>
             <Accordion>
               <AccordionSummary expandIcon={<TbChevronDown />} aria-controls='panel1a-content' id='panel1a-header'>
-                <Typography>Setup details</Typography>
+                <Grid container>
+                  <Grid item xs={10}>
+                    <Typography>Setup details</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Button onClick={() => updateSelector()}>Save changes</Button>
+                  </Grid>
+                </Grid>
               </AccordionSummary>
               <AccordionDetails>
                 <Grid container spacing={2}>

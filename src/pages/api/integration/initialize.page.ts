@@ -4,16 +4,6 @@ import { api } from 'src/blitz-server';
 import { IntegrationProcessingType } from 'types';
 import { getAllSiteUrls } from './util';
 
-// const parseCategory = (pageContent: string, categorySelector: string, categoryBinding: any[]): string | null => {
-//   try {
-//     const pageCategory = getTextFromNodeAsString(pageContent, categorySelector);
-//     return categoryBinding.find((cat) => cat.pageCategoryName.toLowerCase() === pageCategory?.toLowerCase())
-//       .systemCategoryName;
-//   } catch (error) {
-//     return null;
-//   }
-// };
-
 export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const setup = req.body as IntegrationSetup;

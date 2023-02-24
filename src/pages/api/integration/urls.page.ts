@@ -1,5 +1,5 @@
 /* istanbul ignore file -- @preserve */
-import db, { Category, IntegrationSetup, ItemIntegrationStatus, UrlIntegrationStatus } from 'db';
+import db, { Category, IntegrationSetup, ItemIntegrationStatus, UrlIntegration, UrlIntegrationStatus } from 'db';
 import _ from 'lodash';
 import { api } from 'src/blitz-server';
 import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference } from 'types';
@@ -9,16 +9,6 @@ import { fetchPageAsString, executeSelectorAllOnHtmlText, readPageUrls } from '.
 
 let categorySelectorsCache: IntegrationSelector[] = [];
 let categoriesCache: Category[] = [];
-
-// const parseCategory = (pageContent: string, categorySelector: string, categoryBinding: any[]): string | null => {
-//   try {
-//     const pageCategory = getTextFromNodeAsString(pageContent, categorySelector);
-//     return categoryBinding.find((cat) => cat.pageCategoryName.toLowerCase() === pageCategory?.toLowerCase())
-//       .systemCategoryName;
-//   } catch (error) {
-//     return null;
-//   }
-// };
 
 const searchPageItemCategory = (
   itemNode: Element,
@@ -102,23 +92,41 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
 };
 
 const processIntegration = async () => {
-  const partialTypeParam = await db.systemParameter.findFirst({
+  const systemParams = await db.systemParameter.findMany({
     where: {
-      key: 'IntegrationProcessingPartialType'
+      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingPartialType' }]
     }
   });
 
+  const typeParam = systemParams.find((param) => param.key === 'IntegrationProcessingType');
+  const partialTypeParam = systemParams.find((param) => param.key === 'IntegrationProcessingPartialType');
+
+  const type = typeParam?.value as IntegrationProcessingType;
   const isPartial = eval(partialTypeParam!.value);
 
-  const urlIntegrationsToProcess = await db.urlIntegration.findMany({
-    where: {
-      OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
-    },
-    include: {
-      setup: true
-    },
-    take: 10
-  });
+  let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
+
+  if (isPartial) {
+    urlIntegrationsToProcess = await db.urlIntegration.findMany({
+      where: {
+        OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+      },
+      include: {
+        setup: true
+      }
+    });
+    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, urlIntegrationsToProcess.length / 40);
+  } else {
+    urlIntegrationsToProcess = await db.urlIntegration.findMany({
+      where: {
+        OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+      },
+      include: {
+        setup: true
+      },
+      take: 10
+    });
+  }
 
   if (urlIntegrationsToProcess.length === 0) {
     return;
@@ -155,13 +163,15 @@ const processIntegration = async () => {
   console.log(`[UrlIntegrationJOB] Found ${uniquePageItems.length} item(s).`);
 
   if (uniquePageItems.length > 0) {
-    await db.integrationLog.createMany({
-      data: uniquePageItems.map((pageItem) => ({
-        key: ItemSimulationReference.url,
-        reference: 'Global',
-        value: pageItem.url
-      }))
-    });
+    if (type === IntegrationProcessingType.READ_URLS) {
+      await db.integrationLog.createMany({
+        data: uniquePageItems.map((pageItem) => ({
+          key: ItemSimulationReference.url,
+          reference: 'Global',
+          value: pageItem.url
+        }))
+      });
+    }
 
     if (urlIntegrationsToProcess[0]!.status === UrlIntegrationStatus.simulationPending) {
       console.log(`[UrlIntegrationJOB] Creating ItemIntegrations...`);
@@ -237,7 +247,7 @@ export default api(async (req, res, _ctx) => {
 
     console.log(`[UrlIntegrationJOB] Cleaning duplicated registries...`);
 
-    const urlIntegrationUrls = (
+    const integrationUrls = (
       await db.integrationLog.findMany({
         where: {
           key: ItemSimulationReference.url
@@ -245,10 +255,7 @@ export default api(async (req, res, _ctx) => {
       })
     ).map((integrationLog) => integrationLog.value);
 
-    const uniqueItemUrls = Array.from(new Set(urlIntegrationUrls));
-
-    // await db.$transaction(async (tx: typeof db) => {
-    // });
+    const uniqueItemUrls = Array.from(new Set(integrationUrls));
 
     await db.integrationLog.deleteMany({
       where: {
@@ -286,61 +293,6 @@ export default api(async (req, res, _ctx) => {
         ]
       });
     } else if (integrationStatus?.status === UrlIntegrationStatus.simulationDone) {
-      // const integrations = await db.itemIntegration.findMany({
-      //   where: {
-      //     AND: [
-      //       {
-      //         url: {
-      //           in: uniqueItemUrls
-      //         }
-      //       },
-      //       {
-      //         OR: [{ status: ItemIntegrationStatus.running }, { status: ItemIntegrationStatus.done }]
-      //       }
-      //     ]
-      //   }
-      // });
-      // const existingUrls = integrations.map((integrationItem) => integrationItem.url);
-      // let sanitizedSiteUrls: string[];
-      // if (existingUrls.length === 0) {
-      //   sanitizedSiteUrls = [...uniqueItemUrls];
-      // } else
-
-      //   sanitizedSiteUrls = uniqueItemUrls.filter((pageUrl) => !existingUrls.some((existingUrl) => pageUrl === existingUrl));
-      // }
-      // const categories = await db.category.findMany();
-      // const itemsToIntegrate: Partial<ItemIntegration & { hasCategory: boolean }>[] = [];
-      // let pageNodes: string[] = [];
-      // itemUrlSelectors.forEach((selector) => {
-      //   const nodes = readPageNodesAsString(pageContent, selector.value);
-      //   pageNodes = [...pageNodes, ...nodes];
-      // });
-      // await db.$transaction(async (tx) => {
-      // for await (const url of sanitizedSiteUrls) {
-      //   const pageContent = await fetchPageAsString(url);
-      //   const currentNode = pageNodes.find((node) => node.includes(url));
-      //   const name = getTextFromNodeAsString(currentNode!, '*') || url;
-      //   const categorySelectors = JSON.parse(setup.categorySelector) as IntegrationSelector[];
-      //   let categoryName: string | null = null;
-      //   categorySelectors.forEach((selector) => {
-      //     if (!categoryName) {
-      //       categoryName = parseCategory(pageContent, selector.value, JSON.parse(req.body.categoryBinding));
-      //     }
-      //   });
-      //   itemsToIntegrate.push({
-      //     name,
-      //     url,
-      //     status:
-      //       type === IntegrationProcessingType.SIMULATION
-      //         ? ItemIntegrationStatus.pendingSimulation
-      //         : ItemIntegrationStatus.pending,
-      //     setupId: setup.id,
-      //     categoryId: categories.find((category) => category.name === categoryName)?.id || 1,
-      //     hasCategory: !!categoryName
-      //   });
-      // }
-      // })
-
       console.log(`[UrlIntegrationJOB] Saving final logs...`);
 
       const itemIntegrationsCreated = await db.itemIntegration.findMany({
@@ -368,115 +320,8 @@ export default api(async (req, res, _ctx) => {
     }
 
     console.log(`[UrlIntegrationJOB] Site URLs processing job finished`);
-    res.status(200).end();
 
-    // const integrations = await db.itemIntegration.findMany({
-    //   where: {
-    //     url: {
-    //       in: itemsUrls
-    //     }
-    //   }
-    // });
-
-    // const existingUrls = integrations.map((integrationItem) => integrationItem.url);
-
-    // let sanitizedSiteUrls: string[];
-
-    // if (existingUrls.length === 0) {
-    //   sanitizedSiteUrls = [...itemsUrls];
-    // } else {
-    //   sanitizedSiteUrls = itemsUrls.filter((pageUrl) => !existingUrls.some((existingUrl) => pageUrl === existingUrl));
-    // }
-
-    // if (sanitizedSiteUrls.length === 0) {
-    //   res.status(304).end();
-    //   return;
-    // }
-
-    // const categories = await db.category.findMany();
-
-    // const itemsToIntegrate: Partial<ItemIntegration & { hasCategory: boolean }>[] = [];
-
-    // for await (const url of sanitizedSiteUrls) {
-    //   const pageContent = await fetchPageAsString(url);
-    //   const currentNode = pageNodes.find((node) => node.includes(url));
-    //   const name = getTextFromNodeAsString(currentNode!, '*') || url;
-    //   const categorySelectors = JSON.parse(setup.categorySelector) as IntegrationSelector[];
-
-    //   let categoryName: string | null = null;
-
-    //   categorySelectors.forEach((selector) => {
-    //     if (!categoryName) {
-    //       categoryName = parseCategory(pageContent, selector.value, JSON.parse(req.body.categoryBinding));
-    //     }
-    //   });
-
-    //   itemsToIntegrate.push({
-    //     name,
-    //     url,
-    //     status:
-    //       type === IntegrationProcessingType.SIMULATION
-    //         ? ItemIntegrationStatus.pendingSimulation
-    //         : ItemIntegrationStatus.pending,
-    //     setupId: setup.id,
-    //     categoryId: categories.find((category) => category.name === categoryName)?.id || 1,
-    //     hasCategory: !!categoryName
-    //   });
-    // }
-
-    // for await (const item of itemsToIntegrate) {
-    //   await db.itemIntegration.create({
-    //     data: {
-    //       name: item.name!,
-    //       url: item.url!,
-    //       status: item.status!,
-    //       setupId: item.setupId!,
-    //       categoryId: item.categoryId!,
-    //       logs: {
-    //         create: {
-    //           key: ItemSimulationReference.hasCategory,
-    //           reference: item.name!,
-    //           value: String(item.hasCategory)
-    //         }
-    //       }
-    //     }
-    //   });
-    // }
-    // const createReturn = await db.itemIntegration.createMany({
-    //   data: itemsToIntegrate.map(item => ({
-    //     name: item.name!,
-    //     url: item.url!,
-    //     status: item.status!,
-    //     setupId: item.setupId!,
-    //     categoryId: item.categoryId!,
-    //     logs: {
-    //       create: {
-    //         key: ItemSimulationReference.hasCategory,
-    //         reference: item.name,
-    //         value: item.hasCategory
-    //       }
-    //     }
-    //   }))
-    // });
-
-    // const itemsWithCategory = itemsToIntegrate.filter((item) => item.hasCategory);
-
-    // await db.integrationLog.createMany({
-    //   data: [
-    //     {
-    //       key: ItemSimulationReference.initialQuantity,
-    //       reference: 'Global',
-    //       value: itemsToIntegrate.length.toString()
-    //     },
-    //     {
-    //       key: ItemSimulationReference.categoryPercentage,
-    //       reference: 'Global',
-    //       value: `${String((itemsWithCategory.length * 100) / itemsToIntegrate.length)}%`
-    //     }
-    //   ]
-    // });
-
-    // res.status(200).send({ message: 'success' });
+    res.status(200).send({ message: 'success' });
   } else {
     res.status(501).send({});
   }
