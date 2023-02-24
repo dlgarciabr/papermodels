@@ -187,6 +187,7 @@ enum FileIntegrationStatus {
   done
   error
   pendingSimulation
+  runningSimulation
   simulated
 }
 

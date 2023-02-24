@@ -152,7 +152,7 @@ const Integration = () => {
     setLoading(true);
     await loadSimulationLogs();
     if (!simulationIntegrationJob) {
-      setSimulationIntegrationJob(setTimeout(() => feedLog(), 15000));
+      setSimulationIntegrationJob(setTimeout(() => feedLog(), 30000));
     }
   };
 

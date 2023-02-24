@@ -55,6 +55,17 @@ export default api(async (req, res, _ctx) => {
 `);
   // if (req.method === 'POST') {
   try {
+    const runningIntegrations = await db.fileIntegration.findMany({
+      where: {
+        OR: [{ status: FileIntegrationStatus.running }, { status: FileIntegrationStatus.runningSimulation }]
+      }
+    });
+
+    if (runningIntegrations.length > 0) {
+      console.log('[FileIntegrationJOB] Another File integration job is running, aborting...');
+      return;
+    }
+
     console.log('[FileIntegrationJOB] Cleaning last download cache...');
     logs = [];
     const chachedFilesToRemove = fs.readdirSync(downloadPath);
@@ -102,16 +113,16 @@ export default api(async (req, res, _ctx) => {
     })) as IFileIntegration[];
 
     if (integrationList.length > 0) {
+      const fileIntegrationIds = integrationList.map((i) => i.id);
+
       await db.fileIntegration.updateMany({
         where: {
           id: {
-            in: integrationList
-              .filter((integration) => integration.status === FileIntegrationStatus.pending)
-              .map((i) => i.id)
+            in: fileIntegrationIds
           }
         },
         data: {
-          status: FileIntegrationStatus.running
+          status: isSimulation ? FileIntegrationStatus.runningSimulation : FileIntegrationStatus.running
         }
       });
 
@@ -128,7 +139,22 @@ export default api(async (req, res, _ctx) => {
         }
       }
 
-      if (integrationList[0]?.status === FileIntegrationStatus.pendingSimulation) {
+      const newStatus = isSimulation ? FileIntegrationStatus.simulated : FileIntegrationStatus.done;
+
+      console.log(`[FileIntegrationJOB] Updating FileIntegrations status to ${newStatus} ...`);
+
+      await db.fileIntegration.updateMany({
+        where: {
+          id: {
+            in: fileIntegrationIds
+          }
+        },
+        data: {
+          status: newStatus
+        }
+      });
+
+      if (isSimulation) {
         // const containsSchemeFiles = logs.filter(
         //   (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
         // );
@@ -141,17 +167,6 @@ export default api(async (req, res, _ctx) => {
         //     value: `${String((containsSchemeFiles.length * 100) / integrationList.length)}%`
         //   }
         // });
-
-        await db.fileIntegration.updateMany({
-          where: {
-            id: {
-              in: integrationList.map((integration) => integration.id)
-            }
-          },
-          data: {
-            status: FileIntegrationStatus.simulated
-          }
-        });
 
         const pendingSimulations = await db.fileIntegration.findMany({
           where: {
@@ -167,6 +182,7 @@ export default api(async (req, res, _ctx) => {
         });
 
         if (pendingSimulations.length === 0) {
+          console.log(`[FileIntegrationJOB] Persisting Logs...`);
           // const simulatedList = await db.fileIntegration.count({
           //   where: {
           //     status: FileIntegrationStatus.simulated
@@ -405,7 +421,7 @@ const downloadFileFromClick = async (url: string, selector: string) => {
 
     // await checkDownloadFinished();
 
-    await Promise.race([checkDownloadFinished(), new Promise<void>((resolve) => setTimeout(() => resolve(), 120000))]);
+    await Promise.race([checkDownloadFinished(), new Promise((resolve) => setTimeout(resolve, 60000))]);
 
     void browser.close();
     console.log(`\n[FileIntegrationJOB] File download has finished!`);
@@ -433,5 +449,5 @@ const checkDownloadFinished = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return checkDownloadFinished();
   }
-  return true;
+  return;
 };
