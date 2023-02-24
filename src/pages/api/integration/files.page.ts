@@ -19,7 +19,12 @@ import { convertBytesToBase64 } from 'src/utils/storageProviders/cloudinary';
 import { uploadImage } from '../file/image-upload.page';
 import { UploadItemFile } from 'src/items/types';
 import { readPageUrls } from './util';
-import { FileSimulationReference, IntegrationSelector, IntegrationSelectorType } from 'types';
+import {
+  FileSimulationReference,
+  IntegrationProcessingType,
+  IntegrationSelector,
+  IntegrationSelectorType
+} from 'types';
 
 const downloadPath = path.resolve('./download');
 
@@ -59,13 +64,34 @@ export default api(async (req, res, _ctx) => {
       });
     }
 
+    const paramProcessingType = await db.systemParameter.findFirst({
+      where: {
+        key: 'IntegrationProcessingType'
+      }
+    });
+
+    if (!paramProcessingType) {
+      console.log(`[FileIntegrationJOB] Nothing to be done, quiting!`);
+      return { message: 'ok' };
+    }
+
+    const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
+
+    let slice = 5;
+
+    const isSimulation = type === IntegrationProcessingType.SIMULATION;
+
+    if (isSimulation) {
+      slice = 10;
+    }
+
     //TODO defile a better slice
 
     const integrationList = (await db.fileIntegration.findMany({
       where: {
         OR: [{ status: FileIntegrationStatus.pending }, { status: FileIntegrationStatus.pendingSimulation }]
       },
-      take: 5,
+      take: slice,
       include: {
         itemIntegration: {
           include: {
@@ -377,9 +403,9 @@ const downloadFileFromClick = async (url: string, selector: string) => {
 
     process.stdout.write('[FileIntegrationJOB] ');
 
-    await checkDownloadFinished();
+    // await checkDownloadFinished();
 
-    await Promise.race([checkDownloadFinished(), new Promise((resolve) => setTimeout(() => resolve, 120000))]);
+    await Promise.race([checkDownloadFinished(), new Promise<void>((resolve) => setTimeout(() => resolve(), 120000))]);
 
     void browser.close();
     console.log(`\n[FileIntegrationJOB] File download has finished!`);

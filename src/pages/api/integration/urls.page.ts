@@ -71,7 +71,7 @@ const extractPageItem = async (
 };
 
 const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
-  console.log(`[UrlIntegrationJOB] Creating IntegrationItem for ${pageItem.name} ...`);
+  console.log(`[UrlIntegrationJOB] Creating ItemIntegration for ${pageItem.name} ...`);
   const categoryBindingObject = JSON.parse(setup.categoryBinding) as any[];
 
   let categoryName: string | null = categoryBindingObject.find(

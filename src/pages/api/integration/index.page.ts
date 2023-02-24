@@ -43,6 +43,7 @@ const processItemIntegration = async () => {
   const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
 
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
+  const isIntegration = type === IntegrationProcessingType.INTEGRATION;
   const simulationLabel = isSimulation ? ' simulation ' : ' ';
 
   console.log(`
@@ -53,7 +54,7 @@ const processItemIntegration = async () => {
 
   const runningIntegrations = await db.itemIntegration.findMany({
     where: {
-      status: ItemIntegrationStatus.running
+      OR: [{ status: ItemIntegrationStatus.running }, { status: ItemIntegrationStatus.runningSimulation }]
     }
   });
 
@@ -97,7 +98,7 @@ const processItemIntegration = async () => {
 
     const errors: { itemIntegration: number; error: Error }[] = [];
 
-    let logs: Partial<IntegrationLog>[] = [];
+    // let logs: Partial<IntegrationLog>[] = [];
 
     for await (const itemIntegration of integrationList) {
       const singleIntegrationLogs: Partial<IntegrationLog>[] = [];
@@ -107,7 +108,14 @@ const processItemIntegration = async () => {
       try {
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
-        if (!isSimulation) {
+        if (isSimulation) {
+          await db.itemIntegration.update({
+            where: { id: itemIntegration.id },
+            data: {
+              status: ItemIntegrationStatus.runningSimulation
+            }
+          });
+        } else if (isIntegration) {
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
@@ -190,17 +198,6 @@ const processItemIntegration = async () => {
 
         hasPreviewImages = files.length > 0;
 
-        if (!isSimulation) {
-          console.log(`[ItemIntegrationJOB] Persisting preview files...`);
-          await db.itemFile.createMany({
-            data: files.map((file) => ({
-              storagePath: file.storagePath,
-              artifactType: file.artifactType,
-              itemId: item.id
-            }))
-          });
-        }
-
         // await db.item.update({
         //   where: { id: item.id },
         //   data: {
@@ -239,7 +236,7 @@ const processItemIntegration = async () => {
             data: singleIntegrationLogs as IntegrationLog[]
           });
 
-          logs = [...logs, ...singleIntegrationLogs];
+          // logs = [...logs, ...singleIntegrationLogs];
 
           console.log(`[ItemIntegrationJOB] Updating ItemIntegration status...`);
           await db.itemIntegration.update({
@@ -249,6 +246,15 @@ const processItemIntegration = async () => {
             }
           });
         } else {
+          console.log(`[ItemIntegrationJOB] Persisting preview files...`);
+          await db.itemFile.createMany({
+            data: files.map((file) => ({
+              storagePath: file.storagePath,
+              artifactType: file.artifactType,
+              itemId: item.id
+            }))
+          });
+
           console.log(`[ItemIntegrationJOB] Enqueueing scheme file integration...`);
 
           await db.fileIntegration.create({
@@ -283,29 +289,56 @@ const processItemIntegration = async () => {
       }
     }
 
-    if (isSimulation && integrationList.length > 0) {
-      const containsPreviewImages = logs.filter(
-        (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'
-      );
+    if (isSimulation) {
+      //TODO run only if simulation ended
 
-      const containsDescription = logs.filter(
-        (log) => log.key === ItemSimulationReference.hasDescription && log.value === 'true'
-      );
-
-      await db.integrationLog.createMany({
-        data: [
-          {
-            key: ItemSimulationReference.previewImagesPencentage,
-            reference: 'Global',
-            value: `${String(Math.round((containsPreviewImages.length * 100) / integrationList.length))}%`
-          },
-          {
-            key: ItemSimulationReference.descriptionPencentage,
-            reference: 'Global',
-            value: `${String(Math.round((containsDescription.length * 100) / integrationList.length))}%`
-          }
-        ]
+      const itemIntegrations = await db.itemIntegration.findMany({
+        where: {
+          OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.simulated }]
+        },
+        include: {
+          logs: true
+        }
       });
+
+      const hasItemIntegrationsPending = itemIntegrations.some(
+        (it) => it.status === ItemIntegrationStatus.pendingSimulation
+      );
+
+      if (!hasItemIntegrationsPending) {
+        const itemIntegrationsDone = itemIntegrations.filter((it) => it.status === ItemIntegrationStatus.simulated);
+
+        let logs: IntegrationLog[] = [];
+
+        // const logs = itemIntegrations.map(it => it.logs)
+
+        itemIntegrations.forEach((it) => (logs = [...logs, ...it.logs]));
+
+        //TODO make the bind between itemIntegrations and Log to summarized logs
+
+        const containsPreviewImages = logs.filter(
+          (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'
+        );
+
+        const containsDescription = logs.filter(
+          (log) => log.key === ItemSimulationReference.hasDescription && log.value === 'true'
+        );
+
+        await db.integrationLog.createMany({
+          data: [
+            {
+              key: ItemSimulationReference.previewImagesPencentage,
+              reference: 'Global',
+              value: `${String(Math.round((containsPreviewImages.length * 100) / itemIntegrationsDone.length))}%`
+            },
+            {
+              key: ItemSimulationReference.descriptionPencentage,
+              reference: 'Global',
+              value: `${String(Math.round((containsDescription.length * 100) / itemIntegrationsDone.length))}%`
+            }
+          ]
+        });
+      }
     }
 
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item first stage integration process finished.`);

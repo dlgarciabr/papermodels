@@ -9,11 +9,15 @@ import { IntegrationSelectorType } from 'types';
  * to easily generate realistic data.
  */
 const seed = async () => {
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Category_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"Item_id_seq\" RESTART WITH 1`;
-  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemIntegration_id_seq\" RESTART WITH 1`;
   await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationSetup_id_seq\" RESTART WITH 1`;
-  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemFile_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"ItemIntegration_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"FileIntegration_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"IntegrationLog_id_seq\" RESTART WITH 1`;
+  await db.$queryRaw`ALTER SEQUENCE \"public\".\"UrlIntegration_id_seq\" RESTART WITH 1`;
+
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemFile\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"Category\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationSetup\" CASCADE;`;

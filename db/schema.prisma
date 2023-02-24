@@ -132,6 +132,7 @@ enum ItemIntegrationStatus {
   done
   error
   pendingSimulation
+  runningSimulation
   simulated
 }
 

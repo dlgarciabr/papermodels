@@ -26,6 +26,7 @@ import getLogs from 'src/integration-logs/queries/getIntegrationLogs';
 import deleteItemIntegrationByStatus from 'src/item-integration/mutations/deleteItemIntegrationByStatus';
 import { TbChevronDown } from 'react-icons/tb';
 import {
+  FileSimulationReference,
   IntegrationProcessingType,
   IntegrationSelector,
   IntegrationSelectorType,
@@ -323,7 +324,8 @@ const Integration = () => {
               logs.some((log) => log.key === ItemSimulationReference.categoryPercentage) &&
               logs.some((log) => log.key === ItemSimulationReference.descriptionPencentage) &&
               logs.some((log) => log.key === ItemSimulationReference.previewImagesPencentage) &&
-              logs.filter((log) => log.reference === 'Global').length === 4;
+              logs.some((log) => log.key === FileSimulationReference.schemePercentage) &&
+              logs.filter((log) => log.reference === 'Global').length === 5;
             break;
           case IntegrationProcessingType.INTEGRATION:
             break;
