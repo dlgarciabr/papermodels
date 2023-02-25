@@ -23,8 +23,10 @@ import {
   FileSimulationReference,
   IntegrationProcessingType,
   IntegrationSelector,
-  IntegrationSelectorType
+  IntegrationSelectorType,
+  ItemSimulationReference
 } from 'types';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 
 const downloadPath = path.resolve('./download');
 
@@ -65,127 +67,7 @@ export default api(async (req, res, _ctx) => {
       return;
     }
 
-    console.log('[FileIntegrationJOB] Cleaning last download cache...');
-    logs = [];
-    const chachedFilesToRemove = fs.readdirSync(downloadPath);
-    if (chachedFilesToRemove.length > 0) {
-      chachedFilesToRemove.forEach((file) => {
-        fs.unlinkSync(`${downloadPath}/${file}`);
-      });
-    }
-
-    const paramProcessingType = await db.systemParameter.findFirst({
-      where: {
-        key: 'IntegrationProcessingType'
-      }
-    });
-
-    if (!paramProcessingType) {
-      console.log(`[FileIntegrationJOB] Nothing to be done, quiting!`);
-      return { message: 'ok' };
-    }
-
-    const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
-
-    let slice = 5;
-
-    const isSimulation = type === IntegrationProcessingType.SIMULATION;
-
-    if (isSimulation) {
-      slice = 10;
-    }
-
-    //TODO defile a better slice
-
-    const integrationList = (await db.fileIntegration.findMany({
-      where: {
-        OR: [{ status: FileIntegrationStatus.pending }, { status: FileIntegrationStatus.pendingSimulation }]
-      },
-      take: slice,
-      include: {
-        itemIntegration: {
-          include: {
-            setup: true
-          }
-        }
-      }
-    })) as IFileIntegration[];
-
-    if (integrationList.length > 0) {
-      const fileIntegrationIds = integrationList.map((i) => i.id);
-
-      await db.fileIntegration.updateMany({
-        where: {
-          id: {
-            in: fileIntegrationIds
-          }
-        },
-        data: {
-          status: isSimulation ? FileIntegrationStatus.runningSimulation : FileIntegrationStatus.running
-        }
-      });
-
-      console.log(`[FileIntegrationJOB] ${integrationList.length} file(s) to be integrated found!`);
-      for await (const fileIntegration of integrationList) {
-        switch (fileIntegration.integrationType) {
-          case FileType.scheme:
-            await processSchemeType(fileIntegration);
-          //TODO
-          case FileType.preview:
-          //TODO
-          default:
-          //TODO
-        }
-      }
-
-      const newStatus = isSimulation ? FileIntegrationStatus.simulated : FileIntegrationStatus.done;
-
-      console.log(`[FileIntegrationJOB] Updating FileIntegrations status to ${newStatus} ...`);
-
-      await db.fileIntegration.updateMany({
-        where: {
-          id: {
-            in: fileIntegrationIds
-          }
-        },
-        data: {
-          status: newStatus
-        }
-      });
-
-      if (isSimulation) {
-        const pendingSimulations = await db.fileIntegration.findMany({
-          where: {
-            status: FileIntegrationStatus.pendingSimulation
-          },
-          select: {
-            itemIntegration: {
-              select: {
-                logs: true
-              }
-            }
-          }
-        });
-
-        if (pendingSimulations.length === 0) {
-          console.log(`[FileIntegrationJOB] Persisting Logs...`);
-
-          const containsSchemeFiles = logs.filter(
-            (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-          );
-
-          await db.integrationLog.create({
-            data: {
-              key: FileSimulationReference.schemePercentage,
-              reference: 'Global',
-              value: `${String(Math.round((containsSchemeFiles.length * 100) / integrationList.length))}%`
-            }
-          });
-        }
-      }
-    } else {
-      console.log(`[FileIntegrationJOB] No files to be integrated.`);
-    }
+    await processIntegration();
 
     res.status(200).send({});
   } catch (error) {
@@ -421,4 +303,158 @@ const checkDownloadFinished = async () => {
     return checkDownloadFinished();
   }
   return;
+};
+
+const processIntegration = async () => {
+  console.log('[FileIntegrationJOB] Cleaning last download cache...');
+  logs = [];
+  const chachedFilesToRemove = fs.readdirSync(downloadPath);
+  if (chachedFilesToRemove.length > 0) {
+    chachedFilesToRemove.forEach((file) => {
+      fs.unlinkSync(`${downloadPath}/${file}`);
+    });
+  }
+
+  const params = await db.systemParameter.findMany({
+    where: {
+      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingStartTime' }]
+    }
+  });
+
+  const paramProcessingType = params.find((param) => param.key === 'IntegrationProcessingType');
+
+  if (!paramProcessingType) {
+    console.log(`[FileIntegrationJOB] Nothing to be done, quiting!`);
+    return { message: 'ok' };
+  }
+
+  const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
+
+  let slice = 5;
+
+  const isSimulation = type === IntegrationProcessingType.SIMULATION;
+
+  if (isSimulation) {
+    slice = 10;
+  }
+
+  //TODO defile a better slice
+
+  const integrationList = (await db.fileIntegration.findMany({
+    where: {
+      OR: [{ status: FileIntegrationStatus.pending }, { status: FileIntegrationStatus.pendingSimulation }]
+    },
+    take: slice,
+    include: {
+      itemIntegration: {
+        include: {
+          setup: true
+        }
+      }
+    }
+  })) as IFileIntegration[];
+
+  if (integrationList.length > 0) {
+    const fileIntegrationIds = integrationList.map((i) => i.id);
+
+    await db.fileIntegration.updateMany({
+      where: {
+        id: {
+          in: fileIntegrationIds
+        }
+      },
+      data: {
+        status: isSimulation ? FileIntegrationStatus.runningSimulation : FileIntegrationStatus.running
+      }
+    });
+
+    console.log(`[FileIntegrationJOB] ${integrationList.length} file(s) to be integrated found!`);
+    for await (const fileIntegration of integrationList) {
+      switch (fileIntegration.integrationType) {
+        case FileType.scheme:
+          await processSchemeType(fileIntegration);
+        //TODO
+        case FileType.preview:
+        //TODO
+        default:
+        //TODO
+      }
+    }
+
+    const newStatus = isSimulation ? FileIntegrationStatus.simulated : FileIntegrationStatus.done;
+
+    console.log(`[FileIntegrationJOB] Updating FileIntegrations status to ${newStatus} ...`);
+
+    await db.fileIntegration.updateMany({
+      where: {
+        id: {
+          in: fileIntegrationIds
+        }
+      },
+      data: {
+        status: newStatus
+      }
+    });
+
+    if (isSimulation) {
+      const pendingSimulations = await db.fileIntegration.findMany({
+        where: {
+          status: FileIntegrationStatus.pendingSimulation
+        },
+        select: {
+          itemIntegration: {
+            select: {
+              logs: true
+            }
+          }
+        }
+      });
+
+      if (pendingSimulations.length === 0) {
+        console.log(`[FileIntegrationJOB] Persisting Logs...`);
+
+        const containsSchemeFiles = logs.filter(
+          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
+        );
+
+        const paramStartTime = params.find((param) => param.key === 'IntegrationProcessingStartTime');
+        const startTime = new Date(Number(paramStartTime!.value));
+
+        let duration = 0;
+        let rest = 0;
+        const diff = differenceInSeconds(new Date(), startTime);
+        if (diff >= 60) {
+          duration = Math.round(diff / 60);
+          rest = diff % 60;
+        }
+
+        await db.integrationLog.createMany({
+          data: [
+            {
+              key: FileSimulationReference.schemePercentage,
+              reference: 'Global',
+              value: `${String(Math.round((containsSchemeFiles.length * 100) / integrationList.length))}%`
+            },
+            {
+              key: ItemSimulationReference.totalTime,
+              reference: 'Global',
+              value: `${duration}:${rest}`
+            }
+          ]
+        });
+
+        await db.integrationLog.deleteMany({
+          where: {
+            value: `${true}`
+          }
+        });
+      }
+    }
+
+    if (isSimulation) {
+      await processIntegration();
+    }
+  } else {
+    console.log(`[FileIntegrationJOB] No files to be integrated.`);
+  }
 };

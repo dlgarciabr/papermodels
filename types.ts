@@ -35,6 +35,11 @@ export interface IntegrationSelector {
   value: string;
 }
 
+export interface IntegrationCategoryBinding {
+  systemCategoryName: string;
+  pageCategoryName: string;
+}
+
 export enum ItemSimulationReference {
   initialQuantity = '   Initial Quantity',
   totalTime = '   Total time',
@@ -51,4 +56,10 @@ export enum FileSimulationReference {
   hasSchemeFiles = 'Has scheme files',
   schemePercentage = ' Scheme %',
   error = 'File Error'
+}
+
+export enum IntegrationProcessingQtyType {
+  FEW = 'FEW',
+  INTERMEDIATE = 'INTERMEDIATE',
+  FULL = 'FULL'
 }

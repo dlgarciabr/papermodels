@@ -2,31 +2,52 @@
 import db, { Category, IntegrationSetup, ItemIntegrationStatus, UrlIntegration, UrlIntegrationStatus } from 'db';
 import _ from 'lodash';
 import { api } from 'src/blitz-server';
-import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference } from 'types';
+import {
+  IntegrationCategoryBinding,
+  IntegrationProcessingQtyType,
+  IntegrationProcessingType,
+  IntegrationSelector,
+  ItemSimulationReference
+} from 'types';
 import { IPageItem } from './types';
 
 import { fetchPageAsString, executeSelectorAllOnHtmlText, readPageUrls } from './util';
 
 let categorySelectorsCache: IntegrationSelector[] = [];
+let categoryBindingsCache: IntegrationCategoryBinding[] = [];
 let categoriesCache: Category[] = [];
 
 const searchPageItemCategory = (
   itemNode: Element,
-  selectors: IntegrationSelector[],
+  categorySelectors: IntegrationSelector[],
+  categoryBindings: IntegrationCategoryBinding[],
   level: number = 0
 ): string | null => {
-  let categoryName: string | null = null;
+  let categoryName: string | undefined | null = null;
   try {
-    selectors.forEach((selector) => {
+    categorySelectors.forEach((selector) => {
       if (categoryName) {
         return;
       }
       const node = itemNode.parentElement!.querySelector(selector.value);
       if (node) {
-        categoryName = node.textContent;
+        categoryName = categoriesCache.find(
+          (cat) => cat.name.toLowerCase().trim() === node.textContent?.toLowerCase().trim()
+        )?.name;
+
+        if (!categoryName) {
+          categoryName = categoryBindings.find(
+            (cat) => cat.pageCategoryName.toLowerCase().trim() === node.textContent?.toLowerCase().trim()
+          )?.systemCategoryName;
+        }
       } else {
         if (level <= 5) {
-          categoryName = searchPageItemCategory(itemNode.parentElement!.parentElement!, selectors, level++);
+          categoryName = searchPageItemCategory(
+            itemNode.parentElement!.parentElement!,
+            categorySelectors,
+            categoryBindings,
+            level++
+          );
         }
       }
     });
@@ -39,7 +60,8 @@ const searchPageItemCategory = (
 const extractPageItem = async (
   pageUrl: string,
   itemSelectors: IntegrationSelector[],
-  categorySelectors: IntegrationSelector[]
+  categorySelectors: IntegrationSelector[],
+  categoryBindings: IntegrationCategoryBinding[]
 ): Promise<IPageItem[]> => {
   let pageItems: IPageItem[] = [];
   const pageContent = await fetchPageAsString(pageUrl);
@@ -51,7 +73,7 @@ const extractPageItem = async (
         const url = itemNode.getAttribute('href') || '';
         return {
           name: name || url,
-          categoryName: searchPageItemCategory(itemNode, categorySelectors) as string,
+          categoryName: searchPageItemCategory(itemNode, categorySelectors, categoryBindings) as string,
           url
         };
       })
@@ -62,12 +84,6 @@ const extractPageItem = async (
 
 const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
   console.log(`[UrlIntegrationJOB] Creating ItemIntegration for ${pageItem.name} ...`);
-  const categoryBindingObject = JSON.parse(setup.categoryBinding) as any[];
-
-  let categoryName: string | null = categoryBindingObject.find(
-    (cat) => cat.pageCategoryName.toLowerCase() === pageItem.categoryName?.toLowerCase()
-  )?.systemCategoryName;
-
   const status =
     type === IntegrationProcessingType.SIMULATION
       ? ItemIntegrationStatus.pendingSimulation
@@ -79,12 +95,12 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
       url: pageItem.url,
       status,
       setupId: setup.id,
-      categoryId: categoriesCache.find((category) => category.name === categoryName)?.id || 1,
+      categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
       logs: {
         create: {
           key: ItemSimulationReference.hasCategory,
           reference: pageItem.name!,
-          value: String(!!categoryName)
+          value: String(!!pageItem.categoryName)
         }
       }
     }
@@ -94,19 +110,22 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
 const processIntegration = async () => {
   const systemParams = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingPartialType' }]
+      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingQtyType' }]
     }
   });
 
   const typeParam = systemParams.find((param) => param.key === 'IntegrationProcessingType');
-  const partialTypeParam = systemParams.find((param) => param.key === 'IntegrationProcessingPartialType');
+  const processingQtyType = systemParams.find((param) => param.key === 'IntegrationProcessingQtyType')
+    ?.value as IntegrationProcessingQtyType;
 
   const type = typeParam?.value as IntegrationProcessingType;
-  const isPartial = eval(partialTypeParam!.value);
+  const isFew = processingQtyType === IntegrationProcessingQtyType.FEW;
+  const isIntermidiate = processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE;
+  const isFull = processingQtyType === IntegrationProcessingQtyType.FULL;
 
   let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
 
-  if (isPartial) {
+  if (isFew || isIntermidiate) {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
         OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
@@ -115,7 +134,8 @@ const processIntegration = async () => {
         setup: true
       }
     });
-    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, urlIntegrationsToProcess.length / 40);
+    const divisor = isFew ? 40 : 20;
+    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, urlIntegrationsToProcess.length / divisor);
   } else {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
@@ -152,7 +172,15 @@ const processIntegration = async () => {
       if (categorySelectorsCache.length === 0) {
         categorySelectorsCache = JSON.parse(urlIntegration.setup.categorySelector) as IntegrationSelector[];
       }
-      items = await extractPageItem(urlIntegration.url, itemUrlSelectors, categorySelectorsCache);
+      if (categoryBindingsCache.length === 0) {
+        categoryBindingsCache = JSON.parse(urlIntegration.setup.categoryBinding) as IntegrationCategoryBinding[];
+      }
+      items = await extractPageItem(
+        urlIntegration.url,
+        itemUrlSelectors,
+        categorySelectorsCache,
+        categoryBindingsCache
+      );
     }
 
     pageItems = [...pageItems, ...items];
@@ -231,7 +259,7 @@ const processIntegration = async () => {
     }
   });
 
-  if (!isPartial) {
+  if (isFull) {
     await processIntegration();
   }
 };

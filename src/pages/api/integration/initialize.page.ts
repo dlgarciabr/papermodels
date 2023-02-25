@@ -8,7 +8,7 @@ export default api(async (req, res, _ctx) => {
   if (req.method === 'POST') {
     const setup = req.body as IntegrationSetup;
     const type = req.body.type as IntegrationProcessingType;
-    const partial = req.body.partial;
+    const processingQtyType = req.body.processingQtyType;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -22,7 +22,11 @@ export default api(async (req, res, _ctx) => {
 
     await db.systemParameter.deleteMany({
       where: {
-        OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingPartialType' }]
+        OR: [
+          { key: 'IntegrationProcessingType' },
+          { key: 'IntegrationProcessingQtyType' },
+          { key: 'IntegrationProcessingStartTime' }
+        ]
       }
     });
 
@@ -33,8 +37,12 @@ export default api(async (req, res, _ctx) => {
           value: String(type)
         },
         {
-          key: 'IntegrationProcessingPartialType',
-          value: String(partial)
+          key: 'IntegrationProcessingQtyType',
+          value: processingQtyType
+        },
+        {
+          key: 'IntegrationProcessingStartTime',
+          value: String(new Date().getTime())
         }
       ]
     });

@@ -148,7 +148,11 @@ const seed = async () => {
       ]
     },
     {
-      name: 'Wagons',
+      name: 'Buses',
+      items: []
+    },
+    {
+      name: 'Trains',
       items: [
         {
           name: 'Oporto Metro',
@@ -241,6 +245,14 @@ const seed = async () => {
     {
       name: 'Work Machines',
       items: []
+    },
+    {
+      name: 'Trucks',
+      items: []
+    },
+    {
+      name: 'Military Vehicles',
+      items: []
     }
   ];
 
@@ -288,13 +300,25 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.TEXT}",
           "value": "p.post-category > a"
+        },
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "div > p.post-category > a:nth-child(2)"
         }
       ]`,
       categoryBinding: `[
         {
           "systemCategoryName": "Automobiles",
           "pageCategoryName": "Cars"
-        }
+        },
+        {
+          "systemCategoryName": "Boats & Ships",
+          "pageCategoryName": "Ships"
+        },
+        {
+          "systemCategoryName": "Military Vehicles",
+          "pageCategoryName": "Army"
+        }        
       ]`,
       descriptionSelector: `[
         {
@@ -326,130 +350,6 @@ const seed = async () => {
           "value": "div.entry > div.entry-inner > h3 > a"
         }
       ]`
-    },
-    {
-      name: 'Paperdiorama machines WM',
-      key: 'paperdiorama',
-      domain: 'https://www.paperdiorama.com/category/paper-models/work-machines',
-      itemUrlSelector: `[
-        {
-          "type":"${IntegrationSelectorType.LINK}",
-          "value": "article > div > h2 > a"
-        }
-      ]`,
-      categorySelector: `[
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value": "p.post-category > a"
-        }
-      ]`,
-      categoryBinding: `[
-        {
-          "systemCategoryName": "Work Machines",
-          "pageCategoryName": "Work machines"
-        }
-      ]`,
-      descriptionSelector: `[
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value": "article > div> div > div > p"
-        },
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value":"div.entry-inner p:nth-of-type(2)"
-        }
-      ]`,
-      previewImagesSelector: `[
-        {
-          "type":"${IntegrationSelectorType.IMG}",
-          "value": "div > div > div > img.caption"
-        }
-      ]`,
-      schemesSelector: `[
-        {
-          "type":"${IntegrationSelectorType.CLICK}",
-          "value": "div.card-body > div > div > a.download-on-click"
-        },
-        {
-          "type":"${IntegrationSelectorType.LINK}",
-          "value": "div.entry > div.entry-inner > h3 > a"
-        }
-      ]`
-    },
-    {
-      name: 'Paperdiorama machines Misc',
-      key: 'paperdiorama',
-      domain: 'https://www.paperdiorama.com/category/paper-models/misc',
-      itemUrlSelector: 'article > div > h2 > a',
-      categorySelector: 'p.post-category > a',
-      categoryBinding: `[
-        {
-          "systemCategoryName": "Misc.",
-          "pageCategoryName": "Misc."
-        }
-      ]`,
-      descriptionSelector: 'article > div> div > div > p',
-      previewImagesSelector: 'div > div > div > img.caption',
-      ignoreExpressions: `["Paper Diorama"]`,
-      schemesSelector: 'div.card-body > div > div > a.download-on-click'
-    },
-    {
-      name: 'Paperdiorama machines Cars',
-      key: 'paperdiorama',
-      domain: 'https://www.paperdiorama.com/category/paper-models/cars',
-      itemUrlSelector: `[
-        {
-          "type":"${IntegrationSelectorType.LINK}",
-          "value": "article > div > h2 > a"
-        }
-      ]`,
-      categorySelector: `[
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value": "p.post-category > a"
-        }
-      ]`,
-      categoryBinding: `[
-        {
-          "systemCategoryName": "Automobiles",
-          "pageCategoryName": "Cars"
-        }
-      ]`,
-      descriptionSelector: `[
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value": "article > div> div > div > p"
-        },
-        {
-          "type":"${IntegrationSelectorType.TEXT}",
-          "value":"div.entry-inner p:nth-of-type(2)"
-        }
-      ]`,
-      previewImagesSelector: `[
-        {
-          "type":"${IntegrationSelectorType.IMG}",
-          "value": "div > div > div > img.caption"
-        },
-        {
-          "type":"${IntegrationSelectorType.IMG}",
-          "value": "div.entry-inner > p > img"
-        },
-        {
-          "type":"${IntegrationSelectorType.IMG}",
-          "value": "div.entry-inner > h2 > a > img"
-        }
-      ]`,
-      schemesSelector: `[
-        {
-          "type":"${IntegrationSelectorType.CLICK}",
-          "value": "div.card-body > div > div > a.download-on-click"
-        },
-        {
-          "type":"${IntegrationSelectorType.LINK}",
-          "value": "div.entry > div.entry-inner > h3 > a"
-        }
-      ]`,
-      ignoreExpressions: `["Paper Diorama"]`
     }
   ];
 

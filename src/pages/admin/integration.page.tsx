@@ -5,10 +5,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
-  Checkbox,
   Container,
   Grid,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
   TextField,
   Typography
@@ -26,6 +27,7 @@ import deleteItemIntegrationByStatus from 'src/item-integration/mutations/delete
 import { TbChevronDown } from 'react-icons/tb';
 import {
   FileSimulationReference,
+  IntegrationProcessingQtyType,
   IntegrationProcessingType,
   IntegrationSelector,
   IntegrationSelectorType,
@@ -37,8 +39,7 @@ import { showToast } from 'src/core/components/Toast';
 import getSystemParameters from 'src/system-parameter/queries/getSystemParameters';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 import updateIntegrationSetup from 'src/integration-setups/mutations/updateIntegrationSetup';
-import differenceInSeconds from 'date-fns/differenceInSeconds';
-import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
+// import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -70,10 +71,12 @@ const Integration = () => {
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
   const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
-  const [partial, setPartial] = useState<boolean>(false);
+  const [processingQtyType, setProcessingQtyType] = useState<IntegrationProcessingQtyType>(
+    IntegrationProcessingQtyType.FEW
+  );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
-  const [createIntegrationLogMutation] = useMutation(createIntegrationLog);
-  const [startTime, setStartTime] = useState<Date>(new Date());
+  // const [createIntegrationLogMutation] = useMutation(createIntegrationLog);
+  // const [startTime, setStartTime] = useState<Date>(new Date());
 
   const updateSelector = async () => {
     await updateIntegrationSetupMutation(selectedSetup);
@@ -168,7 +171,6 @@ const Integration = () => {
   const processSetup = async (type: IntegrationProcessingType) => {
     setLogs([]);
     setErrors([]);
-    setStartTime(new Date());
 
     if (selectedSetup.id === 0) {
       alert('Select a setup first');
@@ -194,7 +196,7 @@ const Integration = () => {
         body: JSON.stringify({
           ...selectedSetup,
           type,
-          partial
+          processingQtyType
         })
       });
       if (response.status === 204) {
@@ -335,7 +337,7 @@ const Integration = () => {
               logs.some((log) => log.key === ItemSimulationReference.descriptionPencentage) &&
               logs.some((log) => log.key === ItemSimulationReference.previewImagesPencentage) &&
               logs.some((log) => log.key === FileSimulationReference.schemePercentage) &&
-              logs.filter((log) => log.reference === 'Global').length === 5;
+              logs.some((log) => log.key === ItemSimulationReference.totalTime);
             break;
           case IntegrationProcessingType.INTEGRATION:
             break;
@@ -348,30 +350,23 @@ const Integration = () => {
           setFileIntegrationJob(null);
           setLoading(false);
 
-          if (!logs.some((log) => log.reference === ItemSimulationReference.totalTime)) {
-            let duration = 0;
-            let rest = 0;
-            const diff = differenceInSeconds(new Date(), startTime);
-            if (diff >= 60) {
-              duration = Math.round(diff / 60);
-              rest = diff % 60;
-            }
+          // if (!logs.some((log) => log.reference === ItemSimulationReference.totalTime)) {
+          //   let duration = 0;
+          //   let rest = 0;
+          //   const diff = differenceInSeconds(new Date(), startTime);
+          //   if (diff >= 60) {
+          //     duration = Math.round(diff / 60);
+          //     rest = diff % 60;
+          //   }
 
-            const log = {
-              key: ItemSimulationReference.totalTime,
-              reference: 'Global',
-              value: `${duration}:${rest}`
-            };
+          //   await createIntegrationLogMutation({
+          //     key: ItemSimulationReference.totalTime,
+          //     reference: 'Global',
+          //     value: `${duration}:${rest}`
+          //   });
 
-            await createIntegrationLogMutation({
-              ...log
-            });
-
-            logs.splice(0, 0, {
-              ...log,
-              id: 0
-            } as IntegrationLog);
-          }
+          //   await loadSimulationLogs();
+          // }
         }
       }
     })();
@@ -591,8 +586,23 @@ const Integration = () => {
               disabled={!!simulationIntegrationJob}>
               Simulate
             </Button>
-            <Checkbox checked={partial} onClick={() => setPartial(!partial)} />
-            Partial
+            <RadioGroup row>
+              <Radio
+                value={IntegrationProcessingQtyType.FEW}
+                onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.FEW)}
+              />
+              Few
+              <Radio
+                value={IntegrationProcessingQtyType.INTERMEDIATE}
+                onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.INTERMEDIATE)}
+              />
+              A bit
+              <Radio
+                value={IntegrationProcessingQtyType.FULL}
+                onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.FULL)}
+              />
+              Full
+            </RadioGroup>
             <Button
               onClick={() => processSetup(IntegrationProcessingType.INTEGRATION)}
               disabled={loading || !!simulationIntegrationJob}
