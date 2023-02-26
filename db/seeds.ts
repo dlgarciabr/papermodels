@@ -324,6 +324,10 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.TEXT}",
           "value": "article > div> div > div > p"
+        },
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "div.entry > div.entry-inner > p:nth-child(3)"
         }
       ]`,
       previewImagesSelector: `[
@@ -349,7 +353,8 @@ const seed = async () => {
           "type":"${IntegrationSelectorType.LINK}",
           "value": "div.entry > div.entry-inner > h3 > a"
         }
-      ]`
+      ]`,
+      ignoreExpressions: `["Paper Diorama"]`
     }
   ];
 

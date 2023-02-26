@@ -27,6 +27,7 @@ import {
   ItemSimulationReference
 } from 'types';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
+import formatDuration from 'date-fns/formatDuration';
 
 const downloadPath = path.resolve('./download');
 
@@ -66,7 +67,7 @@ export default api(async (req, res, _ctx) => {
       console.log('[FileIntegrationJOB] Another File integration job is running, aborting...');
       return;
     }
-
+    logs = [];
     await processIntegration();
 
     res.status(200).send({});
@@ -307,7 +308,7 @@ const checkDownloadFinished = async () => {
 
 const processIntegration = async () => {
   console.log('[FileIntegrationJOB] Cleaning last download cache...');
-  logs = [];
+  // logs = [];
   const chachedFilesToRemove = fs.readdirSync(downloadPath);
   if (chachedFilesToRemove.length > 0) {
     chachedFilesToRemove.forEach((file) => {
@@ -397,11 +398,19 @@ const processIntegration = async () => {
     });
 
     if (isSimulation) {
-      const pendingSimulations = await db.fileIntegration.findMany({
+      const simulations = await db.fileIntegration.findMany({
         where: {
-          status: FileIntegrationStatus.pendingSimulation
+          OR: [{ status: FileIntegrationStatus.pendingSimulation }, { status: FileIntegrationStatus.simulated }]
         },
-        select: {
+        // select: {
+
+        //   itemIntegration: {
+        //     select: {
+        //       logs: true
+        //     }
+        //   }
+        // },
+        include: {
           itemIntegration: {
             select: {
               logs: true
@@ -410,12 +419,21 @@ const processIntegration = async () => {
         }
       });
 
+      const pendingSimulations = simulations.filter((sim) => sim.status === FileIntegrationStatus.pendingSimulation);
+      const finishedSimulations = simulations.filter((sim) => sim.status === FileIntegrationStatus.simulated);
+
       if (pendingSimulations.length === 0) {
-        console.log(`[FileIntegrationJOB] Persisting Logs...`);
+        console.log(`[FileIntegrationJOB] Saving final Logs...`);
 
         const containsSchemeFiles = logs.filter(
           (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
         );
+
+        await db.integrationLog.deleteMany({
+          where: {
+            value: `${true}`
+          }
+        });
 
         const paramStartTime = params.find((param) => param.key === 'IntegrationProcessingStartTime');
         const startTime = new Date(Number(paramStartTime!.value));
@@ -428,26 +446,32 @@ const processIntegration = async () => {
           rest = diff % 60;
         }
 
+        const totalDuration = formatDuration(
+          {
+            minutes: duration,
+            seconds: rest
+          },
+          { delimiter: ', ' }
+        );
+
         await db.integrationLog.createMany({
           data: [
             {
               key: FileSimulationReference.schemePercentage,
               reference: 'Global',
-              value: `${String(Math.round((containsSchemeFiles.length * 100) / integrationList.length))}%`
+              value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedSimulations.length))}%`
             },
             {
               key: ItemSimulationReference.totalTime,
               reference: 'Global',
-              value: `${duration}:${rest}`
+              value: totalDuration
             }
           ]
         });
-
-        await db.integrationLog.deleteMany({
-          where: {
-            value: `${true}`
-          }
-        });
+        console.log(`
+===================================================================================
+|                     Integration finished in ${totalDuration}                    |
+===================================================================================`);
       }
     }
 

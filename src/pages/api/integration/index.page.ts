@@ -43,7 +43,7 @@ const processItemIntegration = async () => {
   const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
 
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
-  const isIntegration = type === IntegrationProcessingType.INTEGRATION;
+  // const isIntegration = type === IntegrationProcessingType.INTEGRATION;
   const simulationLabel = isSimulation ? ' simulation ' : ' ';
 
   console.log(`
@@ -98,8 +98,6 @@ const processItemIntegration = async () => {
 
     const errors: { itemIntegration: number; error: Error }[] = [];
 
-    // let logs: Partial<IntegrationLog>[] = [];
-
     for await (const itemIntegration of integrationList) {
       const singleIntegrationLogs: Partial<IntegrationLog>[] = [];
       let hasPreviewImages = true;
@@ -108,21 +106,13 @@ const processItemIntegration = async () => {
       try {
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
-        if (isSimulation) {
-          await db.itemIntegration.update({
-            where: { id: itemIntegration.id },
-            data: {
-              status: ItemIntegrationStatus.runningSimulation
-            }
-          });
-        } else if (isIntegration) {
-          await db.itemIntegration.update({
-            where: { id: itemIntegration.id },
-            data: {
-              status: ItemIntegrationStatus.running
-            }
-          });
-        }
+        const nextStatus = isSimulation ? ItemIntegrationStatus.runningSimulation : ItemIntegrationStatus.running;
+        await db.itemIntegration.update({
+          where: { id: itemIntegration.id },
+          data: {
+            status: nextStatus
+          }
+        });
 
         const pageContent = await fetchPageAsString(itemIntegration.url);
 
@@ -130,7 +120,9 @@ const processItemIntegration = async () => {
         if (itemIntegration.setup.descriptionSelector) {
           const selectors = JSON.parse(itemIntegration.setup.descriptionSelector) as IntegrationSelector[];
           selectors.forEach((selector) => {
-            description = getTextFromNodeAsString(pageContent, selector.value) || '';
+            if (!description) {
+              description = getTextFromNodeAsString(pageContent, selector.value) || '';
+            }
           });
         }
 
@@ -302,11 +294,7 @@ const processItemIntegration = async () => {
 
         let logs: IntegrationLog[] = [];
 
-        // const logs = itemIntegrations.map(it => it.logs)
-
         itemIntegrations.forEach((it) => (logs = [...logs, ...it.logs]));
-
-        //TODO make the bind between itemIntegrations and Log to summarized logs
 
         const containsPreviewImages = logs.filter(
           (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'

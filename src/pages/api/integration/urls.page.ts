@@ -132,10 +132,13 @@ const processIntegration = async () => {
       },
       include: {
         setup: true
+      },
+      orderBy: {
+        url: 'asc'
       }
     });
     const divisor = isFew ? 40 : 20;
-    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, urlIntegrationsToProcess.length / divisor);
+    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
   } else {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {

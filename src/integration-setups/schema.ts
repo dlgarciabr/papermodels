@@ -8,7 +8,8 @@ const basicValidation = {
   previewImagesSelector: z.string(),
   categorySelector: z.string(),
   categoryBinding: z.string(),
-  schemesSelector: z.string()
+  schemesSelector: z.string(),
+  descriptionSelector: z.string().nullish()
 };
 
 export const CreateIntegrationSetupValidation = z.object({

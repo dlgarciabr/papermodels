@@ -75,8 +75,6 @@ const Integration = () => {
     IntegrationProcessingQtyType.FEW
   );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
-  // const [createIntegrationLogMutation] = useMutation(createIntegrationLog);
-  // const [startTime, setStartTime] = useState<Date>(new Date());
 
   const updateSelector = async () => {
     await updateIntegrationSetupMutation(selectedSetup);
@@ -349,24 +347,6 @@ const Integration = () => {
           setSimulationIntegrationJob(null);
           setFileIntegrationJob(null);
           setLoading(false);
-
-          // if (!logs.some((log) => log.reference === ItemSimulationReference.totalTime)) {
-          //   let duration = 0;
-          //   let rest = 0;
-          //   const diff = differenceInSeconds(new Date(), startTime);
-          //   if (diff >= 60) {
-          //     duration = Math.round(diff / 60);
-          //     rest = diff % 60;
-          //   }
-
-          //   await createIntegrationLogMutation({
-          //     key: ItemSimulationReference.totalTime,
-          //     reference: 'Global',
-          //     value: `${duration}:${rest}`
-          //   });
-
-          //   await loadSimulationLogs();
-          // }
         }
       }
     })();

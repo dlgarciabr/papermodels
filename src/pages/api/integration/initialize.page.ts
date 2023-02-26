@@ -60,7 +60,8 @@ export default api(async (req, res, _ctx) => {
         OR: [
           { status: ItemIntegrationStatus.pendingSimulation },
           { status: ItemIntegrationStatus.runningSimulation },
-          { status: ItemIntegrationStatus.simulated }
+          { status: ItemIntegrationStatus.simulated },
+          { status: ItemIntegrationStatus.error }
         ]
       }
     });
@@ -73,12 +74,6 @@ export default api(async (req, res, _ctx) => {
           { status: UrlIntegrationStatus.simulationPending },
           { status: UrlIntegrationStatus.simulationDone }
         ]
-      }
-    });
-
-    await db.itemIntegration.deleteMany({
-      where: {
-        status: ItemIntegrationStatus.error
       }
     });
 
