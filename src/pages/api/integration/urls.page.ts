@@ -84,27 +84,37 @@ const extractPageItem = async (
 
 const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
   console.log(`[UrlIntegrationJOB] Creating ItemIntegration for ${pageItem.name} ...`);
-  const status =
-    type === IntegrationProcessingType.SIMULATION
-      ? ItemIntegrationStatus.pendingSimulation
-      : ItemIntegrationStatus.pending;
+  try {
+    const status =
+      type === IntegrationProcessingType.SIMULATION
+        ? ItemIntegrationStatus.pendingSimulation
+        : ItemIntegrationStatus.pending;
 
-  await db.itemIntegration.create({
-    data: {
-      name: pageItem.name!,
-      url: pageItem.url,
-      status,
-      setupId: setup.id,
-      categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
-      logs: {
-        create: {
-          key: ItemSimulationReference.hasCategory,
-          reference: pageItem.name!,
-          value: String(!!pageItem.categoryName)
+    await db.itemIntegration.create({
+      data: {
+        name: pageItem.name!,
+        url: pageItem.url,
+        status,
+        setupId: setup.id,
+        categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
+        logs: {
+          create: {
+            key: ItemSimulationReference.hasCategory,
+            reference: pageItem.name!,
+            value: String(!!pageItem.categoryName)
+          }
         }
       }
-    }
-  });
+    });
+  } catch (error) {
+    await db.integrationLog.create({
+      data: {
+        key: ItemSimulationReference.error,
+        reference: pageItem.name!,
+        value: (error as Error).message
+      }
+    });
+  }
 };
 
 const processIntegration = async () => {
@@ -119,13 +129,42 @@ const processIntegration = async () => {
     ?.value as IntegrationProcessingQtyType;
 
   const type = typeParam?.value as IntegrationProcessingType;
-  const isFew = processingQtyType === IntegrationProcessingQtyType.FEW;
-  const isIntermidiate = processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE;
-  const isFull = processingQtyType === IntegrationProcessingQtyType.FULL;
+  const isReadUrl = type === IntegrationProcessingType.READ_URLS;
+  const isSimulation = type === IntegrationProcessingType.SIMULATION;
+  const isIntegration = type === IntegrationProcessingType.INTEGRATION;
+  // const isFew = processingQtyType === IntegrationProcessingQtyType.FEW;
+  // const isIntermediate = processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE;
+  // const isFull = processingQtyType === IntegrationProcessingQtyType.FULL;
 
   let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
 
-  if (isFew || isIntermidiate) {
+  // if (isFew || isIntermediate) {
+  //   urlIntegrationsToProcess = await db.urlIntegration.findMany({
+  //     where: {
+  //       OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+  //     },
+  //     include: {
+  //       setup: true
+  //     },
+  //     orderBy: {
+  //       url: 'asc'
+  //     }
+  //   });
+  //   const divisor = isFew ? 40 : 20;
+  //   urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
+  // } else {
+  //   urlIntegrationsToProcess = await db.urlIntegration.findMany({
+  //     where: {
+  //       OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+  //     },
+  //     include: {
+  //       setup: true
+  //     },
+  //     take: 10
+  //   });
+  // }
+
+  if (isReadUrl || isSimulation) {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
         OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
@@ -137,18 +176,20 @@ const processIntegration = async () => {
         url: 'asc'
       }
     });
-    const divisor = isFew ? 40 : 20;
+    let divisor = 0;
+    switch (processingQtyType) {
+      case IntegrationProcessingQtyType.FEW:
+        divisor = 40;
+        break;
+      case IntegrationProcessingQtyType.INTERMEDIATE:
+        divisor = 20;
+        break;
+      case IntegrationProcessingQtyType.FULL:
+        divisor = 1;
+        break;
+    }
+    // const divisor = isFew ? 40 : 20;
     urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
-  } else {
-    urlIntegrationsToProcess = await db.urlIntegration.findMany({
-      where: {
-        OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
-      },
-      include: {
-        setup: true
-      },
-      take: 10
-    });
   }
 
   if (urlIntegrationsToProcess.length === 0) {
@@ -204,7 +245,8 @@ const processIntegration = async () => {
       });
     }
 
-    if (urlIntegrationsToProcess[0]!.status === UrlIntegrationStatus.simulationPending) {
+    // if (urlIntegrationsToProcess[0]!.status === UrlIntegrationStatus.simulationPending) {//????????
+    if (isSimulation) {
       console.log(`[UrlIntegrationJOB] Creating ItemIntegrations...`);
       await db.itemIntegration.deleteMany({
         where: {
@@ -262,7 +304,7 @@ const processIntegration = async () => {
     }
   });
 
-  if (isFull) {
+  if (isIntegration) {
     await processIntegration();
   }
 };

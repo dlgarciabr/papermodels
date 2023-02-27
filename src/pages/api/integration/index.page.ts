@@ -66,16 +66,16 @@ const processItemIntegration = async () => {
   let integrationList: (ItemIntegration & { setup: IntegrationSetup })[] = [];
 
   if (isSimulation) {
-    integrationList = (await db.itemIntegration.findMany({
+    integrationList = await db.itemIntegration.findMany({
       where: {
         status: ItemIntegrationStatus.pendingSimulation
       },
       include: {
         setup: true
       }
-    })) as (ItemIntegration & { setup: IntegrationSetup })[];
+    });
   } else {
-    integrationList = (await db.itemIntegration.findMany({
+    integrationList = await db.itemIntegration.findMany({
       where: {
         status: ItemIntegrationStatus.pending
       },
@@ -83,7 +83,7 @@ const processItemIntegration = async () => {
       include: {
         setup: true
       }
-    })) as (ItemIntegration & { setup: IntegrationSetup })[];
+    });
   }
 
   if (integrationList.length > 0) {

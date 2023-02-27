@@ -88,7 +88,10 @@ const Integration = () => {
         return;
       }
       let where = {};
-      where[filter.field] = { contains: filter.value };
+      where[filter.field] = {
+        contains: filter.value,
+        mode: 'insensitive'
+      };
       const { integrationLogs } = await invoke(getLogs, {
         orderBy: { key: 'asc' },
         where
@@ -362,7 +365,7 @@ const Integration = () => {
     { field: 'key', headerName: 'key', width: 150 },
     {
       field: 'reference',
-      headerName: 'ref',
+      headerName: 'reference',
       sortable: false,
       width: 450,
       renderCell: (params) => {

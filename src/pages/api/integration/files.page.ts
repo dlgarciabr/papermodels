@@ -77,22 +77,23 @@ export default api(async (req, res, _ctx) => {
   }
 });
 
-const processSchemeType = async (fileIntegration: IFileIntegration) => {
-  const simulation = fileIntegration.status === FileIntegrationStatus.pendingSimulation;
+const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation: boolean) => {
   try {
     let fileIntegrationLogs: Partial<IntegrationLog>[] = [];
-    const simulationLabel = simulation ? ' simulation ' : ' ';
+    const simulationLabel = isSimulation ? ' simulation ' : ' ';
     console.log(`-----------------------------------------------------------------------------`);
-    console.log(`[FileIntegrationJOB] File ${fileIntegration.id} integration${simulationLabel}initializing.`);
+    console.log(
+      `[FileIntegrationJOB] File ${fileIntegration.itemIntegration.name} integration${simulationLabel}initializing.`
+    );
     let hasShemeFiles = true;
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     const selectors = JSON.parse(fileIntegration.itemIntegration.setup.schemesSelector) as IntegrationSelector[];
 
-    const linkSelector = selectors.find((selector) => selector.type === IntegrationSelectorType.LINK);
+    const linkSelectors = selectors.filter((selector) => selector.type === IntegrationSelectorType.LINK);
     const clickSelector = selectors.find((selector) => selector.type === IntegrationSelectorType.CLICK);
 
-    if (!linkSelector && !clickSelector) {
+    if (linkSelectors.length === 0 && !clickSelector) {
       throw new Error('scheme selector not found');
     }
 
@@ -105,26 +106,43 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
 
     let fileUrls: string[] = [];
 
-    if (linkSelector) {
+    if (linkSelectors.length > 0) {
       //try link selector
       process.stdout.write(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
-      fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
-
-      if (fileUrls.length > 0) {
-        process.stdout.write('found\n');
-        if (simulation) {
-          file.storagePath = 'simulation';
-        } else {
-          console.log('[FileIntegrationJOB] Uploading file to storage...');
-          const response = await uploadImage(
-            fileUrls[0]!,
-            `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-          );
-          file.storagePath = `${response.public_id}.${response.format}`;
+      for await (const linkSelector of linkSelectors) {
+        fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
+        if (!file.storagePath && fileUrls.length > 0) {
+          process.stdout.write('found\n');
+          if (isSimulation) {
+            file.storagePath = 'simulation';
+          } else {
+            console.log('[FileIntegrationJOB] Uploading file to storage...');
+            const response = await uploadImage(
+              fileUrls[0]!,
+              `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+            );
+            file.storagePath = `${response.public_id}.${response.format}`;
+          }
+          break;
         }
-      } else {
-        process.stdout.write('not found!\n');
       }
+      console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
+
+      // if (fileUrls.length > 0) {
+      //   process.stdout.write('found\n');
+      //   if (simulation) {
+      //     file.storagePath = 'simulation';
+      //   } else {
+      //     console.log('[FileIntegrationJOB] Uploading file to storage...');
+      //     const response = await uploadImage(
+      //       fileUrls[0]!,
+      //       `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+      //     );
+      //     file.storagePath = `${response.public_id}.${response.format}`;
+      //   }
+      // } else {
+      //   process.stdout.write('not found!\n');
+      // }
     }
 
     let buffer = new ArrayBuffer(0);
@@ -134,7 +152,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
       console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through click selector...`);
       buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
       const base64Url = convertBytesToBase64(buffer);
-      if (!simulation) {
+      if (!isSimulation) {
         console.log('[FileIntegrationJOB] Uploading file to storage...');
         const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
         file.storagePath = `${response.public_id}.${response.format}`;
@@ -142,13 +160,25 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
     }
 
     if (fileUrls.length === 0 && buffer.byteLength === 0) {
-      if (simulation) {
+      if (isSimulation) {
         hasShemeFiles = false;
       }
       throw new Error('scheme files not found');
     }
 
-    if (!simulation) {
+    if (isSimulation) {
+      console.log('[FileIntegrationJOB] Saving logs...');
+      fileIntegrationLogs.push({
+        integrationId: fileIntegration.itemIntegrationId,
+        key: FileSimulationReference.hasSchemeFiles,
+        reference: fileIntegration.itemIntegration.name,
+        value: String(hasShemeFiles)
+      });
+      logs = [...logs, ...fileIntegrationLogs];
+      await db.integrationLog.createMany({
+        data: fileIntegrationLogs as IntegrationLog[]
+      });
+    } else {
       console.log('[FileIntegrationJOB] Attaching uploaded file to Item...');
 
       await db.itemFile.create({
@@ -202,21 +232,8 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
     console.log(
       `[FileIntegrationJOB] File integration${simulationLabel}id ${fileIntegration.id} has successfully finished!`
     );
-
-    if (simulation) {
-      fileIntegrationLogs.push({
-        integrationId: fileIntegration.itemIntegrationId,
-        key: FileSimulationReference.hasSchemeFiles,
-        reference: fileIntegration.itemIntegration.name,
-        value: String(hasShemeFiles)
-      });
-      logs = [...logs, ...fileIntegrationLogs];
-      await db.integrationLog.createMany({
-        data: fileIntegrationLogs as IntegrationLog[]
-      });
-    }
   } catch (error) {
-    if (simulation) {
+    if (isSimulation) {
       await db.integrationLog.create({
         data: {
           integrationId: fileIntegration.itemIntegrationId,
@@ -234,13 +251,6 @@ const processSchemeType = async (fileIntegration: IFileIntegration) => {
           status: FileIntegrationStatus.error
         }
       });
-      // await db.itemIntegration.update({
-      //   where: { id: fileIntegration.itemIntegrationId },
-      //   data: {
-      //     status: ItemIntegrationStatus.error,
-      //     error
-      //   }
-      // });
     }
   }
 };
@@ -373,7 +383,7 @@ const processIntegration = async () => {
     for await (const fileIntegration of integrationList) {
       switch (fileIntegration.integrationType) {
         case FileType.scheme:
-          await processSchemeType(fileIntegration);
+          await processSchemeType(fileIntegration, isSimulation);
         //TODO
         case FileType.preview:
         //TODO
@@ -398,19 +408,12 @@ const processIntegration = async () => {
     });
 
     if (isSimulation) {
-      const simulations = await db.fileIntegration.findMany({
+      const fileSimulations = await db.fileIntegration.findMany({
         where: {
           OR: [{ status: FileIntegrationStatus.pendingSimulation }, { status: FileIntegrationStatus.simulated }]
         },
-        // select: {
-
-        //   itemIntegration: {
-        //     select: {
-        //       logs: true
-        //     }
-        //   }
-        // },
         include: {
+          //TODO remove if its not being used
           itemIntegration: {
             select: {
               logs: true
@@ -419,59 +422,69 @@ const processIntegration = async () => {
         }
       });
 
-      const pendingSimulations = simulations.filter((sim) => sim.status === FileIntegrationStatus.pendingSimulation);
-      const finishedSimulations = simulations.filter((sim) => sim.status === FileIntegrationStatus.simulated);
+      const pendingFileSimulations = fileSimulations.filter(
+        (sim) => sim.status === FileIntegrationStatus.pendingSimulation
+      );
+      const finishedFileSimulations = fileSimulations.filter((sim) => sim.status === FileIntegrationStatus.simulated);
 
-      if (pendingSimulations.length === 0) {
-        console.log(`[FileIntegrationJOB] Saving final Logs...`);
-
-        const containsSchemeFiles = logs.filter(
-          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-        );
-
-        await db.integrationLog.deleteMany({
+      if (pendingFileSimulations.length === 0) {
+        const pendingItemSimulations = await db.itemIntegration.count({
           where: {
-            value: `${true}`
+            status: ItemIntegrationStatus.pendingSimulation
           }
         });
 
-        const paramStartTime = params.find((param) => param.key === 'IntegrationProcessingStartTime');
-        const startTime = new Date(Number(paramStartTime!.value));
+        if (pendingItemSimulations === 0) {
+          console.log(`[FileIntegrationJOB] Saving final Logs...`);
 
-        let duration = 0;
-        let rest = 0;
-        const diff = differenceInSeconds(new Date(), startTime);
-        if (diff >= 60) {
-          duration = Math.round(diff / 60);
-          rest = diff % 60;
-        }
+          const containsSchemeFiles = logs.filter(
+            (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
+          );
 
-        const totalDuration = formatDuration(
-          {
-            minutes: duration,
-            seconds: rest
-          },
-          { delimiter: ', ' }
-        );
-
-        await db.integrationLog.createMany({
-          data: [
-            {
-              key: FileSimulationReference.schemePercentage,
-              reference: 'Global',
-              value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedSimulations.length))}%`
-            },
-            {
-              key: ItemSimulationReference.totalTime,
-              reference: 'Global',
-              value: totalDuration
+          await db.integrationLog.deleteMany({
+            where: {
+              value: `${true}`
             }
-          ]
-        });
-        console.log(`
-===================================================================================
-|                     Integration finished in ${totalDuration}                    |
-===================================================================================`);
+          });
+
+          const paramStartTime = params.find((param) => param.key === 'IntegrationProcessingStartTime');
+          const startTime = new Date(Number(paramStartTime!.value));
+
+          let duration = 0;
+          let rest = 0;
+          const diff = differenceInSeconds(new Date(), startTime);
+          if (diff >= 60) {
+            duration = Math.round(diff / 60);
+            rest = diff % 60;
+          }
+
+          const totalDuration = formatDuration(
+            {
+              minutes: duration,
+              seconds: rest
+            },
+            { delimiter: ', ' }
+          );
+
+          await db.integrationLog.createMany({
+            data: [
+              {
+                key: FileSimulationReference.schemePercentage,
+                reference: 'Global',
+                value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedFileSimulations.length))}%`
+              },
+              {
+                key: ItemSimulationReference.totalTime,
+                reference: 'Global',
+                value: totalDuration
+              }
+            ]
+          });
+          console.log(`
+  ===================================================================================
+  |                     Integration finished in ${totalDuration}                    |
+  ===================================================================================`);
+        }
       }
     }
 

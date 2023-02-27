@@ -352,6 +352,10 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.LINK}",
           "value": "div.entry > div.entry-inner > h3 > a"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > p > a"
         }
       ]`,
       ignoreExpressions: `["Paper Diorama"]`

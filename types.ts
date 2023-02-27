@@ -49,7 +49,8 @@ export enum ItemSimulationReference {
   categoryPercentage = ' Categories %',
   hasPreviewImages = 'Has preview images',
   hasDescription = 'Has description',
-  hasCategory = 'Has category'
+  hasCategory = 'Has category',
+  error = 'Item Error'
 }
 
 export enum FileSimulationReference {
