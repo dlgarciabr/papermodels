@@ -234,6 +234,12 @@ const processIntegration = async () => {
     }
 
     pageItems = [...pageItems, ...items];
+    if (
+      selectedItemName &&
+      items.filter((pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName?.toLowerCase()) >= 0).length > 0
+    ) {
+      break;
+    }
   }
 
   const uniquePageItems = _.uniqWith(pageItems, _.isEqual) as IPageItem[];
