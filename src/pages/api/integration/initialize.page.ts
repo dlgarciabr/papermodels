@@ -26,7 +26,7 @@ export default api(async (req, res, _ctx) => {
         OR: [
           { key: 'IntegrationProcessingType' },
           { key: 'IntegrationProcessingQtyType' },
-          { key: 'IntegrationProcessingStartTime' },
+          { key: SystemParameterType.INTEGRATION_START_TIME },
           { key: SystemParameterType.INTEGRATION_ITEM_NAME }
         ]
       }
@@ -43,7 +43,7 @@ export default api(async (req, res, _ctx) => {
           value: processingQtyType
         },
         {
-          key: 'IntegrationProcessingStartTime',
+          key: SystemParameterType.INTEGRATION_START_TIME,
           value: String(new Date().getTime())
         },
         {

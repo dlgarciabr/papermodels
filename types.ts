@@ -66,5 +66,6 @@ export enum IntegrationProcessingQtyType {
 }
 
 export enum SystemParameterType {
-  INTEGRATION_ITEM_NAME = 'INTEGRATION_ITEM_NAME'
+  INTEGRATION_ITEM_NAME = 'INTEGRATION_ITEM_NAME',
+  INTEGRATION_START_TIME = 'INTEGRATION_START_TIME'
 }

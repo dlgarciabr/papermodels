@@ -24,7 +24,8 @@ import {
   IntegrationProcessingType,
   IntegrationSelector,
   IntegrationSelectorType,
-  ItemSimulationReference
+  ItemSimulationReference,
+  SystemParameterType
 } from 'types';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import formatDuration from 'date-fns/formatDuration';
@@ -326,7 +327,7 @@ const processIntegration = async () => {
 
   const params = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingStartTime' }]
+      OR: [{ key: 'IntegrationProcessingType' }, { key: SystemParameterType.INTEGRATION_START_TIME }]
     }
   });
 
@@ -445,7 +446,7 @@ const processIntegration = async () => {
             }
           });
 
-          const paramStartTime = params.find((param) => param.key === 'IntegrationProcessingStartTime');
+          const paramStartTime = params.find((param) => param.key === SystemParameterType.INTEGRATION_START_TIME);
           const startTime = new Date(Number(paramStartTime!.value));
 
           let duration = 0;
