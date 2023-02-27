@@ -253,6 +253,10 @@ const seed = async () => {
     {
       name: 'Military Vehicles',
       items: []
+    },
+    {
+      name: 'Games',
+      items: []
     }
   ];
 
@@ -318,7 +322,11 @@ const seed = async () => {
         {
           "systemCategoryName": "Military Vehicles",
           "pageCategoryName": "Army"
-        }        
+        },
+        {
+          "systemCategoryName": "Games",
+          "pageCategoryName": "Toys"
+        }
       ]`,
       descriptionSelector: `[
         {
@@ -342,6 +350,14 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.IMG}",
           "value": "div.entry-inner > h2 > a > img"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry > div.entry-inner > p > a > img"
+        },
+        {
+          "type":"${IntegrationSelectorType.IMG}",
+          "value": "div.entry > div.entry-inner > div.wp-caption > a > img"
         }
       ]`,
       schemesSelector: `[
@@ -351,7 +367,15 @@ const seed = async () => {
         },
         {
           "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > h2 > a"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
           "value": "div.entry > div.entry-inner > h3 > a"
+        },
+        {
+          "type":"${IntegrationSelectorType.LINK}",
+          "value": "div.entry > div.entry-inner > h4 > a"
         },
         {
           "type":"${IntegrationSelectorType.LINK}",

@@ -234,10 +234,11 @@ const processIntegration = async () => {
     }
 
     pageItems = [...pageItems, ...items];
-    if (
+
+    const isSelectedItemFound =
       selectedItemName &&
-      items.filter((pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName?.toLowerCase()) >= 0).length > 0
-    ) {
+      items.filter((pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName?.toLowerCase()) >= 0).length > 0;
+    if (isSelectedItemFound) {
       break;
     }
   }

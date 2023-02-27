@@ -112,11 +112,11 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       for await (const linkSelector of linkSelectors) {
         fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
         if (!file.storagePath && fileUrls.length > 0) {
-          process.stdout.write('found\n');
+          process.stdout.write('found');
           if (isSimulation) {
             file.storagePath = 'simulation';
           } else {
-            console.log('[FileIntegrationJOB] Uploading file to storage...');
+            console.log('\n[FileIntegrationJOB] Uploading file to storage...');
             const response = await uploadImage(
               fileUrls[0]!,
               `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
@@ -126,7 +126,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           break;
         }
       }
-      console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
+      console.log('\n[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
 
       // if (fileUrls.length > 0) {
       //   process.stdout.write('found\n');

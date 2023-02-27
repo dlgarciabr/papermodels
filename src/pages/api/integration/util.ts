@@ -9,7 +9,7 @@ export const fetchPageAsString = async (url: string) => {
 
 export const executeSelectorOnHtmlText = (content: string, querySelector: string) => {
   const { window } = new JSDOM(content);
-  return window.document.querySelector(querySelector);
+  return window.document.querySelector(querySelector.trim());
 };
 
 /**
@@ -22,7 +22,7 @@ export const executeSelectorOnHtmlText = (content: string, querySelector: string
  */
 export const executeSelectorAllOnHtmlText = (content: string, querySelector: string) => {
   const { window } = new JSDOM(content);
-  return window.document.querySelectorAll(querySelector);
+  return window.document.querySelectorAll(querySelector.trim());
 };
 
 export const readPageNodesAsString = (pageContent: string, querySelector: string) => {

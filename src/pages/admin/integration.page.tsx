@@ -78,6 +78,10 @@ const Integration = () => {
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
 
   const updateSelector = async () => {
+    if (validateAllSelectors().length > 0) {
+      showToast(ToastType.ERROR, 'Review invalid seletor(s)');
+      return;
+    }
     await updateIntegrationSetupMutation(selectedSetup);
     showToast(ToastType.SUCCESS, 'Selector updated!');
   };
@@ -312,6 +316,12 @@ const Integration = () => {
     void loadSetups();
     void loadSimulationLogs();
   }, []);
+
+  useEffect(() => {
+    if (itemName) {
+      setProcessingQtyType(IntegrationProcessingQtyType.FULL);
+    }
+  }, [itemName]);
 
   useEffect(() => {
     void (async () => {
@@ -583,16 +593,25 @@ const Integration = () => {
             <RadioGroup row>
               <Radio
                 value={IntegrationProcessingQtyType.FEW}
-                onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.FEW)}
+                checked={processingQtyType === IntegrationProcessingQtyType.FEW}
+                onClick={() => {
+                  setItemName('');
+                  setProcessingQtyType(IntegrationProcessingQtyType.FEW);
+                }}
               />
               Few
               <Radio
                 value={IntegrationProcessingQtyType.INTERMEDIATE}
-                onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.INTERMEDIATE)}
+                checked={processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE}
+                onClick={() => {
+                  setItemName('');
+                  setProcessingQtyType(IntegrationProcessingQtyType.INTERMEDIATE);
+                }}
               />
               A bit
               <Radio
                 value={IntegrationProcessingQtyType.FULL}
+                checked={processingQtyType === IntegrationProcessingQtyType.FULL}
                 onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.FULL)}
               />
               Full
