@@ -76,9 +76,11 @@ const Integration = () => {
     IntegrationProcessingQtyType.FEW
   );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
+  const [expandedAccordion, setExpandedAccordion] = useState(false);
 
   const updateSelector = async () => {
     if (validateAllSelectors().length > 0) {
+      setExpandedAccordion(true);
       showToast(ToastType.ERROR, 'Review invalid seletor(s)');
       return;
     }
@@ -184,6 +186,7 @@ const Integration = () => {
     }
 
     if (validateAllSelectors().length > 0) {
+      setExpandedAccordion(true);
       showToast(ToastType.ERROR, 'Review invalid seletor(s)');
       return;
     }
@@ -488,14 +491,20 @@ const Integration = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Accordion>
+            <Accordion expanded={expandedAccordion} onChange={() => setExpandedAccordion(!expandedAccordion)}>
               <AccordionSummary expandIcon={<TbChevronDown />} aria-controls='panel1a-content' id='panel1a-header'>
                 <Grid container>
                   <Grid item xs={10}>
                     <Typography>Setup details</Typography>
                   </Grid>
                   <Grid item>
-                    <Button onClick={() => updateSelector()}>Save changes</Button>
+                    <Button
+                      onClick={(e) => {
+                        void updateSelector();
+                        e.stopPropagation();
+                      }}>
+                      Save changes
+                    </Button>
                   </Grid>
                 </Grid>
               </AccordionSummary>
@@ -599,7 +608,7 @@ const Integration = () => {
                   setProcessingQtyType(IntegrationProcessingQtyType.FEW);
                 }}
               />
-              Few
+              <Typography>Few</Typography>
               <Radio
                 value={IntegrationProcessingQtyType.INTERMEDIATE}
                 checked={processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE}
@@ -608,13 +617,13 @@ const Integration = () => {
                   setProcessingQtyType(IntegrationProcessingQtyType.INTERMEDIATE);
                 }}
               />
-              A bit
+              <Typography>Intermediate</Typography>
               <Radio
                 value={IntegrationProcessingQtyType.FULL}
                 checked={processingQtyType === IntegrationProcessingQtyType.FULL}
                 onClick={() => setProcessingQtyType(IntegrationProcessingQtyType.FULL)}
               />
-              Full
+              <Typography>Full</Typography>
             </RadioGroup>
             <Button
               onClick={() => processSetup(IntegrationProcessingType.INTEGRATION)}
