@@ -336,6 +336,10 @@ const seed = async () => {
         {
           "type":"${IntegrationSelectorType.TEXT}",
           "value": "div.entry > div.entry-inner > p:nth-child(3)"
+        },
+        {
+          "type":"${IntegrationSelectorType.TEXT}",
+          "value": "div.entry > div.entry-inner > p:nth-child(4)"
         }
       ]`,
       previewImagesSelector: `[

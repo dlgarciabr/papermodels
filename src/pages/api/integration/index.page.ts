@@ -104,6 +104,7 @@ const processItemIntegration = async () => {
       let hasDescription = true;
 
       try {
+        console.log(`-----------------------------------------------------------------------------------------------`);
         console.log(`[ItemIntegrationJOB] Running integration${simulationLabel}of item '${itemIntegration.name}'...`);
 
         const nextStatus = isSimulation ? ItemIntegrationStatus.runningSimulation : ItemIntegrationStatus.running;

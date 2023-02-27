@@ -108,15 +108,15 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
 
     if (linkSelectors.length > 0) {
       //try link selector
-      process.stdout.write(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
+      console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
       for await (const linkSelector of linkSelectors) {
         fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
         if (!file.storagePath && fileUrls.length > 0) {
-          process.stdout.write('found');
+          console.log('[FileIntegrationJOB] file found from link selector!');
           if (isSimulation) {
             file.storagePath = 'simulation';
           } else {
-            console.log('\n[FileIntegrationJOB] Uploading file to storage...');
+            console.log('[FileIntegrationJOB] Uploading file to storage...');
             const response = await uploadImage(
               fileUrls[0]!,
               `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
@@ -126,7 +126,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           break;
         }
       }
-      console.log('\n[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
+      console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
 
       // if (fileUrls.length > 0) {
       //   process.stdout.write('found\n');
@@ -282,8 +282,6 @@ const downloadFileFromClick = async (url: string, selector: string) => {
     await page.click(selector);
 
     process.stdout.write('[FileIntegrationJOB] ');
-
-    // await checkDownloadFinished();
 
     await Promise.race([checkDownloadFinished(), new Promise((resolve) => setTimeout(resolve, 60000))]);
 
