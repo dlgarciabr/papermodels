@@ -693,4 +693,6 @@ const Integration = () => {
   );
 };
 
+Integration.authenticate = { redirectTo: '/admin' };
+
 export default Integration;

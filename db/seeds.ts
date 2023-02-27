@@ -26,6 +26,15 @@ const seed = async () => {
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationLog\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\" CASCADE;`;
 
+  await db.user.create({
+    data: {
+      email: 'dlgarciabr@gmail.com',
+      hashedPassword:
+        'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTIscD0xJHhYSGg0djNOdU0yWEhhV0xSdlZwcVEkTkdDckF6QmI1b2xrTmdVaWhPT1JSbzg1SVZMaUZ6SkJoWW51YTNNRHF2ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      role: 'USER'
+    }
+  });
+
   const categories = [
     {
       name: 'Misc.',
