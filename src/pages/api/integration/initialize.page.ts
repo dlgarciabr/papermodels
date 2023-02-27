@@ -1,7 +1,7 @@
 /* istanbul ignore file -- @preserve */
 import db, { IntegrationSetup, ItemIntegrationStatus, UrlIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
-import { IntegrationProcessingType } from 'types';
+import { IntegrationProcessingType, SystemParameterType } from 'types';
 import { getAllSiteUrls } from './util';
 
 export default api(async (req, res, _ctx) => {
@@ -9,6 +9,7 @@ export default api(async (req, res, _ctx) => {
     const setup = req.body as IntegrationSetup;
     const type = req.body.type as IntegrationProcessingType;
     const processingQtyType = req.body.processingQtyType;
+    const itemName = req.body.itemName;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -25,7 +26,8 @@ export default api(async (req, res, _ctx) => {
         OR: [
           { key: 'IntegrationProcessingType' },
           { key: 'IntegrationProcessingQtyType' },
-          { key: 'IntegrationProcessingStartTime' }
+          { key: 'IntegrationProcessingStartTime' },
+          { key: SystemParameterType.INTEGRATION_ITEM_NAME }
         ]
       }
     });
@@ -43,6 +45,10 @@ export default api(async (req, res, _ctx) => {
         {
           key: 'IntegrationProcessingStartTime',
           value: String(new Date().getTime())
+        },
+        {
+          key: SystemParameterType.INTEGRATION_ITEM_NAME,
+          value: itemName
         }
       ]
     });

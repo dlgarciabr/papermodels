@@ -7,7 +7,8 @@ import {
   IntegrationProcessingQtyType,
   IntegrationProcessingType,
   IntegrationSelector,
-  ItemSimulationReference
+  ItemSimulationReference,
+  SystemParameterType
 } from 'types';
 import { IPageItem } from './types';
 
@@ -120,10 +121,15 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
 const processIntegration = async () => {
   const systemParams = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: 'IntegrationProcessingType' }, { key: 'IntegrationProcessingQtyType' }]
+      OR: [
+        { key: 'IntegrationProcessingType' },
+        { key: 'IntegrationProcessingQtyType' },
+        { key: SystemParameterType.INTEGRATION_ITEM_NAME }
+      ]
     }
   });
 
+  const selectedItemName = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_ITEM_NAME)?.value;
   const typeParam = systemParams.find((param) => param.key === 'IntegrationProcessingType');
   const processingQtyType = systemParams.find((param) => param.key === 'IntegrationProcessingQtyType')
     ?.value as IntegrationProcessingQtyType;
@@ -280,8 +286,27 @@ const processIntegration = async () => {
         );
       }
 
-      for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
-        await createItemIntegration(pageItem, setup, IntegrationProcessingType.SIMULATION);
+      if (selectedItemName) {
+        const pageItems = uniquePageItems.filter(
+          (pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName.toLowerCase()) >= 0
+        );
+        if (pageItems.length > 0) {
+          for await (const pageItem of pageItems) {
+            await createItemIntegration(pageItem, setup, IntegrationProcessingType.SIMULATION);
+          }
+        } else {
+          await db.integrationLog.create({
+            data: {
+              key: ItemSimulationReference.url,
+              reference: 'Global',
+              value: `Selected Name Item ${selectedItemName} not found!`
+            }
+          });
+        }
+      } else {
+        for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
+          await createItemIntegration(pageItem, setup, IntegrationProcessingType.SIMULATION);
+        }
       }
     }
   }

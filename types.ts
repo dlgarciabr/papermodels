@@ -64,3 +64,7 @@ export enum IntegrationProcessingQtyType {
   INTERMEDIATE = 'INTERMEDIATE',
   FULL = 'FULL'
 }
+
+export enum SystemParameterType {
+  INTEGRATION_ITEM_NAME = 'INTEGRATION_ITEM_NAME'
+}

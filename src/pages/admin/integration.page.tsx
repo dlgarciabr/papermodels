@@ -71,6 +71,7 @@ const Integration = () => {
   const [simulationIntegrationJob, setSimulationIntegrationJob] = useState<NodeJS.Timeout | null>();
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
   const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
+  const [itemName, setItemName] = useState<string>('');
   const [processingQtyType, setProcessingQtyType] = useState<IntegrationProcessingQtyType>(
     IntegrationProcessingQtyType.FEW
   );
@@ -197,7 +198,8 @@ const Integration = () => {
         body: JSON.stringify({
           ...selectedSetup,
           type,
-          processingQtyType
+          processingQtyType,
+          itemName
         })
       });
       if (response.status === 204) {
@@ -457,13 +459,22 @@ const Integration = () => {
               error={fieldErrors.includes('key')}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <TextField
               fullWidth
               label='Domain'
               value={selectedSetup.domain}
               name='domain'
               onChange={(e) => setParam(e as any)}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label='Item name'
+              value={itemName}
+              name='itemName'
+              onChange={(e) => setItemName(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>
