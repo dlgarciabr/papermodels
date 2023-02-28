@@ -21,25 +21,16 @@ export default api(async (req, res, _ctx) => {
       return;
     }
 
-    await db.systemParameter.deleteMany({
-      where: {
-        OR: [
-          { key: 'IntegrationProcessingType' },
-          { key: 'IntegrationProcessingQtyType' },
-          { key: SystemParameterType.INTEGRATION_START_TIME },
-          { key: SystemParameterType.INTEGRATION_ITEM_NAME }
-        ]
-      }
-    });
+    console.log(`[IntegrationInitializer] Creating support files...`);
 
     await db.systemParameter.createMany({
       data: [
         {
-          key: 'IntegrationProcessingType',
+          key: SystemParameterType.INTEGRATION_TYPE,
           value: String(type)
         },
         {
-          key: 'IntegrationProcessingQtyType',
+          key: SystemParameterType.INTEGRATION_QUANTITY,
           value: processingQtyType
         },
         {
@@ -53,7 +44,11 @@ export default api(async (req, res, _ctx) => {
       ]
     });
 
+    console.log(`[IntegrationInitializer] Extracting all site URLs...`);
+
     const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
+
+    console.log(`[IntegrationInitializer] Cleaning old registries...`);
 
     await db.integrationLog.deleteMany({
       where: {
@@ -91,7 +86,12 @@ export default api(async (req, res, _ctx) => {
       case IntegrationProcessingType.SIMULATION:
         status = UrlIntegrationStatus.simulationPending; //TODO rename enum property
         break;
+      case IntegrationProcessingType.INTEGRATION:
+        status = UrlIntegrationStatus.pending;
+        break;
     }
+
+    console.log(`[IntegrationInitializer] Saving extracted site URLs...`);
 
     await db.urlIntegration.createMany({
       data: uniqueSiteUrls.map((url) => ({

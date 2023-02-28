@@ -76,6 +76,11 @@ const Admin = () => {
                   <a>items</a>
                 </Link>
               </p>
+              <p>
+                <Link href='/admin/integration'>
+                  <a>integration</a>
+                </Link>
+              </p>
             </div>
           )}
         </main>

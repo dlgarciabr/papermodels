@@ -122,25 +122,22 @@ const processIntegration = async () => {
   const systemParams = await db.systemParameter.findMany({
     where: {
       OR: [
-        { key: 'IntegrationProcessingType' },
-        { key: 'IntegrationProcessingQtyType' },
+        { key: SystemParameterType.INTEGRATION_TYPE },
+        { key: SystemParameterType.INTEGRATION_QUANTITY },
         { key: SystemParameterType.INTEGRATION_ITEM_NAME }
       ]
     }
   });
 
   const selectedItemName = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_ITEM_NAME)?.value;
-  const typeParam = systemParams.find((param) => param.key === 'IntegrationProcessingType');
-  const processingQtyType = systemParams.find((param) => param.key === 'IntegrationProcessingQtyType')
+  const typeParam = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_TYPE);
+  const processingQtyType = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_QUANTITY)
     ?.value as IntegrationProcessingQtyType;
 
   const type = typeParam?.value as IntegrationProcessingType;
   const isReadUrl = type === IntegrationProcessingType.READ_URLS;
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
   const isIntegration = type === IntegrationProcessingType.INTEGRATION;
-  // const isFew = processingQtyType === IntegrationProcessingQtyType.FEW;
-  // const isIntermediate = processingQtyType === IntegrationProcessingQtyType.INTERMEDIATE;
-  // const isFull = processingQtyType === IntegrationProcessingQtyType.FULL;
 
   let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
 
@@ -194,11 +191,21 @@ const processIntegration = async () => {
         divisor = 1;
         break;
     }
-    // const divisor = isFew ? 40 : 20;
     urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
+  } else {
+    urlIntegrationsToProcess = await db.urlIntegration.findMany({
+      where: {
+        status: UrlIntegrationStatus.pending
+      },
+      include: {
+        setup: true
+      },
+      take: 10
+    });
   }
 
   if (urlIntegrationsToProcess.length === 0) {
+    console.log(`[UrlIntegrationJOB] Nothing to be done, quiting!`);
     return;
   }
 
@@ -209,16 +216,17 @@ const processIntegration = async () => {
   const setup = urlIntegrationsToProcess[0]!.setup;
   let pageItems: IPageItem[] = [];
 
+  // for await (const urlIntegration of urlIntegrationsToProcess.slice(0, 1)) {
   for await (const urlIntegration of urlIntegrationsToProcess) {
     console.log(`[UrlIntegrationJOB] Reading URL ${urlIntegration.url} ...`);
     const itemUrlSelectors = JSON.parse(urlIntegration.setup.itemUrlSelector) as IntegrationSelector[];
 
+    const isRunAllSelectors =
+      urlIntegration.status === UrlIntegrationStatus.simulationPending ||
+      urlIntegration.status === UrlIntegrationStatus.pending;
+
     let items: IPageItem[] = [];
-    if (urlIntegration.status === UrlIntegrationStatus.readingPending) {
-      for await (const itemSelector of itemUrlSelectors) {
-        items = (await readPageUrls(urlIntegration.url, itemSelector.value)).map((url) => ({ url: url as string }));
-      }
-    } else if (urlIntegration.status === UrlIntegrationStatus.simulationPending) {
+    if (isRunAllSelectors) {
       if (categorySelectorsCache.length === 0) {
         categorySelectorsCache = JSON.parse(urlIntegration.setup.categorySelector) as IntegrationSelector[];
       }
@@ -231,6 +239,10 @@ const processIntegration = async () => {
         categorySelectorsCache,
         categoryBindingsCache
       );
+    } else {
+      for await (const itemSelector of itemUrlSelectors) {
+        items = (await readPageUrls(urlIntegration.url, itemSelector.value)).map((url) => ({ url: url as string }));
+      }
     }
 
     pageItems = [...pageItems, ...items];
@@ -258,8 +270,7 @@ const processIntegration = async () => {
       });
     }
 
-    // if (urlIntegrationsToProcess[0]!.status === UrlIntegrationStatus.simulationPending) {//????????
-    if (isSimulation) {
+    if (isSimulation || isIntegration) {
       console.log(`[UrlIntegrationJOB] Creating ItemIntegrations...`);
       await db.itemIntegration.deleteMany({
         where: {
@@ -299,7 +310,7 @@ const processIntegration = async () => {
         );
         if (pageItems.length > 0) {
           for await (const pageItem of pageItems) {
-            await createItemIntegration(pageItem, setup, IntegrationProcessingType.SIMULATION);
+            await createItemIntegration(pageItem, setup, type);
           }
         } else {
           await db.integrationLog.create({
@@ -312,16 +323,25 @@ const processIntegration = async () => {
         }
       } else {
         for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
-          await createItemIntegration(pageItem, setup, IntegrationProcessingType.SIMULATION);
+          await createItemIntegration(pageItem, setup, type);
         }
       }
     }
   }
 
-  const nextStatus =
-    urlIntegrationsToProcess[0]?.status === UrlIntegrationStatus.readingPending
-      ? UrlIntegrationStatus.readingDone
-      : UrlIntegrationStatus.simulationDone;
+  let nextStatus;
+
+  switch (urlIntegrationsToProcess[0]?.status) {
+    case UrlIntegrationStatus.readingPending:
+      nextStatus = UrlIntegrationStatus.readingDone;
+      break;
+    case UrlIntegrationStatus.simulationPending:
+      nextStatus = UrlIntegrationStatus.simulationDone;
+      break;
+    case UrlIntegrationStatus.pending:
+      nextStatus = UrlIntegrationStatus.done;
+      break;
+  }
 
   console.log(`[UrlIntegrationJOB] Updating UrlIntegrations status to ${nextStatus}...`);
 

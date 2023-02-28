@@ -79,6 +79,7 @@ enum ItemStatus {
   integrating
   enable
   disable
+  validate
 }
 
 model Item {

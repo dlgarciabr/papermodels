@@ -1,5 +1,4 @@
-import { Decimal } from '@prisma/client/runtime';
-import db, { FileType, ItemStatus } from 'db';
+import db from 'db';
 import { IntegrationSelectorType } from 'types';
 
 /*
@@ -26,14 +25,14 @@ const seed = async () => {
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationLog\" CASCADE;`;
   await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\" CASCADE;`;
 
-  await db.user.create({
-    data: {
-      email: 'dlgarciabr@gmail.com',
-      hashedPassword:
-        'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTIscD0xJHhYSGg0djNOdU0yWEhhV0xSdlZwcVEkTkdDckF6QmI1b2xrTmdVaWhPT1JSbzg1SVZMaUZ6SkJoWW51YTNNRHF2ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
-      role: 'USER'
-    }
-  });
+  // await db.user.create({
+  //   data: {
+  //     email: 'dlgarciabr@gmail.com',
+  //     hashedPassword:
+  //       'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTIscD0xJHhYSGg0djNOdU0yWEhhV0xSdlZwcVEkTkdDckF6QmI1b2xrTmdVaWhPT1JSbzg1SVZMaUZ6SkJoWW51YTNNRHF2ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+  //     role: 'USER'
+  //   }
+  // });
 
   const categories = [
     {
@@ -43,117 +42,117 @@ const seed = async () => {
     {
       name: 'Buildings',
       items: [
-        {
-          name: 'Veterinary  clinic',
-          description: 'A tiny and nice vet clinic building',
-          dificulty: 1,
-          assemblyTime: new Decimal(0.5),
-          licenseType: 'MIT',
-          status: ItemStatus.enable,
-          licenseTypeLink: 'https://opensource.org/licenses/MIT',
-          files: [
-            {
-              storagePath: '1/vet_clinic_scheme_1.jpg',
-              artifactType: FileType.scheme
-            }
-          ]
-        },
-        {
-          name: 'Pharmacy',
-          description: '',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        },
-        {
-          name: 'Market',
-          description: '',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Veterinary  clinic',
+        //   description: 'A tiny and nice vet clinic building',
+        //   dificulty: 1,
+        //   assemblyTime: new Decimal(0.5),
+        //   licenseType: 'MIT',
+        //   status: ItemStatus.enable,
+        //   licenseTypeLink: 'https://opensource.org/licenses/MIT',
+        //   files: [
+        //     {
+        //       storagePath: '1/vet_clinic_scheme_1.jpg',
+        //       artifactType: FileType.scheme
+        //     }
+        //   ]
+        // },
+        // {
+        //   name: 'Pharmacy',
+        //   description: '',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // },
+        // {
+        //   name: 'Market',
+        //   description: '',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Emergency services',
       items: [
-        {
-          name: 'Hospital',
-          description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          licenseType: '',
-          files: [
-            {
-              storagePath: 'papermodel_test/4/jxt34bqa1edbjchtotkd.pdf',
-              artifactType: FileType.scheme
-            },
-            {
-              storagePath: 'papermodel_test/4/zhoznsqsiqcbdsl2pfta.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              storagePath: 'papermodel_test/4/ptkzjkeagc9wsus0s8jy.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              storagePath: 'papermodel_test/4/gepqjo1blhjycliynppk.jpg',
-              artifactType: FileType.preview
-            },
-            {
-              storagePath: 'papermodel_test/4/u1sd8jwko61icvfdjrzn.pdf',
-              artifactType: FileType.instruction
-            }
-          ]
-        }
+        // {
+        //   name: 'Hospital',
+        //   description: 'A big and cool hospital, perfect to play with kids. It also contains some doctors to be made',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   licenseType: '',
+        //   files: [
+        //     {
+        //       storagePath: 'papermodel_test/4/jxt34bqa1edbjchtotkd.pdf',
+        //       artifactType: FileType.scheme
+        //     },
+        //     {
+        //       storagePath: 'papermodel_test/4/zhoznsqsiqcbdsl2pfta.jpg',
+        //       artifactType: FileType.preview
+        //     },
+        //     {
+        //       storagePath: 'papermodel_test/4/ptkzjkeagc9wsus0s8jy.jpg',
+        //       artifactType: FileType.preview
+        //     },
+        //     {
+        //       storagePath: 'papermodel_test/4/gepqjo1blhjycliynppk.jpg',
+        //       artifactType: FileType.preview
+        //     },
+        //     {
+        //       storagePath: 'papermodel_test/4/u1sd8jwko61icvfdjrzn.pdf',
+        //       artifactType: FileType.instruction
+        //     }
+        //   ]
+        // }
       ]
     },
     {
       name: 'Architecture',
       items: [
-        {
-          name: 'Alcázar of Segovia',
-          description:
-            'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
-          dificulty: 5,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(12),
-          licenseType: 'MIT',
-          licenseTypeLink: 'https://opensource.org/licenses/MIT',
-          author: 'Tod Jason',
-          authorLink: 'https://google.com',
-          files: [
-            // {
-            //   storagePath: '3/alcazar_of_segovia_preview_1.jpg',
-            //   artifactType: FileType.preview
-            // },
-            // {
-            //   storagePath: '3/alcazar_of_segovia_preview_2.jpg',
-            //   artifactType: FileType.preview
-            // },
-            // {
-            //   storagePath: '3/alcazar_of_segovia_preview_3.jpg',
-            //   artifactType: FileType.preview
-            // },
-          ]
-        }
+        // {
+        //   name: 'Alcázar of Segovia',
+        //   description:
+        //     'The Alcázar of Segovia is a medieval castle located in the city of Segovia, in Castile and León, Spain',
+        //   dificulty: 5,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(12),
+        //   licenseType: 'MIT',
+        //   licenseTypeLink: 'https://opensource.org/licenses/MIT',
+        //   author: 'Tod Jason',
+        //   authorLink: 'https://google.com',
+        //   files: [
+        // {
+        //   storagePath: '3/alcazar_of_segovia_preview_1.jpg',
+        //   artifactType: FileType.preview
+        // },
+        // {
+        //   storagePath: '3/alcazar_of_segovia_preview_2.jpg',
+        //   artifactType: FileType.preview
+        // },
+        // {
+        //   storagePath: '3/alcazar_of_segovia_preview_3.jpg',
+        //   artifactType: FileType.preview
+        // },
+        //   ]
+        // }
       ]
     },
     {
       name: 'Boats & Ships',
       items: [
-        {
-          name: 'Speedboat',
-          description: 'A fast racing speed boat',
-          dificulty: 2,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(3),
-          licenseTypeLink: 'https://opensource.org/licenses/MIT',
-          files: []
-        }
+        // {
+        //   name: 'Speedboat',
+        //   description: 'A fast racing speed boat',
+        //   dificulty: 2,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(3),
+        //   licenseTypeLink: 'https://opensource.org/licenses/MIT',
+        //   files: []
+        // }
       ]
     },
     {
@@ -163,92 +162,92 @@ const seed = async () => {
     {
       name: 'Trains',
       items: [
-        {
-          name: 'Oporto Metro',
-          description: 'A two wagon metro of Oporto city',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Oporto Metro',
+        //   description: 'A two wagon metro of Oporto city',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Aircrafts',
       items: [
-        {
-          name: 'F-14 Tomcat',
-          description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
-          dificulty: 1,
-          status: ItemStatus.disable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'F-14 Tomcat',
+        //   description: 'The classic US Navy fighter jet from 80s. Used to fly from aircraft carriers',
+        //   dificulty: 1,
+        //   status: ItemStatus.disable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Automobiles',
       items: [
-        {
-          name: 'Mercedes Class A',
-          description: 'The small solution of a city car presented by Mercedes',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Mercedes Class A',
+        //   description: 'The small solution of a city car presented by Mercedes',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Houses & Apartments',
       items: [
-        {
-          name: 'Farm House',
-          description: 'A nice farm house',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Farm House',
+        //   description: 'A nice farm house',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Realistic Animals',
       items: [
-        {
-          name: 'Jaguar',
-          description: '',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Jaguar',
+        //   description: '',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Plants & trees',
       items: [
-        {
-          name: 'Oak',
-          description: '',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Oak',
+        //   description: '',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
       name: 'Origami',
       items: [
-        {
-          name: 'Origami bird',
-          description: '',
-          dificulty: 1,
-          status: ItemStatus.enable,
-          assemblyTime: new Decimal(1),
-          files: []
-        }
+        // {
+        //   name: 'Origami bird',
+        //   description: '',
+        //   dificulty: 1,
+        //   status: ItemStatus.enable,
+        //   assemblyTime: new Decimal(1),
+        //   files: []
+        // }
       ]
     },
     {
@@ -269,21 +268,21 @@ const seed = async () => {
     }
   ];
 
-  for await (const { name, items } of categories) {
+  for await (const { name } of categories) {
     await db.category.create({
       data: {
         name,
-        description: name,
-        items: {
-          create: items!.map((item) => ({
-            ...item,
-            files: {
-              create: item.files.map((file) => ({
-                ...file
-              }))
-            }
-          }))
-        }
+        description: name
+        // items: {
+        //   create: items!.map((item) => ({
+        //     ...item,
+        //     files: {
+        //       create: item.files.map((file) => ({
+        //         ...file
+        //       }))
+        //     }
+        //   }))
+        // }
       }
     });
   }

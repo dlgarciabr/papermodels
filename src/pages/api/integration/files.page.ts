@@ -98,6 +98,8 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       throw new Error('scheme selector not found');
     }
 
+    const errors: string[] = [];
+
     const file: UploadItemFile = {
       storagePath: '',
       item: { id: fileIntegration.itemIntegration.itemId, files: [] },
@@ -105,66 +107,52 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       tempId: ''
     };
 
-    let fileUrls: string[] = [];
+    try {
+      let fileUrls: string[] = [];
 
-    if (linkSelectors.length > 0) {
-      //try link selector
-      console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
-      for await (const linkSelector of linkSelectors) {
-        fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
-        if (!file.storagePath && fileUrls.length > 0) {
-          console.log('[FileIntegrationJOB] file found from link selector!');
-          if (isSimulation) {
-            file.storagePath = 'simulation';
-          } else {
-            console.log('[FileIntegrationJOB] Uploading file to storage...');
-            const response = await uploadImage(
-              fileUrls[0]!,
-              `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-            );
-            file.storagePath = `${response.public_id}.${response.format}`;
+      if (linkSelectors.length > 0) {
+        //try link selector
+        console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
+        for await (const linkSelector of linkSelectors) {
+          fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
+          if (!file.storagePath && fileUrls.length > 0) {
+            console.log('[FileIntegrationJOB] file found from link selector!');
+            if (isSimulation) {
+              file.storagePath = 'simulation';
+            } else {
+              console.log('[FileIntegrationJOB] Uploading file to storage...');
+              const response = await uploadImage(
+                fileUrls[0]!,
+                `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+              );
+              file.storagePath = `${response.public_id}.${response.format}`;
+            }
+            break;
           }
-          break;
+        }
+        console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
+      }
+
+      let buffer = new ArrayBuffer(0);
+
+      if (!file.storagePath && clickSelector) {
+        //try click selector
+        console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through click selector...`);
+        buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
+        const base64Url = convertBytesToBase64(buffer);
+        if (!isSimulation) {
+          console.log('[FileIntegrationJOB] Uploading file to storage...');
+          const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
+          file.storagePath = `${response.public_id}.${response.format}`;
         }
       }
-      console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
 
-      // if (fileUrls.length > 0) {
-      //   process.stdout.write('found\n');
-      //   if (simulation) {
-      //     file.storagePath = 'simulation';
-      //   } else {
-      //     console.log('[FileIntegrationJOB] Uploading file to storage...');
-      //     const response = await uploadImage(
-      //       fileUrls[0]!,
-      //       `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-      //     );
-      //     file.storagePath = `${response.public_id}.${response.format}`;
-      //   }
-      // } else {
-      //   process.stdout.write('not found!\n');
-      // }
-    }
-
-    let buffer = new ArrayBuffer(0);
-
-    if (!file.storagePath && clickSelector) {
-      //try click selector
-      console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through click selector...`);
-      buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
-      const base64Url = convertBytesToBase64(buffer);
-      if (!isSimulation) {
-        console.log('[FileIntegrationJOB] Uploading file to storage...');
-        const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
-        file.storagePath = `${response.public_id}.${response.format}`;
+      if (fileUrls.length === 0 && buffer.byteLength === 0) {
+        throw new Error('scheme files not found');
       }
-    }
-
-    if (fileUrls.length === 0 && buffer.byteLength === 0) {
-      if (isSimulation) {
-        hasShemeFiles = false;
-      }
-      throw new Error('scheme files not found');
+    } catch (error) {
+      hasShemeFiles = false;
+      errors.push(error.message);
     }
 
     if (isSimulation) {
@@ -221,7 +209,21 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
         await db.item.update({
           where: { id: fileIntegration.itemIntegration.itemId! },
           data: {
-            status: ItemStatus.enable
+            status: hasShemeFiles ? ItemStatus.enable : ItemStatus.validate
+          }
+        });
+
+        console.log(`[FileIntegrationJOB] Cleaning System Parameters...`);
+
+        await db.systemParameter.deleteMany({
+          where: {
+            OR: [
+              { key: SystemParameterType.INTEGRATION_TYPE },
+              { key: SystemParameterType.INTEGRATION_QUANTITY },
+              { key: SystemParameterType.INTEGRATION_START_TIME },
+              { key: SystemParameterType.INTEGRATION_ITEM_NAME },
+              { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
+            ]
           }
         });
         console.log(
@@ -233,6 +235,10 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
     console.log(
       `[FileIntegrationJOB] File integration${simulationLabel}id ${fileIntegration.id} has successfully finished!`
     );
+
+    if (errors.length > 0) {
+      throw new Error(errors.join(';\n'));
+    }
   } catch (error) {
     if (isSimulation) {
       await db.integrationLog.create({
@@ -240,16 +246,15 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           integrationId: fileIntegration.itemIntegrationId,
           key: FileSimulationReference.error,
           reference: fileIntegration.itemIntegration.name,
-          value: (error as Error).message
+          value: error.message
         }
       });
     } else {
-      console.log('error', error);
-      // TODO save error on integration table
       await db.fileIntegration.update({
         where: { id: fileIntegration.id },
         data: {
-          status: FileIntegrationStatus.error
+          status: FileIntegrationStatus.error,
+          error: error.message
         }
       });
     }
@@ -327,11 +332,11 @@ const processIntegration = async () => {
 
   const params = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: 'IntegrationProcessingType' }, { key: SystemParameterType.INTEGRATION_START_TIME }]
+      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_START_TIME }]
     }
   });
 
-  const paramProcessingType = params.find((param) => param.key === 'IntegrationProcessingType');
+  const paramProcessingType = params.find((param) => param.key === SystemParameterType.INTEGRATION_TYPE);
 
   if (!paramProcessingType) {
     console.log(`[FileIntegrationJOB] Nothing to be done, quiting!`);

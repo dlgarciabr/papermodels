@@ -11,7 +11,7 @@ import db, {
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference } from 'types';
+import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference, SystemParameterType } from 'types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
@@ -31,7 +31,7 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
 const processItemIntegration = async () => {
   const paramProcessingType = await db.systemParameter.findFirst({
     where: {
-      key: 'IntegrationProcessingType'
+      key: SystemParameterType.INTEGRATION_TYPE
     }
   });
 

@@ -1,7 +1,7 @@
 import { FileType, ItemStatus } from 'db';
 import { z } from 'zod';
 
-const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating]);
+const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating, ItemStatus.validate]);
 const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme]);
 
 export const basicValidation = {

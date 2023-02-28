@@ -31,7 +31,8 @@ import {
   IntegrationProcessingType,
   IntegrationSelector,
   IntegrationSelectorType,
-  ItemSimulationReference
+  ItemSimulationReference,
+  SystemParameterType
 } from 'types';
 import { MdContentCopy } from 'react-icons/md';
 import { ToastType } from 'src/core/components/Toast/types.d';
@@ -213,11 +214,9 @@ const Integration = () => {
         setLoading(false);
         return;
       }
-      if (type === IntegrationProcessingType.SIMULATION || type === IntegrationProcessingType.READ_URLS) {
-        void feedLog();
-        void runUrlsIntegration();
-      }
-      if (type === IntegrationProcessingType.SIMULATION) {
+      void runUrlsIntegration();
+      void feedLog();
+      if (type === IntegrationProcessingType.SIMULATION || type === IntegrationProcessingType.INTEGRATION) {
         void runFilesIntegration();
       }
     } catch (error) {
@@ -331,7 +330,7 @@ const Integration = () => {
       const { systemParameters } = await invoke(getSystemParameters, {
         orderBy: { key: 'asc' },
         where: {
-          key: 'IntegrationProcessingType'
+          key: SystemParameterType.INTEGRATION_TYPE
         }
       });
 
@@ -452,6 +451,7 @@ const Integration = () => {
               value={selectedSetup.id !== 0 ? selectedSetup.id : ''}
               label='Setup'
               name='selectedSetup'
+              placeholder='Setup'
               fullWidth
               onChange={(e) => handleSelectSetup(Number(e.target.value))}>
               {integrationSetups.map((item) => (
