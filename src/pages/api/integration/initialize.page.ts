@@ -23,17 +23,30 @@ export default api(async (req, res, _ctx) => {
 
     console.log(`[IntegrationInitializer] Creating support files...`);
 
-    await db.systemParameter.createMany({
-      data: [
-        {
-          key: SystemParameterType.INTEGRATION_QUANTITY,
-          value: processingQtyType
-        },
-        {
-          key: SystemParameterType.INTEGRATION_START_TIME,
-          value: String(new Date().getTime())
-        }
-      ]
+    await db.systemParameter.upsert({
+      where: {
+        key: SystemParameterType.INTEGRATION_QUANTITY
+      },
+      update: {
+        value: processingQtyType
+      },
+      create: {
+        key: SystemParameterType.INTEGRATION_QUANTITY,
+        value: processingQtyType
+      }
+    });
+
+    await db.systemParameter.upsert({
+      where: {
+        key: SystemParameterType.INTEGRATION_START_TIME
+      },
+      update: {
+        value: String(new Date().getTime())
+      },
+      create: {
+        key: SystemParameterType.INTEGRATION_START_TIME,
+        value: String(new Date().getTime())
+      }
     });
 
     await db.systemParameter.upsert({

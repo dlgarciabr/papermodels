@@ -18,7 +18,7 @@ import db from 'db';
 import { convertBytesToBase64 } from 'src/utils/storageProviders/cloudinary';
 import { uploadImage } from '../file/image-upload.page';
 import { UploadItemFile } from 'src/items/types';
-import { readPageUrls } from './util';
+import { executeSelectorAllOnHtmlText, fetchPageAsString, readPageUrls } from './util';
 import {
   FileSimulationReference,
   IntegrationProcessingType,
@@ -92,62 +92,92 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
     const selectors = JSON.parse(fileIntegration.itemIntegration.setup.schemesSelector) as IntegrationSelector[];
 
     const linkSelectors = selectors.filter((selector) => selector.type === IntegrationSelectorType.LINK);
-    const clickSelector = selectors.find((selector) => selector.type === IntegrationSelectorType.CLICK);
+    const clickSelectors = selectors.filter((selector) => selector.type === IntegrationSelectorType.CLICK);
 
-    if (linkSelectors.length === 0 && !clickSelector) {
-      throw new Error('scheme selector not found');
+    if (linkSelectors.length === 0 && clickSelectors.length === 0) {
+      throw new Error('scheme selectors not found');
     }
 
     const errors: string[] = [];
 
-    const file: UploadItemFile = {
-      storagePath: '',
-      item: { id: fileIntegration.itemIntegration.itemId, files: [] },
-      artifactType: fileIntegration.integrationType,
-      tempId: ''
-    };
+    const files: UploadItemFile[] = [];
 
     try {
-      let fileUrls: string[] = [];
+      let filesUrls: string[] = [];
 
       if (linkSelectors.length > 0) {
-        //try link selector
         console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
+
         for await (const linkSelector of linkSelectors) {
-          fileUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
-          if (!file.storagePath && fileUrls.length > 0) {
+          const selectorFilesUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
+          if (selectorFilesUrls.length > 0) {
             console.log('[FileIntegrationJOB] file found from link selector!');
+
+            const file: UploadItemFile = {
+              storagePath: '',
+              item: { id: fileIntegration.itemIntegration.itemId, files: [] },
+              artifactType: fileIntegration.integrationType,
+              tempId: ''
+            };
+
             if (isSimulation) {
               file.storagePath = 'simulation';
             } else {
               console.log('[FileIntegrationJOB] Uploading file to storage...');
               const response = await uploadImage(
-                fileUrls[0]!,
+                selectorFilesUrls[0]!,
                 `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
               );
               file.storagePath = `${response.public_id}.${response.format}`;
             }
-            break;
+            filesUrls = [...filesUrls, ...selectorFilesUrls];
+            files.push(file);
           }
         }
-        console.log('[FileIntegrationJOB] URLs found from Link selector: ', fileUrls.length);
+        console.log('[FileIntegrationJOB] URLs found from Link selector: ', filesUrls.length);
       }
 
-      let buffer = new ArrayBuffer(0);
+      let hasBufferFiles = false;
 
-      if (!file.storagePath && clickSelector) {
-        //try click selector
+      if (clickSelectors.length > 0) {
         console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through click selector...`);
-        buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value);
-        const base64Url = convertBytesToBase64(buffer);
-        if (!isSimulation) {
-          console.log('[FileIntegrationJOB] Uploading file to storage...');
-          const response = await uploadImage(base64Url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
-          file.storagePath = `${response.public_id}.${response.format}`;
+
+        for await (const clickSelector of clickSelectors) {
+          const pageContent = await fetchPageAsString(fileIntegration.url);
+          const nodes = executeSelectorAllOnHtmlText(pageContent, clickSelector.value);
+          let index = 0;
+          for await (const _iterator of nodes) {
+            const buffer = await downloadFileFromClick(fileIntegration.url, clickSelector.value, index);
+            const base64Url = convertBytesToBase64(buffer);
+
+            const file: UploadItemFile = {
+              storagePath: '',
+              item: { id: fileIntegration.itemIntegration.itemId, files: [] },
+              artifactType: fileIntegration.integrationType,
+              tempId: ''
+            };
+
+            if (buffer.byteLength > 0) {
+              if (!isSimulation) {
+                console.log('[FileIntegrationJOB] Uploading file to storage...');
+                const response = await uploadImage(
+                  base64Url,
+                  `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+                );
+                file.storagePath = `${response.public_id}.${response.format}`;
+              }
+
+              hasBufferFiles = true;
+              files.push(file);
+            }
+
+            clearCachedFiles();
+            index++;
+          }
         }
       }
 
-      if (fileUrls.length === 0 && buffer.byteLength === 0) {
+      if (files.length === 0 && hasBufferFiles) {
         throw new Error('scheme files not found');
       }
     } catch (error) {
@@ -168,14 +198,22 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
         data: fileIntegrationLogs as IntegrationLog[]
       });
     } else {
-      console.log('[FileIntegrationJOB] Attaching uploaded file to Item...');
+      console.log('[FileIntegrationJOB] Attaching uploaded files to Item...');
 
-      await db.itemFile.create({
-        data: {
+      // await db.itemFile.create({
+      //   data: {
+      //     storagePath: file.storagePath,
+      //     artifactType: file.artifactType,
+      //     itemId: fileIntegration.itemIntegration.itemId!
+      //   }
+      // });
+
+      await db.itemFile.createMany({
+        data: files.map((file) => ({
           storagePath: file.storagePath,
           artifactType: file.artifactType,
           itemId: fileIntegration.itemIntegration.itemId!
-        }
+        }))
       });
 
       await db.fileIntegration.update({
@@ -248,9 +286,9 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
   }
 };
 
-const downloadFileFromClick = async (url: string, selector: string) => {
+const downloadFileFromClick = async (url: string, selector: string, index: number) => {
   try {
-    console.log('[FileIntegrationJOB] Initializing download of file...');
+    console.log('[FileIntegrationJOB] Initializing download of file from: ');
 
     const browser = await chromium.launch({
       // args: chromium.args,
@@ -272,7 +310,9 @@ const downloadFileFromClick = async (url: string, selector: string) => {
 
     await page.waitForSelector(selector);
 
-    await page.click(selector);
+    // await page.click(selector);//TODO remove if the code below is working
+    const locator = page.locator(selector).nth(index);
+    await locator.click({ timeout: 60000 });
 
     process.stdout.write('[FileIntegrationJOB] ');
 
@@ -297,25 +337,29 @@ const downloadFileFromClick = async (url: string, selector: string) => {
   }
 };
 
-const checkDownloadFinished = async () => {
+const checkDownloadFinished = async (): Promise<void> => {
   process.stdout.write('.');
   const files = fs.readdirSync(downloadPath);
   if (files.length === 0 || files[0]!.indexOf('crdownload') > 0) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return checkDownloadFinished();
   }
-  return;
+  return Promise.resolve();
 };
 
-const processIntegration = async () => {
-  console.log('[FileIntegrationJOB] Cleaning last download cache...');
-
+const clearCachedFiles = () => {
   const chachedFilesToRemove = fs.readdirSync(downloadPath);
   if (chachedFilesToRemove.length > 0) {
     chachedFilesToRemove.forEach((file) => {
       fs.unlinkSync(`${downloadPath}/${file}`);
     });
   }
+};
+
+const processIntegration = async () => {
+  console.log('[FileIntegrationJOB] Cleaning last download cache...');
+
+  clearCachedFiles();
 
   const params = await db.systemParameter.findMany({
     where: {
@@ -331,11 +375,9 @@ const processIntegration = async () => {
   }
 
   const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
-
-  let slice = 5;
-
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
 
+  let slice = 5;
   if (isSimulation) {
     slice = 10;
   }
