@@ -29,18 +29,25 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
 };
 
 const processItemIntegration = async () => {
-  const paramProcessingType = await db.systemParameter.findFirst({
+  const systemParameters = await db.systemParameter.findMany({
     where: {
-      key: SystemParameterType.INTEGRATION_TYPE
+      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }]
     }
   });
 
-  if (!paramProcessingType) {
+  const processingTypeParam = systemParameters.find((sp) => sp.key === SystemParameterType.INTEGRATION_TYPE);
+
+  const itemReintegrationParam = systemParameters.find(
+    (param) => param.key === SystemParameterType.INTEGRATION_ITEM_REPLACE
+  );
+  const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
+
+  if (!processingTypeParam) {
     console.log(`[ItemIntegrationJOB] Nothing to be done, quiting!`);
     return { message: 'ok' };
   }
 
-  const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
+  const type = processingTypeParam!.value as unknown as IntegrationProcessingType;
 
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
   // const isIntegration = type === IntegrationProcessingType.INTEGRATION;
@@ -145,12 +152,19 @@ const processItemIntegration = async () => {
         if (!isSimulation) {
           console.log(`[ItemIntegrationJOB] Persisting item '${itemIntegration.name}'...`);
           try {
+            const name = removeExpressions(itemIntegration.name, itemIntegration.setup.ignoreExpressions).trim();
+            if (isItemReintegration) {
+              await db.item.delete({
+                where: { name }
+              });
+            }
             item = await db.item.create({
               data: {
-                name: removeExpressions(itemIntegration.name, itemIntegration.setup.ignoreExpressions).trim(),
+                name,
                 description: removeExpressions(description, itemIntegration.setup.ignoreExpressions).trim(),
                 dificulty,
                 assemblyTime,
+                setupId: itemIntegration.setup.id,
                 categoryId: itemIntegration.categoryId,
                 status: ItemStatus.integrating
               }

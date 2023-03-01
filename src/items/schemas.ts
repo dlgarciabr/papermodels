@@ -14,7 +14,8 @@ export const basicValidation = {
   author: z.string().max(50).nullable(),
   authorLink: z.union([z.string().max(100).url().nullish(), z.literal('')]),
   licenseType: z.string().max(50).nullable(),
-  licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
+  licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')]),
+  setupId: z.number().nullish()
 };
 
 export const CreateItemValidation = z.object({

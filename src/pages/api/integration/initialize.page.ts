@@ -26,22 +26,40 @@ export default api(async (req, res, _ctx) => {
     await db.systemParameter.createMany({
       data: [
         {
-          key: SystemParameterType.INTEGRATION_TYPE,
-          value: String(type)
-        },
-        {
           key: SystemParameterType.INTEGRATION_QUANTITY,
           value: processingQtyType
         },
         {
           key: SystemParameterType.INTEGRATION_START_TIME,
           value: String(new Date().getTime())
-        },
-        {
-          key: SystemParameterType.INTEGRATION_ITEM_NAME,
-          value: itemName
         }
       ]
+    });
+
+    await db.systemParameter.upsert({
+      where: {
+        key: SystemParameterType.INTEGRATION_TYPE
+      },
+      update: {
+        value: String(type)
+      },
+      create: {
+        key: SystemParameterType.INTEGRATION_TYPE,
+        value: String(type)
+      }
+    });
+
+    await db.systemParameter.upsert({
+      where: {
+        key: SystemParameterType.INTEGRATION_ITEM_NAME
+      },
+      update: {
+        value: itemName
+      },
+      create: {
+        key: SystemParameterType.INTEGRATION_ITEM_NAME,
+        value: itemName
+      }
     });
 
     console.log(`[IntegrationInitializer] Extracting all site URLs...`);
@@ -73,7 +91,8 @@ export default api(async (req, res, _ctx) => {
           { status: UrlIntegrationStatus.readingPending },
           { status: UrlIntegrationStatus.readingDone },
           { status: UrlIntegrationStatus.simulationPending },
-          { status: UrlIntegrationStatus.simulationDone }
+          { status: UrlIntegrationStatus.simulationDone },
+          { status: UrlIntegrationStatus.pending }
         ]
       }
     });
@@ -91,15 +110,43 @@ export default api(async (req, res, _ctx) => {
         break;
     }
 
+    const itemReintegrationParam = await db.systemParameter.findFirst({
+      where: {
+        key: SystemParameterType.INTEGRATION_ITEM_REPLACE
+      }
+    });
+
+    const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
+
     console.log(`[IntegrationInitializer] Saving extracted site URLs...`);
 
-    await db.urlIntegration.createMany({
-      data: uniqueSiteUrls.map((url) => ({
-        status,
-        url,
-        setupId: setup.id
-      }))
-    });
+    if (isItemReintegration) {
+      for await (const url of uniqueSiteUrls) {
+        await db.urlIntegration.upsert({
+          where: {
+            url: url
+          },
+          create: {
+            status,
+            url,
+            setupId: setup.id
+          },
+          update: {
+            status
+          }
+        });
+      }
+    } else {
+      await db.urlIntegration.createMany({
+        data: uniqueSiteUrls.map((url) => ({
+          status,
+          url,
+          setupId: setup.id
+        }))
+      });
+    }
+
+    console.log(`[IntegrationInitializer] Integration initialized!`);
 
     res.status(200).send({ message: 'success' });
   } else {

@@ -213,19 +213,6 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           }
         });
 
-        console.log(`[FileIntegrationJOB] Cleaning System Parameters...`);
-
-        await db.systemParameter.deleteMany({
-          where: {
-            OR: [
-              { key: SystemParameterType.INTEGRATION_TYPE },
-              { key: SystemParameterType.INTEGRATION_QUANTITY },
-              { key: SystemParameterType.INTEGRATION_START_TIME },
-              { key: SystemParameterType.INTEGRATION_ITEM_NAME },
-              { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
-            ]
-          }
-        });
         console.log(
           `[FileIntegrationJOB] Item integration ${fileIntegration.itemIntegration.itemId} has successfully finished!`
         );
@@ -322,7 +309,7 @@ const checkDownloadFinished = async () => {
 
 const processIntegration = async () => {
   console.log('[FileIntegrationJOB] Cleaning last download cache...');
-  // logs = [];
+
   const chachedFilesToRemove = fs.readdirSync(downloadPath);
   if (chachedFilesToRemove.length > 0) {
     chachedFilesToRemove.forEach((file) => {
@@ -411,86 +398,98 @@ const processIntegration = async () => {
       }
     });
 
-    if (isSimulation) {
-      const fileSimulations = await db.fileIntegration.findMany({
+    // if (isSimulation) {
+    const fileIntegrations = await db.fileIntegration.findMany({
+      where: {
+        OR: [
+          { status: FileIntegrationStatus.pendingSimulation },
+          { status: FileIntegrationStatus.pending },
+          { status: FileIntegrationStatus.simulated },
+          { status: FileIntegrationStatus.done }
+        ]
+      }
+    });
+
+    const pendingFileIntegrations = fileIntegrations.filter(
+      (sim) => sim.status === FileIntegrationStatus.pendingSimulation || sim.status === FileIntegrationStatus.pending
+    );
+    const finishedFileIntegrations = fileIntegrations.filter(
+      (sim) => sim.status === FileIntegrationStatus.simulated || sim.status === FileIntegrationStatus.done
+    );
+
+    if (pendingFileIntegrations.length === 0) {
+      const pendingItemIntegrations = await db.itemIntegration.count({
         where: {
-          OR: [{ status: FileIntegrationStatus.pendingSimulation }, { status: FileIntegrationStatus.simulated }]
-        },
-        include: {
-          //TODO remove if its not being used
-          itemIntegration: {
-            select: {
-              logs: true
-            }
-          }
+          OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.pending }]
         }
       });
 
-      const pendingFileSimulations = fileSimulations.filter(
-        (sim) => sim.status === FileIntegrationStatus.pendingSimulation
-      );
-      const finishedFileSimulations = fileSimulations.filter((sim) => sim.status === FileIntegrationStatus.simulated);
+      if (pendingItemIntegrations === 0) {
+        console.log(`[FileIntegrationJOB] Saving final Logs...`);
 
-      if (pendingFileSimulations.length === 0) {
-        const pendingItemSimulations = await db.itemIntegration.count({
+        const containsSchemeFiles = logs.filter(
+          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
+        );
+
+        await db.integrationLog.deleteMany({
           where: {
-            status: ItemIntegrationStatus.pendingSimulation
+            value: `${true}`
           }
         });
 
-        if (pendingItemSimulations === 0) {
-          console.log(`[FileIntegrationJOB] Saving final Logs...`);
+        const paramStartTime = params.find((param) => param.key === SystemParameterType.INTEGRATION_START_TIME);
+        const startTime = new Date(Number(paramStartTime!.value));
 
-          const containsSchemeFiles = logs.filter(
-            (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-          );
-
-          await db.integrationLog.deleteMany({
-            where: {
-              value: `${true}`
-            }
-          });
-
-          const paramStartTime = params.find((param) => param.key === SystemParameterType.INTEGRATION_START_TIME);
-          const startTime = new Date(Number(paramStartTime!.value));
-
-          let duration = 0;
-          let rest = 0;
-          const diff = differenceInSeconds(new Date(), startTime);
-          if (diff >= 60) {
-            duration = Math.round(diff / 60);
-            rest = diff % 60;
-          }
-
-          const totalDuration = formatDuration(
-            {
-              minutes: duration,
-              seconds: rest
-            },
-            { delimiter: ', ' }
-          );
-
-          await db.integrationLog.createMany({
-            data: [
-              {
-                key: FileSimulationReference.schemePercentage,
-                reference: 'Global',
-                value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedFileSimulations.length))}%`
-              },
-              {
-                key: ItemSimulationReference.totalTime,
-                reference: 'Global',
-                value: totalDuration
-              }
-            ]
-          });
-          console.log(`
-  ===================================================================================
-  |                     Integration finished in ${totalDuration}                    |
-  ===================================================================================`);
+        let duration = 0;
+        let rest = 0;
+        const diff = differenceInSeconds(new Date(), startTime);
+        if (diff >= 60) {
+          duration = Math.round(diff / 60);
+          rest = diff % 60;
         }
+
+        const totalDuration = formatDuration(
+          {
+            minutes: duration,
+            seconds: rest
+          },
+          { delimiter: ', ' }
+        );
+
+        await db.integrationLog.createMany({
+          data: [
+            {
+              key: FileSimulationReference.schemePercentage,
+              reference: 'Global',
+              value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedFileIntegrations.length))}%`
+            },
+            {
+              key: ItemSimulationReference.totalTime,
+              reference: 'Global',
+              value: totalDuration
+            }
+          ]
+        });
+
+        console.log(`[FileIntegrationJOB] Cleaning System Parameters...`);
+
+        await db.systemParameter.deleteMany({
+          where: {
+            OR: [
+              { key: SystemParameterType.INTEGRATION_QUANTITY },
+              { key: SystemParameterType.INTEGRATION_START_TIME },
+              { key: SystemParameterType.INTEGRATION_ITEM_NAME },
+              { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
+            ]
+          }
+        });
+        console.log(`
+===================================================================================
+                  Integration finished in ${totalDuration}                    
+===================================================================================`);
       }
     }
+    // }
 
     if (isSimulation) {
       await processIntegration();

@@ -40,6 +40,8 @@ import { showToast } from 'src/core/components/Toast';
 import getSystemParameters from 'src/system-parameter/queries/getSystemParameters';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 import updateIntegrationSetup from 'src/integration-setups/mutations/updateIntegrationSetup';
+import { Routes } from '@blitzjs/next';
+import Link from 'next/link';
 // import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
 
 interface IIntegrationLogFilter {
@@ -317,6 +319,20 @@ const Integration = () => {
   useEffect(() => {
     void loadSetups();
     void loadSimulationLogs();
+    void (async () => {
+      const { systemParameters } = await invoke(getSystemParameters, {
+        where: {
+          OR: [
+            { key: SystemParameterType.INTEGRATION_ITEM_REPLACE },
+            { key: SystemParameterType.INTEGRATION_ITEM_NAME }
+          ]
+        }
+      });
+      if (systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_REPLACE)) {
+        const paramItemName = systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_NAME);
+        setItemName(paramItemName!.value);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -355,6 +371,9 @@ const Integration = () => {
               logs.some((log) => log.key === ItemSimulationReference.totalTime);
             break;
           case IntegrationProcessingType.INTEGRATION:
+            integrationFinished =
+              logs.some((log) => log.key === FileSimulationReference.schemePercentage) &&
+              logs.some((log) => log.key === ItemSimulationReference.totalTime);
             break;
         }
 
@@ -441,6 +460,9 @@ const Integration = () => {
       <Head>
         <title>Papermodels</title>
       </Head>
+      <Link href={Routes.AdminPage()}>
+        <a>Admin page</a>
+      </Link>
       <Container component='main'>
         <Grid container spacing={2}>
           <Grid item xs={6}>

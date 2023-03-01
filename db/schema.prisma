@@ -93,6 +93,8 @@ model Item {
   files           ItemFile[]
   itemIntegration ItemIntegration[]
   status          ItemStatus        @default(disable)
+  setup           IntegrationSetup? @relation(fields: [setupId], references: [id])
+  setupId         Int?
   dificulty       Int?
   assemblyTime    Decimal?
   author          String?
@@ -150,6 +152,7 @@ model IntegrationSetup {
   schemesSelector       String
   ignoreExpressions     String?
   integrationItems      ItemIntegration[]
+  items                 Item[]
   urlIntegrations       UrlIntegration[]
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
@@ -219,6 +222,6 @@ model IntegrationLog {
 
 model SystemParameter {
   id    Int    @id @default(autoincrement())
-  key   String
+  key   String @unique
   value String
 }

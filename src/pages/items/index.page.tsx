@@ -18,6 +18,7 @@ import Button from '@mui/material/Button';
 import createSystemParameters from 'src/system-parameter/mutations/createSystemParameters';
 import { SystemParameterType } from 'types';
 import { TextField } from '@mui/material';
+import deleteSystemParameters from 'src/system-parameter/mutations/deleteSystemParameters';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -31,6 +32,7 @@ export const ItemsList = () => {
 
   const [deleteItemMutation] = useMutation(deleteItem);
   const [createSystemParametersMutation] = useMutation(createSystemParameters);
+  const [deleteSystemParametersMutation] = useMutation(deleteSystemParameters);
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
@@ -68,6 +70,9 @@ export const ItemsList = () => {
   };
 
   const reintegrateItem = async (itemName: string) => {
+    await deleteSystemParametersMutation({
+      keys: [SystemParameterType.INTEGRATION_ITEM_REPLACE, SystemParameterType.INTEGRATION_ITEM_NAME]
+    });
     await createSystemParametersMutation([
       {
         key: SystemParameterType.INTEGRATION_ITEM_REPLACE,
@@ -96,6 +101,7 @@ export const ItemsList = () => {
       sortable: false,
       width: 250,
       renderCell: (params) => {
+        console.log(params);
         return (
           <Grid container>
             <Grid item xs={6}>
@@ -115,9 +121,11 @@ export const ItemsList = () => {
                 style={{ marginLeft: '0.5rem' }}>
                 delete
               </button>
-              <button type='button' onClick={() => reintegrateItem(params.row.name)} style={{ marginLeft: '0.5rem' }}>
-                reintegrate
-              </button>
+              {params.row.setupId && (
+                <button type='button' onClick={() => reintegrateItem(params.row.name)} style={{ marginLeft: '0.5rem' }}>
+                  reintegrate
+                </button>
+              )}
             </Grid>
           </Grid>
         );
@@ -131,7 +139,7 @@ export const ItemsList = () => {
   }[] = [];
 
   if (items.length > 0) {
-    rows = items.map((item) => ({ id: item.id, name: item.name, status: item.status }));
+    rows = items.map((item) => ({ id: item.id, name: item.name, status: item.status, setupId: item.setupId }));
   }
 
   return (
@@ -191,6 +199,11 @@ const ItemsPage = () => {
       </Head>
 
       <div>
+        <p>
+          <Link href={Routes.AdminPage()}>
+            <a>Admin page</a>
+          </Link>
+        </p>
         <p>
           <Link href={Routes.NewItemPage()}>
             <a>Create Item</a>

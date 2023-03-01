@@ -112,7 +112,8 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
       data: {
         key: ItemSimulationReference.error,
         reference: pageItem.name!,
-        value: (error as Error).message
+        value: (error as Error).message,
+        error: (error as Error).stack
       }
     });
   }
@@ -124,16 +125,21 @@ const processIntegration = async () => {
       OR: [
         { key: SystemParameterType.INTEGRATION_TYPE },
         { key: SystemParameterType.INTEGRATION_QUANTITY },
-        { key: SystemParameterType.INTEGRATION_ITEM_NAME }
+        { key: SystemParameterType.INTEGRATION_ITEM_NAME },
+        { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
       ]
     }
   });
 
   const selectedItemName = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_ITEM_NAME)?.value;
+  const isItemNamesIntegration = !!selectedItemName;
   const typeParam = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_TYPE);
   const processingQtyType = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_QUANTITY)
     ?.value as IntegrationProcessingQtyType;
-
+  const itemReintegrationParam = systemParams.find(
+    (param) => param.key === SystemParameterType.INTEGRATION_ITEM_REPLACE
+  );
+  const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
   const type = typeParam?.value as IntegrationProcessingType;
   const isReadUrl = type === IntegrationProcessingType.READ_URLS;
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
@@ -141,33 +147,24 @@ const processIntegration = async () => {
 
   let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
 
-  // if (isFew || isIntermediate) {
-  //   urlIntegrationsToProcess = await db.urlIntegration.findMany({
-  //     where: {
-  //       OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
-  //     },
-  //     include: {
-  //       setup: true
-  //     },
-  //     orderBy: {
-  //       url: 'asc'
-  //     }
-  //   });
-  //   const divisor = isFew ? 40 : 20;
-  //   urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
-  // } else {
-  //   urlIntegrationsToProcess = await db.urlIntegration.findMany({
-  //     where: {
-  //       OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
-  //     },
-  //     include: {
-  //       setup: true
-  //     },
-  //     take: 10
-  //   });
-  // }
+  if (isItemNamesIntegration) {
+    let urlIntegrationStatus;
 
-  if (isReadUrl || isSimulation) {
+    if (isIntegration) {
+      urlIntegrationStatus = UrlIntegrationStatus.pending;
+    } else {
+      urlIntegrationStatus = UrlIntegrationStatus.simulationPending;
+    }
+
+    urlIntegrationsToProcess = await db.urlIntegration.findMany({
+      where: {
+        status: urlIntegrationStatus
+      },
+      include: {
+        setup: true
+      }
+    });
+  } else if (isReadUrl || isSimulation) {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
         OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
@@ -309,6 +306,16 @@ const processIntegration = async () => {
           (pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName.toLowerCase()) >= 0
         );
         if (pageItems.length > 0) {
+          console.log('[UrlIntegrationJOB] Named integration to be done found!');
+          if (isItemReintegration) {
+            await db.itemIntegration.deleteMany({
+              where: {
+                url: {
+                  in: pageItems.map((pa) => pa.url)
+                }
+              }
+            });
+          }
           for await (const pageItem of pageItems) {
             await createItemIntegration(pageItem, setup, type);
           }
