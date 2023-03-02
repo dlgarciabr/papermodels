@@ -25,6 +25,7 @@ const ITEMS_PER_PAGE = 10;
 export const ItemsList = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
   const [statusFilter, setStatusFilter] = useState<ItemStatus | string>('');
@@ -36,6 +37,10 @@ export const ItemsList = () => {
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
+  const goToPage = (page: number) => {
+    console.log(page);
+    void router.push({ query: { page: page } });
+  };
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
   const loadItems = async (useFilters: boolean = false) => {
@@ -50,21 +55,23 @@ export const ItemsList = () => {
       };
     }
     if (useFilters && Object.keys(where).length > 0) {
-      const { items, hasMore } = await invoke(getItems, {
+      const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
         take: ITEMS_PER_PAGE,
         where
       });
       setItems(items);
+      setCount(count);
       setHasMore(hasMore);
     } else {
-      const { items, hasMore } = await invoke(getItems, {
+      const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
         take: ITEMS_PER_PAGE
       });
       setItems(items);
+      setCount(count);
       setHasMore(hasMore);
     }
   };
@@ -101,7 +108,6 @@ export const ItemsList = () => {
       sortable: false,
       width: 250,
       renderCell: (params) => {
-        console.log(params);
         return (
           <Grid container>
             <Grid item xs={6}>
@@ -174,7 +180,16 @@ export const ItemsList = () => {
       </Grid>
       <Grid item xs={12}>
         <Box sx={{ height: 650, width: '100%' }}>
-          <DataGrid rows={rows} columns={columns} pageSize={10} rowsPerPageOptions={[10]} />
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            pageSize={10}
+            rowsPerPageOptions={[10]}
+            onPageChange={(page) => goToPage(page)}
+            rowCount={count}
+            page={page}
+            paginationMode='server'
+          />
         </Box>
       </Grid>
       <Grid item xs={12}>

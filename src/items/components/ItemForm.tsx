@@ -34,7 +34,7 @@ export function ItemForm<S extends z.ZodType<any, any>>(props: FormProps<S> & { 
         name='status'
         label='Status'
         placeholder='Chose one...'
-        items={[ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating].map((item) => ({
+        items={[ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating, ItemStatus.validate].map((item) => ({
           value: item,
           label: item
         }))}
