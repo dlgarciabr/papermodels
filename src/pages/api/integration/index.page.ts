@@ -1,5 +1,4 @@
 /* istanbul ignore file -- @preserve */
-import { UploadApiResponse } from 'cloudinary';
 import db, {
   FileType,
   ItemIntegration,
@@ -7,7 +6,8 @@ import db, {
   IntegrationSetup,
   ItemStatus,
   FileIntegrationStatus,
-  IntegrationLog
+  IntegrationLog,
+  Item
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
@@ -147,7 +147,7 @@ const processItemIntegration = async () => {
           previewImageNodes = [...previewImageNodes, ...Array.from(nodes)];
         });
 
-        let item;
+        let item: Item | null = null;
 
         if (!isSimulation) {
           console.log(`[ItemIntegrationJOB] Persisting item '${itemIntegration.name}'...`);
@@ -186,18 +186,28 @@ const processItemIntegration = async () => {
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            let response = {} as UploadApiResponse;
             if (!isSimulation) {
               console.log(`[ItemIntegrationJOB] Uploading preview image ${src}...`);
-              response = await uploadImage(src, `${ARTIFACTS_PATH}/${item.id}`);
+              try {
+                const response = await uploadImage(src, `${ARTIFACTS_PATH}/${item!.id}`);
+                const file: UploadItemFile = {
+                  storagePath: `${response.public_id}.${response.format}`,
+                  item: { ...item, files: [] },
+                  artifactType: FileType.preview,
+                  tempId: ''
+                };
+                files.push(file);
+              } catch (error) {
+                await db.integrationLog.create({
+                  data: {
+                    key: ItemSimulationReference.error,
+                    reference: item!.name,
+                    error: error.message,
+                    value: error.stack || error.message
+                  }
+                });
+              }
             }
-            const file: UploadItemFile = {
-              storagePath: `${response.public_id}.${response.format}`,
-              item: { ...item, files: [] },
-              artifactType: FileType.preview,
-              tempId: ''
-            };
-            files.push(file);
           } else {
             // throw new Error(`Error integrating image ${node}`);
           }
@@ -250,7 +260,7 @@ const processItemIntegration = async () => {
             data: files.map((file) => ({
               storagePath: file.storagePath,
               artifactType: file.artifactType,
-              itemId: item.id
+              itemId: item!.id
             }))
           });
 
@@ -269,14 +279,13 @@ const processItemIntegration = async () => {
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
-              itemId: item.id,
+              itemId: item!.id,
               status: ItemIntegrationStatus.pendingFiles
             }
           });
         }
       } catch (error) {
         console.log(`[ItemIntegrationJOB] Error trying to integrate item ${itemIntegration.name}!`);
-        console.log(error);
         await db.itemIntegration.update({
           where: { id: itemIntegration.id },
           data: {
@@ -339,6 +348,14 @@ const processItemIntegration = async () => {
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item first stage integration process finished.`);
 
     if (errors.length > 0) {
+      await db.integrationLog.createMany({
+        data: errors.map((e) => ({
+          key: ItemSimulationReference.error,
+          reference: `Global: item: ${e.itemIntegration}`,
+          error: e.error.message,
+          value: e.error.stack || e.error.message
+        }))
+      });
       return { message: 'error', errors };
     } else {
       return { message: 'ok' };

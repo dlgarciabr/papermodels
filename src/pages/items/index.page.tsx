@@ -151,7 +151,18 @@ export const ItemsList = () => {
   return (
     <Grid container>
       <Grid item xs={5}>
-        <TextField label='Name' fullWidth value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} />
+        <TextField
+          label='Name'
+          fullWidth
+          value={nameFilter}
+          onChange={(e) => setNameFilter(e.target.value)}
+          onKeyPress={(ev) => {
+            if (ev.key === 'Enter') {
+              void loadItems(true);
+              ev.preventDefault();
+            }
+          }}
+        />
       </Grid>
       <Grid item xs={5}>
         <Select

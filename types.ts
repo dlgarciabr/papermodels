@@ -72,3 +72,12 @@ export enum SystemParameterType {
   INTEGRATION_START_TIME = 'INTEGRATION_START_TIME',
   INTEGRATION_ITEM_REPLACE = 'INTEGRATION_ITEM_REPLACE'
 }
+
+export interface IErrorLog {
+  itemId?: number;
+  itemName?: string;
+  fileName?: string;
+  url?: string;
+  message: string;
+  stack: string;
+}

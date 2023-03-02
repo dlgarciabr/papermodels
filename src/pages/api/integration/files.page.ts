@@ -124,14 +124,27 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
               file.storagePath = 'simulation';
             } else {
               console.log('[FileIntegrationJOB] Uploading file to storage...');
-              const response = await uploadImage(
-                selectorFilesUrls[0]!,
-                `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-              );
-              file.storagePath = `${response.public_id}.${response.format}`;
+              try {
+                const response = await uploadImage(
+                  selectorFilesUrls[0]!,
+                  `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+                );
+                file.storagePath = `${response.public_id}.${response.format}`;
+              } catch (error) {
+                await db.integrationLog.create({
+                  data: {
+                    key: FileSimulationReference.error,
+                    reference: `linkSelector:${selectorFilesUrls[0]}`,
+                    error: error.message,
+                    value: error.stack || error.message || ''
+                  }
+                });
+              }
             }
-            filesUrls = [...filesUrls, ...selectorFilesUrls];
-            files.push(file);
+            if (file.storagePath) {
+              filesUrls = [...filesUrls, ...selectorFilesUrls];
+              files.push(file);
+            }
           }
         }
         console.log('[FileIntegrationJOB] URLs found from Link selector: ', filesUrls.length);
@@ -160,15 +173,27 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
             if (buffer.byteLength > 0) {
               if (!isSimulation) {
                 console.log('[FileIntegrationJOB] Uploading file to storage...');
-                const response = await uploadImage(
-                  base64Url,
-                  `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-                );
-                file.storagePath = `${response.public_id}.${response.format}`;
+                try {
+                  const response = await uploadImage(
+                    base64Url,
+                    `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
+                  );
+                  file.storagePath = `${response.public_id}.${response.format}`;
+                } catch (error) {
+                  await db.integrationLog.create({
+                    data: {
+                      key: FileSimulationReference.error,
+                      reference: `clickSelector:${fileIntegration.itemIntegration.name}`,
+                      error: error.message,
+                      value: error.stack || error.message || ''
+                    }
+                  });
+                }
               }
-
-              hasBufferFiles = true;
-              files.push(file);
+              if (file.storagePath) {
+                hasBufferFiles = true;
+                files.push(file);
+              }
             }
 
             clearCachedFiles();
@@ -199,14 +224,6 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       });
     } else {
       console.log('[FileIntegrationJOB] Attaching uploaded files to Item...');
-
-      // await db.itemFile.create({
-      //   data: {
-      //     storagePath: file.storagePath,
-      //     artifactType: file.artifactType,
-      //     itemId: fileIntegration.itemIntegration.itemId!
-      //   }
-      // });
 
       await db.itemFile.createMany({
         data: files.map((file) => ({
@@ -280,6 +297,14 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
         data: {
           status: FileIntegrationStatus.error,
           error: error.message
+        }
+      });
+      await db.integrationLog.create({
+        data: {
+          key: FileIntegrationStatus.error,
+          reference: fileIntegration.url,
+          error: error.message,
+          value: (error as Error).stack || error.message
         }
       });
     }
