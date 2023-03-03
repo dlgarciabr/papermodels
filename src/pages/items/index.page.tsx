@@ -6,7 +6,7 @@ import { invoke, useMutation } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import getItems from 'src/items/queries/getItems';
 import deleteItem from 'src/items/mutations/deleteItem';
-import { Item, ItemStatus } from '@prisma/client';
+import { FileType, ItemStatus } from '@prisma/client';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -16,69 +16,80 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import createSystemParameters from 'src/system-parameter/mutations/createSystemParameters';
-import { SystemParameterType } from 'types';
-import { TextField } from '@mui/material';
+import { ItemWithChildren, SystemParameterType } from 'types';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import deleteSystemParameters from 'src/system-parameter/mutations/deleteSystemParameters';
 
 const ITEMS_PER_PAGE = 10;
 
+const filtersInitialValue = {
+  name: '',
+  status: ''
+};
+
 export const ItemsList = () => {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<ItemWithChildren[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
-  const [statusFilter, setStatusFilter] = useState<ItemStatus | string>('');
-  const [nameFilter, setNameFilter] = useState<String>('');
-
+  const [filters, setFilters] = useState<{ name: string | ''; status: ItemStatus | string }>({
+    ...filtersInitialValue
+  });
   const [deleteItemMutation] = useMutation(deleteItem);
   const [createSystemParametersMutation] = useMutation(createSystemParameters);
   const [deleteSystemParametersMutation] = useMutation(deleteSystemParameters);
+  const [openLogDialog, setOpenLogDialog] = useState(false);
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
   const goToPage = (page: number) => {
-    console.log(page);
     void router.push({ query: { page: page } });
   };
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
-  const loadItems = async (useFilters: boolean = false) => {
+  const loadItems = async () => {
     const where = {} as any;
-    if (statusFilter) {
-      where.status = statusFilter;
+    if (filters.status) {
+      where.status = filters.status;
     }
-    if (nameFilter) {
+    if (filters.name) {
       where.name = {
-        contains: nameFilter,
+        contains: filters.name,
         mode: 'insensitive'
       };
     }
-    if (useFilters && Object.keys(where).length > 0) {
+    if (Object.keys(where).length > 0) {
       const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
         take: ITEMS_PER_PAGE,
+        include: {
+          files: true
+        },
         where
       });
-      setItems(items);
+      setItems(items as ItemWithChildren[]);
       setCount(count);
       setHasMore(hasMore);
     } else {
       const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
-        take: ITEMS_PER_PAGE
+        take: ITEMS_PER_PAGE,
+        include: {
+          files: true
+        }
       });
-      setItems(items);
+      setItems(items as ItemWithChildren[]);
       setCount(count);
       setHasMore(hasMore);
     }
   };
 
-  const reintegrateItem = async (itemName: string) => {
+  const reintegrateItem = async (id) => {
     await deleteSystemParametersMutation({
-      keys: [SystemParameterType.INTEGRATION_ITEM_REPLACE, SystemParameterType.INTEGRATION_ITEM_NAME]
+      keys: [SystemParameterType.INTEGRATION_ITEM_REPLACE, SystemParameterType.INTEGRATION_ITEM_ID]
     });
     await createSystemParametersMutation([
       {
@@ -86,8 +97,8 @@ export const ItemsList = () => {
         value: String(true)
       },
       {
-        key: SystemParameterType.INTEGRATION_ITEM_NAME,
-        value: itemName
+        key: SystemParameterType.INTEGRATION_ITEM_ID,
+        value: String(id)
       }
     ]);
     await router.push(Routes.Integration());
@@ -101,16 +112,22 @@ export const ItemsList = () => {
   const columns: GridColDef[] = [
     { field: 'id', width: 10 },
     { field: 'name', headerName: 'Name', width: 600 },
+    { field: 'previewsQty', headerName: 'Previews', width: 5 },
+    { field: 'schemesQty', headerName: 'Squemes', width: 5 },
+    { field: 'schemesPdfs', headerName: 'PDFs', width: 5 },
     { field: 'status', headerName: 'Status', width: 100 },
     {
       field: 's',
       headerName: 'actions',
       sortable: false,
-      width: 250,
+      width: 300,
       renderCell: (params) => {
         return (
           <Grid container>
             <Grid item xs={6}>
+              <button type='button' onClick={() => setOpenLogDialog(true)} style={{ marginLeft: '0.5rem' }}>
+                logs
+              </button>
               <button type='button' onClick={() => goToEditPage(Number(params.id))} style={{ marginLeft: '0.5rem' }}>
                 edit
               </button>
@@ -128,7 +145,7 @@ export const ItemsList = () => {
                 delete
               </button>
               {params.row.setupId && (
-                <button type='button' onClick={() => reintegrateItem(params.row.name)} style={{ marginLeft: '0.5rem' }}>
+                <button type='button' onClick={() => reintegrateItem(params.row.id)} style={{ marginLeft: '0.5rem' }}>
                   reintegrate
                 </button>
               )}
@@ -145,20 +162,55 @@ export const ItemsList = () => {
   }[] = [];
 
   if (items.length > 0) {
-    rows = items.map((item) => ({ id: item.id, name: item.name, status: item.status, setupId: item.setupId }));
+    rows = items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      status: item.status,
+      setupId: item.setupId,
+      previewsQty: item.files.filter((file) => file.artifactType === FileType.preview).length,
+      schemesQty: item.files.filter((file) => file.artifactType === FileType.scheme).length,
+      schemesPdfs: item.files.filter(
+        (file) => file.artifactType === FileType.scheme && file.storagePath.endsWith('.pdf')
+      ).length
+    }));
   }
+
+  const renderLogDialog = () => {
+    return (
+      <Dialog open={openLogDialog}>
+        <DialogTitle>Log</DialogTitle>
+        <DialogContent>
+          <Box
+            noValidate
+            component='form'
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              m: 'auto',
+              width: 'fit-content'
+            }}>
+            <Typography>log</Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenLogDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
 
   return (
     <Grid container>
+      {renderLogDialog()}
       <Grid item xs={5}>
         <TextField
           label='Name'
           fullWidth
-          value={nameFilter}
-          onChange={(e) => setNameFilter(e.target.value)}
+          value={filters.name}
+          onChange={(e) => setFilters({ ...filters, name: e.target.value })}
           onKeyPress={(ev) => {
             if (ev.key === 'Enter') {
-              void loadItems(true);
+              void loadItems();
               ev.preventDefault();
             }
           }}
@@ -171,19 +223,18 @@ export const ItemsList = () => {
           name='status'
           placeholder='Status'
           fullWidth
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ItemStatus)}>
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value as ItemStatus })}>
           <MenuItem value={ItemStatus.integrating}>{ItemStatus.integrating}</MenuItem>
           <MenuItem value={ItemStatus.enable}>{ItemStatus.enable}</MenuItem>
           <MenuItem value={ItemStatus.validate}>{ItemStatus.validate}</MenuItem>
         </Select>
       </Grid>
       <Grid item xs={2}>
-        <Button onClick={() => loadItems(true)}>Search</Button>
+        <Button onClick={() => loadItems()}>Search</Button>
         <Button
           onClick={() => {
-            setNameFilter('');
-            setStatusFilter('');
+            setFilters({ ...filtersInitialValue });
             void loadItems();
           }}>
           Clear

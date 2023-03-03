@@ -124,33 +124,8 @@ export default api(async (req, res, _ctx) => {
         break;
     }
 
-    // const itemReintegrationParam = await db.systemParameter.findFirst({
-    //   where: {
-    //     key: SystemParameterType.INTEGRATION_ITEM_REPLACE
-    //   }
-    // });
-
-    // const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
-
     console.log(`[IntegrationInitializer] Saving extracted site URLs...`);
 
-    // if (isItemReintegration) {
-    //   for await (const url of uniqueSiteUrls) {
-    //     await db.urlIntegration.upsert({
-    //       where: {
-    //         url: url
-    //       },
-    //       create: {
-    //         status,
-    //         url,
-    //         setupId: setup.id
-    //       },
-    //       update: {
-    //         status
-    //       }
-    //     });
-    //   }
-    // } else {
     await db.urlIntegration.createMany({
       data: uniqueSiteUrls.map((url) => ({
         status,
@@ -158,7 +133,6 @@ export default api(async (req, res, _ctx) => {
         setupId: setup.id
       }))
     });
-    // }
 
     console.log(`[IntegrationInitializer] Integration initialized!`);
 

@@ -83,24 +83,26 @@ enum ItemStatus {
 }
 
 model Item {
-  id              Int               @id @default(autoincrement())
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  name            String            @unique
-  description     String
-  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId      Int
-  files           ItemFile[]
-  itemIntegration ItemIntegration[]
-  status          ItemStatus        @default(disable)
-  setup           IntegrationSetup? @relation(fields: [setupId], references: [id])
-  setupId         Int?
-  dificulty       Int?
-  assemblyTime    Decimal?
-  author          String?
-  authorLink      String?
-  licenseType     String?
-  licenseTypeLink String?
+  id                  Int                  @id @default(autoincrement())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  name                String               @unique
+  description         String
+  category            Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId          Int
+  files               ItemFile[]
+  itemIntegration     ItemIntegration[]
+  itemIntegrationLogs ItemIntegrationLog[]
+  status              ItemStatus           @default(disable)
+  setup               IntegrationSetup?    @relation(fields: [setupId], references: [id])
+  setupId             Int?
+  integrationUrl      String?
+  dificulty           Int?
+  assemblyTime        Decimal?
+  author              String?
+  authorLink          String?
+  licenseType         String?
+  licenseTypeLink     String?
 }
 
 enum FileType {
@@ -154,6 +156,10 @@ model IntegrationSetup {
   integrationItems      ItemIntegration[]
   items                 Item[]
   urlIntegrations       UrlIntegration[]
+  author                String?
+  authorLink            String?
+  licenseType           String?
+  licenseTypeLink       String?
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 }
@@ -218,6 +224,18 @@ model IntegrationLog {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   error         String?
+}
+
+model ItemIntegrationLog {
+  id         Int      @id @default(autoincrement())
+  key        String
+  message    String
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId     Int
+  itemName   String
+  url        String?
+  errorStack String?
+  createdAt  DateTime @default(now())
 }
 
 model SystemParameter {

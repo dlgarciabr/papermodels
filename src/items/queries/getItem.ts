@@ -11,7 +11,10 @@ const GetItem = z.object({
 export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async ({ id }) => {
   const item = await db.item.findFirst({
     where: { id },
-    include: { files: true }
+    include: {
+      setup: true,
+      files: true
+    }
   });
 
   if (!item) throw new NotFoundError();

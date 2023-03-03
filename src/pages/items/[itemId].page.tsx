@@ -4,7 +4,20 @@ import { RouterContext, Routes, useParam } from '@blitzjs/next';
 import Head from 'next/head';
 
 import Layout from 'src/core/layouts/Layout';
-import { Button, CircularProgress, Container, Grid, Paper, Rating, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Paper,
+  Rating,
+  Typography
+} from '@mui/material';
 import { FileType } from 'db';
 import { MdDownload } from 'react-icons/md';
 import Image from 'next/image';
@@ -15,10 +28,11 @@ import { IImageData, IThumbnailsData } from './types';
 import { getFileUrl, getThumbnailUrl } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
-import { ItemWithFiles } from 'types';
+import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { useDownloadFiles } from './items.hook';
 import logo from 'public/images/logo.png';
+import { shortenTextWithEllipsis } from 'src/utils/string';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -52,7 +66,7 @@ const renderContentAndUrlRow = (label: string, name: string | null, url: string 
   );
 };
 
-const DetailsTable = ({ item }: { item: ItemWithFiles }) => {
+const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
   const assemblyTime = Number(item.assemblyTime);
   return (
     <Grid container item xs={12}>
@@ -96,8 +110,8 @@ export const Item = () => {
   const itemId = useParam('itemId', 'number');
   const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useContext(RouterContext);
-
-  const [itemWithFiles, setItemWithFiles] = useState<ItemWithFiles>();
+  const [openDescriptionDialog, setOpenDescriptionDialog] = useState(false);
+  const [ItemWithChildren, setItemWithChildren] = useState<ItemWithChildren>();
 
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
@@ -107,9 +121,9 @@ export const Item = () => {
     items: []
   });
 
-  const downloadFiles = useDownloadFiles(itemWithFiles);
+  const downloadFiles = useDownloadFiles(ItemWithChildren);
 
-  const setupThumbnails = (item: ItemWithFiles) => {
+  const setupThumbnails = (item: ItemWithChildren) => {
     const thumbnails = item.files
       .filter((file) => file.artifactType === FileType.preview)
       .map((file) => ({
@@ -135,6 +149,33 @@ export const Item = () => {
     });
   };
 
+  const renderDescriptionDialog = () => {
+    return (
+      <Dialog
+        open={openDescriptionDialog}
+        // onClose={setOpenDescriptionDialog(false)}
+      >
+        <DialogTitle>{ItemWithChildren?.name}</DialogTitle>
+        <DialogContent>
+          <Box
+            noValidate
+            component='form'
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              m: 'auto',
+              width: 'fit-content'
+            }}>
+            <Typography>{ItemWithChildren?.description}</Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDescriptionDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
+
   /* istanbul ignore next -- @preserve */
   const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
     const storagePathParts = thumbnailsData.items[thumbnailIndex]?.storagePath.split('.');
@@ -155,8 +196,8 @@ export const Item = () => {
           gRecaptchaToken,
           id: itemId
         });
-        setItemWithFiles(item);
-        setupThumbnails(item);
+        setItemWithChildren(item as ItemWithChildren);
+        setupThumbnails(item as ItemWithChildren);
         const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
         if (!imageData.url && previewFiles.length >= 1) {
           const file = previewFiles[0];
@@ -203,8 +244,9 @@ export const Item = () => {
 
   return (
     <>
+      {renderDescriptionDialog()}
       <Head>
-        <title>Papermodels - {itemWithFiles?.name}</title>
+        <title>Papermodels - {ItemWithChildren?.name}</title>
       </Head>
       <Container component='main'>
         <Grid container spacing={2} justifyContent='center'>
@@ -238,9 +280,16 @@ export const Item = () => {
           <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
             <Grid item xs={12}>
               <Typography variant='h6' component='div'>
-                {itemWithFiles?.name}
+                {ItemWithChildren?.name}
               </Typography>
-              {itemWithFiles?.description && <Typography variant='subtitle1'>{itemWithFiles?.description}</Typography>}
+              {ItemWithChildren?.description && (
+                <Typography variant='subtitle1'>
+                  {shortenTextWithEllipsis(ItemWithChildren?.description, 200)}
+                  <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
+                    see more
+                  </a>
+                </Typography>
+              )}
             </Grid>
             <Grid item xs={12}>
               <Paper className='item-download' elevation={0}>
@@ -276,7 +325,7 @@ export const Item = () => {
               </Paper>
             </Grid>
             <Grid item container xs={12}>
-              {itemWithFiles && <DetailsTable item={itemWithFiles} />}
+              {ItemWithChildren && <DetailsTable item={ItemWithChildren} />}
             </Grid>
           </Grid>
           {/* </Grid> */}

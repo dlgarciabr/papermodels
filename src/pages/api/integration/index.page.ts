@@ -16,7 +16,10 @@ import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
 // const setup = {
-//   instructionsSelector: ''
+//   author: '',
+//   authorLink: '',
+//   licenseType: 'Creative Commons Non Commercial use license',
+//   licenseTypeLink: 'https://creativecommons.org/licenses/by-nc-sa/4.0/'
 // };
 
 const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
@@ -166,7 +169,11 @@ const processItemIntegration = async () => {
                 assemblyTime,
                 setupId: itemIntegration.setup.id,
                 categoryId: itemIntegration.categoryId,
-                status: ItemStatus.integrating
+                status: ItemStatus.integrating,
+                author: itemIntegration.setup.author,
+                authorLink: itemIntegration.setup.authorLink,
+                licenseType: itemIntegration.setup.licenseType,
+                licenseTypeLink: itemIntegration.setup.licenseTypeLink
               }
             });
           } catch (error) {

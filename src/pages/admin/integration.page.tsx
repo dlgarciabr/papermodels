@@ -42,6 +42,7 @@ import { shortenTextWithEllipsis } from 'src/utils/string';
 import updateIntegrationSetup from 'src/integration-setups/mutations/updateIntegrationSetup';
 import { Routes } from '@blitzjs/next';
 import Link from 'next/link';
+import getItem from 'src/items/queries/getItem';
 // import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
 
 interface IIntegrationLogFilter {
@@ -61,6 +62,10 @@ const Integration = () => {
     previewImagesSelector: '',
     categorySelector: '',
     ignoreExpressions: '',
+    author: '',
+    authorLink: '',
+    licenseType: '',
+    licenseTypeLink: '',
     categoryBinding: '',
     descriptionSelector: '',
     schemesSelector: '',
@@ -324,13 +329,22 @@ const Integration = () => {
         where: {
           OR: [
             { key: SystemParameterType.INTEGRATION_ITEM_REPLACE },
-            { key: SystemParameterType.INTEGRATION_ITEM_NAME }
+            { key: SystemParameterType.INTEGRATION_ITEM_NAME },
+            { key: SystemParameterType.INTEGRATION_ITEM_ID }
           ]
         }
       });
       if (systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_REPLACE)) {
-        const paramItemName = systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_NAME);
-        setItemName(paramItemName!.value);
+        const paramItemId = systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_ID);
+        if (paramItemId) {
+          const item = await invoke(getItem, {
+            id: Number(paramItemId.value)
+          });
+          if (item) {
+            setItemName(item.name);
+            setSelectedSetup((item as any).setup);
+          }
+        }
       }
     })();
   }, []);

@@ -29,8 +29,17 @@ const seed = async () => {
   const session = await db.session.count();
 
   if (session === 0) {
-    await db.user.create({
-      data: {
+    await db.user.upsert({
+      where: {
+        email: 'dlgarciabr@gmail.com'
+      },
+      create: {
+        email: 'dlgarciabr@gmail.com',
+        hashedPassword:
+          'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTIscD0xJHhYSGg0djNOdU0yWEhhV0xSdlZwcVEkTkdDckF6QmI1b2xrTmdVaWhPT1JSbzg1SVZMaUZ6SkJoWW51YTNNRHF2ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        role: 'USER'
+      },
+      update: {
         email: 'dlgarciabr@gmail.com',
         hashedPassword:
           'JGFyZ29uMmlkJHY9MTkkbT02NTUzNix0PTIscD0xJHhYSGg0djNOdU0yWEhhV0xSdlZwcVEkTkdDckF6QmI1b2xrTmdVaWhPT1JSbzg1SVZMaUZ6SkJoWW51YTNNRHF2ZwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
@@ -307,6 +316,10 @@ const seed = async () => {
       name: 'Paperdiorama',
       key: 'paperdiorama',
       domain: 'https://www.paperdiorama.com',
+      author: 'Paperdiorama',
+      authorLink: '',
+      licenseType: 'Creative Commons Non Commercial use license',
+      licenseTypeLink: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
       itemUrlSelector: `[
         {
           "type":"${IntegrationSelectorType.LINK}",

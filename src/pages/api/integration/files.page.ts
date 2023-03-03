@@ -11,6 +11,7 @@ import {
   IntegrationLog,
   IntegrationSetup,
   ItemIntegration,
+  ItemIntegrationLog,
   ItemIntegrationStatus,
   ItemStatus
 } from '@prisma/client';
@@ -49,6 +50,8 @@ interface IFileIntegration extends FileIntegration {
 }
 
 let logs: Partial<IntegrationLog>[] = [];
+
+let filesErrors: ItemIntegrationLog[] = [];
 
 // TODO extract to node project, modifying DB interactions
 export default api(async (req, res, _ctx) => {
@@ -108,6 +111,11 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       if (linkSelectors.length > 0) {
         console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
 
+        // TODO
+        //  retrieve page content as string
+        //  retrieve all nodes from preview selectors
+        //  if a node with preview and scheme selector at the same time exists, ignore it
+
         for await (const linkSelector of linkSelectors) {
           const selectorFilesUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
           if (selectorFilesUrls.length > 0) {
@@ -131,14 +139,14 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
                 );
                 file.storagePath = `${response.public_id}.${response.format}`;
               } catch (error) {
-                await db.integrationLog.create({
-                  data: {
-                    key: FileSimulationReference.error,
-                    reference: `linkSelector:${selectorFilesUrls[0]}`,
-                    error: error.message,
-                    value: error.stack || error.message || ''
-                  }
-                });
+                filesErrors.push({
+                  key: FileSimulationReference.error,
+                  itemId: fileIntegration.itemIntegration.itemId!,
+                  itemName: fileIntegration.itemIntegration.name!,
+                  message: error.message || error.stack || error,
+                  errorStack: error.stack,
+                  url: selectorFilesUrls[0]!
+                } as ItemIntegrationLog);
               }
             }
             if (file.storagePath) {
@@ -180,14 +188,13 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
                   );
                   file.storagePath = `${response.public_id}.${response.format}`;
                 } catch (error) {
-                  await db.integrationLog.create({
-                    data: {
-                      key: FileSimulationReference.error,
-                      reference: `clickSelector:${fileIntegration.itemIntegration.name}`,
-                      error: error.message,
-                      value: error.stack || error.message || ''
-                    }
-                  });
+                  filesErrors.push({
+                    key: FileSimulationReference.error,
+                    itemId: fileIntegration.itemIntegration.itemId!,
+                    itemName: fileIntegration.itemIntegration.name!,
+                    message: error.message || error.stack || error,
+                    errorStack: error.stack
+                  } as ItemIntegrationLog);
                 }
               }
               if (file.storagePath) {
@@ -202,11 +209,11 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
         }
       }
 
-      if (files.length === 0 && hasBufferFiles) {
+      if (files.length === 0 && !hasBufferFiles) {
+        hasShemeFiles = false;
         throw new Error('scheme files not found');
       }
     } catch (error) {
-      hasShemeFiles = false;
       errors.push(error.message);
     }
 
@@ -223,15 +230,17 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
         data: fileIntegrationLogs as IntegrationLog[]
       });
     } else {
-      console.log('[FileIntegrationJOB] Attaching uploaded files to Item...');
+      if (files.length > 0) {
+        console.log('[FileIntegrationJOB] Attaching uploaded files to Item...');
 
-      await db.itemFile.createMany({
-        data: files.map((file) => ({
-          storagePath: file.storagePath,
-          artifactType: file.artifactType,
-          itemId: fileIntegration.itemIntegration.itemId!
-        }))
-      });
+        await db.itemFile.createMany({
+          data: files.map((file) => ({
+            storagePath: file.storagePath,
+            artifactType: file.artifactType,
+            itemId: fileIntegration.itemIntegration.itemId!
+          }))
+        });
+      }
 
       await db.fileIntegration.update({
         where: { id: fileIntegration.id },
@@ -381,6 +390,12 @@ const clearCachedFiles = () => {
   }
 };
 
+const registerErrorLogs = async (errors: ItemIntegrationLog[]) => {
+  await db.itemIntegrationLog.createMany({
+    data: errors
+  });
+};
+
 const processIntegration = async () => {
   console.log('[FileIntegrationJOB] Cleaning last download cache...');
 
@@ -402,7 +417,7 @@ const processIntegration = async () => {
   const type = paramProcessingType!.value as unknown as IntegrationProcessingType;
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
 
-  let slice = 5;
+  let slice = 6;
   if (isSimulation) {
     slice = 10;
   }
@@ -437,8 +452,9 @@ const processIntegration = async () => {
       }
     });
 
-    console.log(`[FileIntegrationJOB] ${integrationList.length} file(s) to be integrated found!`);
+    console.log(`[FileIntegrationJOB] integrating ${integrationList.length} file(s)!`);
     for await (const fileIntegration of integrationList) {
+      filesErrors = [];
       switch (fileIntegration.integrationType) {
         case FileType.scheme:
           await processSchemeType(fileIntegration, isSimulation);
@@ -447,6 +463,9 @@ const processIntegration = async () => {
         //TODO
         default:
         //TODO
+      }
+      if (filesErrors.length > 0) {
+        await registerErrorLogs(filesErrors);
       }
     }
 
@@ -465,7 +484,6 @@ const processIntegration = async () => {
       }
     });
 
-    // if (isSimulation) {
     const fileIntegrations = await db.fileIntegration.findMany({
       where: {
         OR: [
@@ -556,7 +574,6 @@ const processIntegration = async () => {
 ===================================================================================`);
       }
     }
-    // }
 
     if (isSimulation) {
       await processIntegration();

@@ -1,5 +1,5 @@
 import { SimpleRolesIsAuthorized } from '@blitzjs/auth';
-import { Item, ItemFile, User } from 'db';
+import { IntegrationSetup, Item, ItemFile, User } from 'db';
 
 export type Role = 'ADMIN' | 'USER';
 
@@ -13,8 +13,9 @@ declare module '@blitzjs/auth' {
   }
 }
 
-export interface ItemWithFiles extends Item {
+export interface ItemWithChildren extends Item {
   files: ItemFile[];
+  setup: IntegrationSetup;
 }
 
 export enum IntegrationSelectorType {
@@ -68,16 +69,8 @@ export enum IntegrationProcessingQtyType {
 export enum SystemParameterType {
   INTEGRATION_TYPE = 'INTEGRATION_TYPE',
   INTEGRATION_QUANTITY = 'INTEGRATION_QUANTITY',
+  INTEGRATION_ITEM_ID = 'INTEGRATION_ITEM_ID',
   INTEGRATION_ITEM_NAME = 'INTEGRATION_ITEM_NAME',
   INTEGRATION_START_TIME = 'INTEGRATION_START_TIME',
   INTEGRATION_ITEM_REPLACE = 'INTEGRATION_ITEM_REPLACE'
-}
-
-export interface IErrorLog {
-  itemId?: number;
-  itemName?: string;
-  fileName?: string;
-  url?: string;
-  message: string;
-  stack: string;
 }

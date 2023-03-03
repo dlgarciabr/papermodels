@@ -1,8 +1,8 @@
 import { FileType } from '@prisma/client';
 import { downloadFile } from 'src/utils/global';
-import { ItemWithFiles } from 'types';
+import { ItemWithChildren } from 'types';
 
-export const useDownloadFiles = (item?: ItemWithFiles) => (artifactType: FileType) => {
+export const useDownloadFiles = (item?: ItemWithChildren) => (artifactType: FileType) => {
   if (!item) {
     return;
   }

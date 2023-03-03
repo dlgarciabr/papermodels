@@ -23,6 +23,7 @@ import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
+import { ItemWithChildren } from 'types';
 
 const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
   return (
@@ -173,7 +174,7 @@ export const EditItem = () => {
                 ...values
               });
               showToast(ToastType.SUCCESS, 'Item successfully updated!');
-              await queryResult.setQueryData(updated as Item & { files: ItemFile[] });
+              await queryResult.setQueryData(updated as ItemWithChildren);
               await router.push(Routes.ItemsPage());
             } catch (error: any) {
               console.error(error);
