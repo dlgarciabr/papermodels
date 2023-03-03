@@ -10,6 +10,7 @@ export default api(async (req, res, _ctx) => {
     const type = req.body.type as IntegrationProcessingType;
     const processingQtyType = req.body.processingQtyType;
     const itemName = req.body.itemName;
+    const reintegrateItemId = req.body.reintegrateItemId;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -75,9 +76,20 @@ export default api(async (req, res, _ctx) => {
       }
     });
 
-    console.log(`[IntegrationInitializer] Extracting all site URLs...`);
+    let uniqueSiteUrls: string[] = [];
 
-    const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
+    if (reintegrateItemId) {
+      const itemToReintegrate = await db.item.findUnique({
+        where: {
+          id: reintegrateItemId
+        }
+      });
+      console.log(`[IntegrationInitializer] Recovering URL to reintegrate Item ${itemToReintegrate?.name}...`);
+      uniqueSiteUrls.push(itemToReintegrate?.integrationUrl!);
+    } else {
+      console.log(`[IntegrationInitializer] Extracting all site URLs...`);
+      uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
+    }
 
     console.log(`[IntegrationInitializer] Cleaning old registries...`);
 

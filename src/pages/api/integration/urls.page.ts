@@ -126,28 +126,32 @@ const processIntegration = async () => {
         { key: SystemParameterType.INTEGRATION_TYPE },
         { key: SystemParameterType.INTEGRATION_QUANTITY },
         { key: SystemParameterType.INTEGRATION_ITEM_NAME },
-        { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
+        { key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID }
       ]
     }
   });
 
   const selectedItemName = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_ITEM_NAME)?.value;
-  const isItemNamesIntegration = !!selectedItemName;
-  const typeParam = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_TYPE);
+  const isItemNamedIntegration = !!selectedItemName;
+
   const processingQtyType = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_QUANTITY)
     ?.value as IntegrationProcessingQtyType;
-  const itemReintegrationParam = systemParams.find(
-    (param) => param.key === SystemParameterType.INTEGRATION_ITEM_REPLACE
+
+  const reintegrationItemIdParam = systemParams.find(
+    (param) => param.key === SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
   );
-  const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
+  const isItemReintegration = !!(reintegrationItemIdParam && Number(reintegrationItemIdParam));
+
+  const typeParam = systemParams.find((param) => param.key === SystemParameterType.INTEGRATION_TYPE);
   const type = typeParam?.value as IntegrationProcessingType;
+
   const isReadUrl = type === IntegrationProcessingType.READ_URLS;
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
   const isIntegration = type === IntegrationProcessingType.INTEGRATION;
 
   let urlIntegrationsToProcess: (UrlIntegration & { setup: IntegrationSetup })[] = [];
 
-  if (isItemNamesIntegration) {
+  if (isItemNamedIntegration || isItemReintegration) {
     let urlIntegrationStatus;
 
     if (isIntegration) {

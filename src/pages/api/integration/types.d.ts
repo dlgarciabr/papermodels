@@ -5,6 +5,7 @@ export interface IError extends Error {
 
 export interface IPageItem {
   url: string;
+  itemId?: number;
   name?: string;
   categoryName?: string;
 }

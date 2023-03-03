@@ -16,10 +16,6 @@ import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
 // const setup = {
-//   author: '',
-//   authorLink: '',
-//   licenseType: 'Creative Commons Non Commercial use license',
-//   licenseTypeLink: 'https://creativecommons.org/licenses/by-nc-sa/4.0/'
 // };
 
 const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
@@ -34,16 +30,16 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
 const processItemIntegration = async () => {
   const systemParameters = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }]
+      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID }]
     }
   });
 
   const processingTypeParam = systemParameters.find((sp) => sp.key === SystemParameterType.INTEGRATION_TYPE);
 
   const itemReintegrationParam = systemParameters.find(
-    (param) => param.key === SystemParameterType.INTEGRATION_ITEM_REPLACE
+    (param) => param.key === SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
   );
-  const isItemReintegration = itemReintegrationParam && Boolean(itemReintegrationParam.value);
+  const isItemReintegration = !!(itemReintegrationParam && Number(itemReintegrationParam.value));
 
   if (!processingTypeParam) {
     console.log(`[ItemIntegrationJOB] Nothing to be done, quiting!`);
@@ -173,7 +169,8 @@ const processItemIntegration = async () => {
                 author: itemIntegration.setup.author,
                 authorLink: itemIntegration.setup.authorLink,
                 licenseType: itemIntegration.setup.licenseType,
-                licenseTypeLink: itemIntegration.setup.licenseTypeLink
+                licenseTypeLink: itemIntegration.setup.licenseTypeLink,
+                integrationUrl: itemIntegration.url
               }
             });
           } catch (error) {

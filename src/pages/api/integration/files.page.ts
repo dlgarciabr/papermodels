@@ -564,7 +564,7 @@ const processIntegration = async () => {
               { key: SystemParameterType.INTEGRATION_QUANTITY },
               { key: SystemParameterType.INTEGRATION_START_TIME },
               { key: SystemParameterType.INTEGRATION_ITEM_NAME },
-              { key: SystemParameterType.INTEGRATION_ITEM_REPLACE }
+              { key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID }
             ]
           }
         });

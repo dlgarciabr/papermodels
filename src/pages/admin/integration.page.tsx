@@ -80,6 +80,7 @@ const Integration = () => {
   const [deleteItemIntegrationMutation] = useMutation(deleteItemIntegrationByStatus);
   const [filter, setFilter] = useState<IIntegrationLogFilter>({ field: '', value: '' });
   const [itemName, setItemName] = useState<string>('');
+  const [reintegrateItemId, setReintegrateItemId] = useState<number | null>();
   const [processingQtyType, setProcessingQtyType] = useState<IntegrationProcessingQtyType>(
     IntegrationProcessingQtyType.FEW
   );
@@ -214,7 +215,8 @@ const Integration = () => {
           ...selectedSetup,
           type,
           processingQtyType,
-          itemName
+          itemName,
+          reintegrateItemId
         })
       });
       if (response.status === 204) {
@@ -327,23 +329,20 @@ const Integration = () => {
     void (async () => {
       const { systemParameters } = await invoke(getSystemParameters, {
         where: {
-          OR: [
-            { key: SystemParameterType.INTEGRATION_ITEM_REPLACE },
-            { key: SystemParameterType.INTEGRATION_ITEM_NAME },
-            { key: SystemParameterType.INTEGRATION_ITEM_ID }
-          ]
+          key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
         }
       });
-      if (systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_REPLACE)) {
-        const paramItemId = systemParameters.find((p) => p.key === SystemParameterType.INTEGRATION_ITEM_ID);
-        if (paramItemId) {
-          const item = await invoke(getItem, {
-            id: Number(paramItemId.value)
-          });
-          if (item) {
-            setItemName(item.name);
-            setSelectedSetup((item as any).setup);
-          }
+      const paramReintegrateItemId = systemParameters.find(
+        (params) => params.key === SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+      );
+      if (paramReintegrateItemId) {
+        const item = await invoke(getItem, {
+          id: Number(paramReintegrateItemId.value)
+        });
+        if (item) {
+          setItemName(item.name);
+          setReintegrateItemId(item.id);
+          setSelectedSetup((item as any).setup);
         }
       }
     })();

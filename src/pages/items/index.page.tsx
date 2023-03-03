@@ -6,7 +6,7 @@ import { invoke, useMutation } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import getItems from 'src/items/queries/getItems';
 import deleteItem from 'src/items/mutations/deleteItem';
-import { FileType, ItemStatus } from '@prisma/client';
+import { FileType, ItemIntegrationLog, ItemStatus } from '@prisma/client';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -19,6 +19,7 @@ import createSystemParameters from 'src/system-parameter/mutations/createSystemP
 import { ItemWithChildren, SystemParameterType } from 'types';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import deleteSystemParameters from 'src/system-parameter/mutations/deleteSystemParameters';
+import { getSimpleRandomKey } from 'src/utils/global';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -40,6 +41,7 @@ export const ItemsList = () => {
   const [createSystemParametersMutation] = useMutation(createSystemParameters);
   const [deleteSystemParametersMutation] = useMutation(deleteSystemParameters);
   const [openLogDialog, setOpenLogDialog] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>();
 
   const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
   const goToNextPage = () => router.push({ query: { page: page + 1 } });
@@ -65,6 +67,7 @@ export const ItemsList = () => {
         skip: ITEMS_PER_PAGE * page,
         take: ITEMS_PER_PAGE,
         include: {
+          itemIntegrationLogs: true,
           files: true
         },
         where
@@ -78,6 +81,7 @@ export const ItemsList = () => {
         skip: ITEMS_PER_PAGE * page,
         take: ITEMS_PER_PAGE,
         include: {
+          itemIntegrationLogs: true,
           files: true
         }
       });
@@ -89,15 +93,11 @@ export const ItemsList = () => {
 
   const reintegrateItem = async (id) => {
     await deleteSystemParametersMutation({
-      keys: [SystemParameterType.INTEGRATION_ITEM_REPLACE, SystemParameterType.INTEGRATION_ITEM_ID]
+      keys: [SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID]
     });
     await createSystemParametersMutation([
       {
-        key: SystemParameterType.INTEGRATION_ITEM_REPLACE,
-        value: String(true)
-      },
-      {
-        key: SystemParameterType.INTEGRATION_ITEM_ID,
+        key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID,
         value: String(id)
       }
     ]);
@@ -125,9 +125,6 @@ export const ItemsList = () => {
         return (
           <Grid container>
             <Grid item xs={6}>
-              <button type='button' onClick={() => setOpenLogDialog(true)} style={{ marginLeft: '0.5rem' }}>
-                logs
-              </button>
               <button type='button' onClick={() => goToEditPage(Number(params.id))} style={{ marginLeft: '0.5rem' }}>
                 edit
               </button>
@@ -147,6 +144,17 @@ export const ItemsList = () => {
               {params.row.setupId && (
                 <button type='button' onClick={() => reintegrateItem(params.row.id)} style={{ marginLeft: '0.5rem' }}>
                   reintegrate
+                </button>
+              )}
+              {items.find((item) => item.id === params.id)!.itemIntegrationLogs.length > 0 && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    setSelectedItemId(Number(params.id));
+                    setOpenLogDialog(true);
+                  }}
+                  style={{ marginLeft: '0.5rem' }}>
+                  Int. logs
                 </button>
               )}
             </Grid>
@@ -176,20 +184,19 @@ export const ItemsList = () => {
   }
 
   const renderLogDialog = () => {
+    let itemIntegrationLogs: ItemIntegrationLog[] = [];
+    if (selectedItemId && items.length > 0) {
+      const selectedItem = items.find((item) => item.id === selectedItemId);
+      itemIntegrationLogs = [...selectedItem?.itemIntegrationLogs!];
+    }
     return (
       <Dialog open={openLogDialog}>
-        <DialogTitle>Log</DialogTitle>
+        <DialogTitle>Logs</DialogTitle>
         <DialogContent>
-          <Box
-            noValidate
-            component='form'
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              m: 'auto',
-              width: 'fit-content'
-            }}>
-            <Typography>log</Typography>
+          <Box noValidate component='form' sx={{ height: 650 }}>
+            {itemIntegrationLogs.map((log) => (
+              <Typography key={getSimpleRandomKey()}>{log.message}</Typography>
+            ))}
           </Box>
         </DialogContent>
         <DialogActions>
