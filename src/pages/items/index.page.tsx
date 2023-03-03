@@ -17,7 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import createSystemParameters from 'src/system-parameter/mutations/createSystemParameters';
 import { ItemWithChildren, SystemParameterType } from 'types';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
+import { Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import deleteSystemParameters from 'src/system-parameter/mutations/deleteSystemParameters';
 import { getSimpleRandomKey } from 'src/utils/global';
 
@@ -25,7 +25,8 @@ const ITEMS_PER_PAGE = 10;
 
 const filtersInitialValue = {
   name: '',
-  status: ''
+  status: '',
+  suspect: false
 };
 
 export const ItemsList = () => {
@@ -34,7 +35,7 @@ export const ItemsList = () => {
   const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
-  const [filters, setFilters] = useState<{ name: string | ''; status: ItemStatus | string }>({
+  const [filters, setFilters] = useState<{ name: string | ''; status: ItemStatus | string; suspect: boolean }>({
     ...filtersInitialValue
   });
   const [deleteItemMutation] = useMutation(deleteItem);
@@ -50,6 +51,25 @@ export const ItemsList = () => {
   };
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
+  const filterSuspectItems = (items: ItemWithChildren[]) => {
+    let filteredItems: ItemWithChildren[];
+
+    //no pdf
+    filteredItems = items.filter(
+      (item) =>
+        item.files.filter((file) => file.artifactType === FileType.scheme && file.storagePath.endsWith('.pdf'))
+          .length === 0
+    );
+
+    // filteredItems = filteredItems.filter(item =>
+    //   item.files.filter(
+    //     (file) => file.artifactType === FileType.preview
+    //   ).length === 0
+    // );
+
+    return filteredItems;
+  };
+
   const loadItems = async () => {
     const where = {} as any;
     if (filters.status) {
@@ -61,32 +81,53 @@ export const ItemsList = () => {
         mode: 'insensitive'
       };
     }
+
+    let takeParam = {};
+
+    if (!filters.suspect) {
+      takeParam = {
+        take: ITEMS_PER_PAGE
+      };
+    }
+
     if (Object.keys(where).length > 0) {
       const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
-        take: ITEMS_PER_PAGE,
+        ...takeParam,
         include: {
           itemIntegrationLogs: true,
           files: true
         },
         where
       });
-      setItems(items as ItemWithChildren[]);
-      setCount(count);
+      if (filters.suspect) {
+        const filtered = filterSuspectItems(items as ItemWithChildren[]);
+        setItems(filtered);
+        setCount(filtered.length);
+      } else {
+        setItems(items as ItemWithChildren[]);
+        setCount(count);
+      }
       setHasMore(hasMore);
     } else {
       const { items, hasMore, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
-        take: ITEMS_PER_PAGE,
+        ...takeParam,
         include: {
           itemIntegrationLogs: true,
           files: true
         }
       });
-      setItems(items as ItemWithChildren[]);
-      setCount(count);
+      if (filters.suspect) {
+        const filtered = filterSuspectItems(items as ItemWithChildren[]);
+        setItems(filtered);
+        setCount(filtered.length);
+      } else {
+        setItems(items as ItemWithChildren[]);
+        setCount(count);
+      }
       setHasMore(hasMore);
     }
   };
@@ -229,7 +270,7 @@ export const ItemsList = () => {
           }}
         />
       </Grid>
-      <Grid item xs={5}>
+      <Grid item xs={3}>
         <Select
           id='status'
           label='Status'
@@ -239,9 +280,14 @@ export const ItemsList = () => {
           value={filters.status}
           onChange={(e) => setFilters({ ...filters, status: e.target.value as ItemStatus })}>
           <MenuItem value={ItemStatus.integrating}>{ItemStatus.integrating}</MenuItem>
+          <MenuItem value={ItemStatus.disable}>{ItemStatus.disable}</MenuItem>
           <MenuItem value={ItemStatus.enable}>{ItemStatus.enable}</MenuItem>
           <MenuItem value={ItemStatus.validate}>{ItemStatus.validate}</MenuItem>
         </Select>
+      </Grid>
+      <Grid item xs={2}>
+        <Checkbox checked={filters.suspect} onChange={() => setFilters({ ...filters, suspect: !filters.suspect })} />
+        Suspect
       </Grid>
       <Grid item xs={2}>
         <Button onClick={() => loadItems()}>Search</Button>
@@ -263,7 +309,7 @@ export const ItemsList = () => {
             onPageChange={(page) => goToPage(page)}
             rowCount={count}
             page={page}
-            paginationMode='server'
+            paginationMode={filters.suspect ? 'client' : 'server'}
           />
         </Box>
       </Grid>

@@ -76,7 +76,7 @@ export default api(async (req, res, _ctx) => {
 
     console.log(`[IntegrationInitializer] Cleaning old registries...`);
     await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationLog\";`;
-    await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\";`;
+    await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\" CASCADE;`;
     await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\";`;
 
     let status;
