@@ -1,7 +1,7 @@
 /* istanbul ignore file -- @preserve */
-import db, { IntegrationSetup, ItemIntegrationStatus, UrlIntegrationStatus } from 'db';
+import db, { IntegrationSetup, UrlIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
-import { IntegrationProcessingType, SystemParameterType } from 'types';
+import { IntegrationProcessingType, ItemSimulationReference, SystemParameterType } from 'types';
 import { getAllSiteUrls } from './util';
 
 export default api(async (req, res, _ctx) => {
@@ -10,7 +10,6 @@ export default api(async (req, res, _ctx) => {
     const type = req.body.type as IntegrationProcessingType;
     const processingQtyType = req.body.processingQtyType;
     const itemName = req.body.itemName;
-    const reintegrateItemId = req.body.reintegrateItemId;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -22,8 +21,7 @@ export default api(async (req, res, _ctx) => {
       return;
     }
 
-    console.log(`[IntegrationInitializer] Creating support files...`);
-
+    console.log(`[IntegrationInitializer] Creating support registries...`);
     await db.systemParameter.upsert({
       where: {
         key: SystemParameterType.INTEGRATION_QUANTITY
@@ -36,7 +34,6 @@ export default api(async (req, res, _ctx) => {
         value: processingQtyType
       }
     });
-
     await db.systemParameter.upsert({
       where: {
         key: SystemParameterType.INTEGRATION_START_TIME
@@ -49,7 +46,6 @@ export default api(async (req, res, _ctx) => {
         value: String(new Date().getTime())
       }
     });
-
     await db.systemParameter.upsert({
       where: {
         key: SystemParameterType.INTEGRATION_TYPE
@@ -62,7 +58,6 @@ export default api(async (req, res, _ctx) => {
         value: String(type)
       }
     });
-
     await db.systemParameter.upsert({
       where: {
         key: SystemParameterType.INTEGRATION_ITEM_NAME
@@ -76,52 +71,13 @@ export default api(async (req, res, _ctx) => {
       }
     });
 
-    let uniqueSiteUrls: string[] = [];
-
-    if (reintegrateItemId) {
-      const itemToReintegrate = await db.item.findUnique({
-        where: {
-          id: reintegrateItemId
-        }
-      });
-      console.log(`[IntegrationInitializer] Recovering URL to reintegrate Item ${itemToReintegrate?.name}...`);
-      uniqueSiteUrls.push(itemToReintegrate?.integrationUrl!);
-    } else {
-      console.log(`[IntegrationInitializer] Extracting all site URLs...`);
-      uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
-    }
+    console.log(`[IntegrationInitializer] Extracting all site URLs...`);
+    const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
 
     console.log(`[IntegrationInitializer] Cleaning old registries...`);
-
-    await db.integrationLog.deleteMany({
-      where: {
-        integrationId: null
-      }
-    });
-
-    await db.itemIntegration.deleteMany({
-      where: {
-        OR: [
-          { status: ItemIntegrationStatus.pendingSimulation },
-          { status: ItemIntegrationStatus.runningSimulation },
-          { status: ItemIntegrationStatus.simulated },
-          { status: ItemIntegrationStatus.error }
-        ]
-      }
-    });
-
-    await db.urlIntegration.deleteMany({
-      where: {
-        OR: [
-          { status: UrlIntegrationStatus.readingPending },
-          { status: UrlIntegrationStatus.readingDone },
-          { status: UrlIntegrationStatus.simulationPending },
-          { status: UrlIntegrationStatus.simulationDone },
-          { status: UrlIntegrationStatus.pending },
-          { status: UrlIntegrationStatus.done }
-        ]
-      }
-    });
+    await db.$queryRaw`TRUNCATE TABLE \"public\".\"IntegrationLog\";`;
+    await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\";`;
+    await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\";`;
 
     let status;
     switch (type) {
@@ -144,6 +100,14 @@ export default api(async (req, res, _ctx) => {
         url,
         setupId: setup.id
       }))
+    });
+
+    await db.integrationLog.create({
+      data: {
+        key: ItemSimulationReference.percentage,
+        reference: 'Global',
+        value: '0'
+      }
     });
 
     console.log(`[IntegrationInitializer] Integration initialized!`);

@@ -43,6 +43,7 @@ export interface IntegrationCategoryBinding {
 }
 
 export enum ItemSimulationReference {
+  percentage = '    Percentage',
   initialQuantity = '   Initial Quantity',
   totalTime = '   Total time',
   url = '  Url',

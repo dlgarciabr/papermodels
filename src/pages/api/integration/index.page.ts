@@ -7,7 +7,8 @@ import db, {
   ItemStatus,
   FileIntegrationStatus,
   IntegrationLog,
-  Item
+  Item,
+  ItemIntegrationLog
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
@@ -17,6 +18,8 @@ import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsStrin
 
 // const setup = {
 // };
+
+let itemErrors: ItemIntegrationLog[] = [];
 
 const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
   if (setupIgnoreExpressions) {
@@ -30,7 +33,9 @@ const removeExpressions = (text: string, setupIgnoreExpressions: string | null) 
 const processItemIntegration = async () => {
   const systemParameters = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID }]
+      key: {
+        in: [SystemParameterType.INTEGRATION_TYPE, SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID]
+      }
     }
   });
 
@@ -49,7 +54,6 @@ const processItemIntegration = async () => {
   const type = processingTypeParam!.value as unknown as IntegrationProcessingType;
 
   const isSimulation = type === IntegrationProcessingType.SIMULATION;
-  // const isIntegration = type === IntegrationProcessingType.INTEGRATION;
   const simulationLabel = isSimulation ? ' simulation ' : ' ';
 
   console.log(`
@@ -60,11 +64,25 @@ const processItemIntegration = async () => {
 
   const runningIntegrations = await db.itemIntegration.findMany({
     where: {
-      OR: [{ status: ItemIntegrationStatus.running }, { status: ItemIntegrationStatus.runningSimulation }]
+      status: {
+        in: [
+          ItemIntegrationStatus.running,
+          ItemIntegrationStatus.runningSimulation,
+          ItemIntegrationStatus.pendingSimulation,
+          ItemIntegrationStatus.pending
+        ]
+      }
+    },
+    include: {
+      setup: true
     }
   });
 
-  if (runningIntegrations.length > 0) {
+  if (
+    runningIntegrations.filter(
+      (i) => i.status === ItemIntegrationStatus.running || i.status === ItemIntegrationStatus.runningSimulation
+    ).length > 0
+  ) {
     console.log('[ItemIntegrationJOB] Another Item integration job is running, aborting...');
     return;
   }
@@ -72,24 +90,9 @@ const processItemIntegration = async () => {
   let integrationList: (ItemIntegration & { setup: IntegrationSetup })[] = [];
 
   if (isSimulation) {
-    integrationList = await db.itemIntegration.findMany({
-      where: {
-        status: ItemIntegrationStatus.pendingSimulation
-      },
-      include: {
-        setup: true
-      }
-    });
+    integrationList = runningIntegrations.filter((i) => i.status === ItemIntegrationStatus.pendingSimulation);
   } else {
-    integrationList = await db.itemIntegration.findMany({
-      where: {
-        status: ItemIntegrationStatus.pending
-      },
-      take: 4,
-      include: {
-        setup: true
-      }
-    });
+    integrationList = runningIntegrations.filter((i) => i.status === ItemIntegrationStatus.pending).slice(0, 6);
   }
 
   if (integrationList.length > 0) {
@@ -202,6 +205,14 @@ const processItemIntegration = async () => {
                 };
                 files.push(file);
               } catch (error) {
+                itemErrors.push({
+                  key: ItemSimulationReference.error,
+                  itemId: item!.id,
+                  itemName: item!.name,
+                  message: error.message || error.stack || JSON.stringify(error),
+                  errorStack: error.stack
+                } as ItemIntegrationLog);
+
                 await db.integrationLog.create({
                   data: {
                     key: ItemSimulationReference.error,

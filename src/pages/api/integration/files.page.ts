@@ -19,7 +19,12 @@ import db from 'db';
 import { convertBytesToBase64 } from 'src/utils/storageProviders/cloudinary';
 import { uploadImage } from '../file/image-upload.page';
 import { UploadItemFile } from 'src/items/types';
-import { executeSelectorAllOnHtmlText, fetchPageAsString, readPageUrls } from './util';
+import {
+  executeSelectorAllOnHtmlText,
+  executeSelectorOnHtmlText,
+  fetchPageAsString,
+  readPageNodesAsString
+} from './util';
 import {
   FileSimulationReference,
   IntegrationProcessingType,
@@ -92,10 +97,13 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
     let hasShemeFiles = true;
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
-    const selectors = JSON.parse(fileIntegration.itemIntegration.setup.schemesSelector) as IntegrationSelector[];
+    const previewSelectors = JSON.parse(
+      fileIntegration.itemIntegration.setup.previewImagesSelector
+    ) as IntegrationSelector[];
+    const schemeSelectors = JSON.parse(fileIntegration.itemIntegration.setup.schemesSelector) as IntegrationSelector[];
 
-    const linkSelectors = selectors.filter((selector) => selector.type === IntegrationSelectorType.LINK);
-    const clickSelectors = selectors.filter((selector) => selector.type === IntegrationSelectorType.CLICK);
+    const linkSelectors = schemeSelectors.filter((selector) => selector.type === IntegrationSelectorType.LINK);
+    const clickSelectors = schemeSelectors.filter((selector) => selector.type === IntegrationSelectorType.CLICK);
 
     if (linkSelectors.length === 0 && clickSelectors.length === 0) {
       throw new Error('scheme selectors not found');
@@ -111,14 +119,23 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       if (linkSelectors.length > 0) {
         console.log(`[FileIntegrationJOB] Trying to do integration${simulationLabel}through link selector...`);
 
-        // TODO
-        //  retrieve page content as string
-        //  retrieve all nodes from preview selectors
-        //  if a node with preview and scheme selector at the same time exists, ignore it
+        const pageContent = await fetchPageAsString(fileIntegration.url);
+        let existingPreviewUrls: string[] = [];
+        previewSelectors.forEach((selector) => {
+          const nodes = executeSelectorAllOnHtmlText(pageContent, selector.value);
+          const urls = Array.from(nodes).map((n) => String(n.getAttribute('src')));
+          existingPreviewUrls = [...existingPreviewUrls, ...urls];
+        });
 
         for await (const linkSelector of linkSelectors) {
-          const selectorFilesUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
-          if (selectorFilesUrls.length > 0) {
+          const nodes = readPageNodesAsString(pageContent, linkSelector.value);
+          const selectorFilesUrls = nodes.map((node) =>
+            String(executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'))
+          );
+          const urlsNotPresentOnPreview = selectorFilesUrls.filter((sfu) => existingPreviewUrls.indexOf(sfu) === -1);
+
+          //  const selectorFilesUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
+          if (urlsNotPresentOnPreview.length > 0) {
             console.log('[FileIntegrationJOB] file found from link selector!');
 
             const file: UploadItemFile = {
@@ -134,7 +151,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
               console.log('[FileIntegrationJOB] Uploading file to storage...');
               try {
                 const response = await uploadImage(
-                  selectorFilesUrls[0]!,
+                  urlsNotPresentOnPreview[0]!,
                   `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
                 );
                 file.storagePath = `${response.public_id}.${response.format}`;
@@ -143,14 +160,14 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
                   key: FileSimulationReference.error,
                   itemId: fileIntegration.itemIntegration.itemId!,
                   itemName: fileIntegration.itemIntegration.name!,
-                  message: error.message || error.stack || error,
+                  message: error.message || error.stack || JSON.stringify(error),
                   errorStack: error.stack,
-                  url: selectorFilesUrls[0]!
+                  url: urlsNotPresentOnPreview[0]!
                 } as ItemIntegrationLog);
               }
             }
             if (file.storagePath) {
-              filesUrls = [...filesUrls, ...selectorFilesUrls];
+              filesUrls = [...filesUrls, ...urlsNotPresentOnPreview];
               files.push(file);
             }
           }
@@ -188,12 +205,13 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
                   );
                   file.storagePath = `${response.public_id}.${response.format}`;
                 } catch (error) {
+                  const e = error as Error;
                   filesErrors.push({
                     key: FileSimulationReference.error,
                     itemId: fileIntegration.itemIntegration.itemId!,
                     itemName: fileIntegration.itemIntegration.name!,
-                    message: error.message || error.stack || error,
-                    errorStack: error.stack
+                    message: error.message || error.stack || JSON.stringify(error),
+                    errorStack: e.stack
                   } as ItemIntegrationLog);
                 }
               }
@@ -215,6 +233,13 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       }
     } catch (error) {
       errors.push(error.message);
+      // filesErrors.push({
+      //   message: error.message,
+      //   itemId: fileIntegration.itemIntegration.itemId!,
+      //   key: FileSimulationReference.error,
+      //   itemName: fileIntegration.itemIntegration.name!,
+      //   errorStack: error.stack
+      // } as ItemIntegrationLog)
     }
 
     if (isSimulation) {
@@ -391,9 +416,19 @@ const clearCachedFiles = () => {
 };
 
 const registerErrorLogs = async (errors: ItemIntegrationLog[]) => {
-  await db.itemIntegrationLog.createMany({
-    data: errors
-  });
+  try {
+    await db.itemIntegrationLog.createMany({
+      data: errors
+    });
+  } catch (error) {
+    await db.integrationLog.create({
+      data: {
+        key: ItemSimulationReference.error,
+        reference: 'Global',
+        value: JSON.stringify(error)
+      }
+    });
+  }
 };
 
 const processIntegration = async () => {

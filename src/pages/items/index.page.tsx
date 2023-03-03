@@ -187,15 +187,21 @@ export const ItemsList = () => {
     let itemIntegrationLogs: ItemIntegrationLog[] = [];
     if (selectedItemId && items.length > 0) {
       const selectedItem = items.find((item) => item.id === selectedItemId);
-      itemIntegrationLogs = [...selectedItem?.itemIntegrationLogs!];
+      if (selectedItem?.itemIntegrationLogs) {
+        itemIntegrationLogs = [...selectedItem?.itemIntegrationLogs!];
+      }
     }
     return (
-      <Dialog open={openLogDialog}>
+      <Dialog open={openLogDialog} fullWidth={true} maxWidth='lg'>
         <DialogTitle>Logs</DialogTitle>
         <DialogContent>
-          <Box noValidate component='form' sx={{ height: 650 }}>
+          <Box noValidate component='form' sx={{ height: 650, width: 1000 }}>
             {itemIntegrationLogs.map((log) => (
-              <Typography key={getSimpleRandomKey()}>{log.message}</Typography>
+              <div key={getSimpleRandomKey()}>
+                ------------------------------------------------------------------------------------------------------------------------------
+                <Typography>{log.message}</Typography>
+                <Typography>{log.errorStack}</Typography>
+              </div>
             ))}
           </Box>
         </DialogContent>

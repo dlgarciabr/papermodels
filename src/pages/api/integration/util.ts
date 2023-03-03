@@ -30,8 +30,8 @@ export const readPageNodesAsString = (pageContent: string, querySelector: string
   return Array.from(selection).map((node) => node.outerHTML);
 };
 
-export const readPageUrlsFromNodes = (nodesAsString: string[]) => {
-  return nodesAsString.map((node) => executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'));
+export const readPageUrlsFromNodes = (nodesAsString: string[]): string[] => {
+  return nodesAsString.map((node) => String(executeSelectorOnHtmlText(node, 'a')?.getAttribute('href')));
 };
 
 export const readPageUrls = async (url: string, querySelector: string) => {
@@ -52,7 +52,7 @@ export const getTextFromNodeAsString = (content: string, querySelector: string) 
  * Extract all URLs from a specific domain
  *
  * @param url
- * @param key
+ * @param key a key that will be used to filter all url found from site
  * @returns a unique list of URLs
  */
 export const getAllSiteUrls = async (url: string, key: string): Promise<string[]> => {

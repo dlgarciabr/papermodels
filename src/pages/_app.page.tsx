@@ -23,12 +23,20 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
   }
 };
 
+let timeout: NodeJS.Timeout | undefined;
+
 const runIntegration = async () => {
   if (typeof location !== 'undefined') {
     try {
       await fetch(`${location.origin}/api/integration`);
     } finally {
-      setTimeout(() => runIntegration(), 60000);
+      if (!timeout) {
+        timeout = setTimeout(() => {
+          void runIntegration();
+          clearTimeout(timeout);
+          timeout = undefined;
+        }, 50000);
+      }
     }
   }
 };
