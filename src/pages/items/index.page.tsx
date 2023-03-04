@@ -31,7 +31,7 @@ const filtersInitialValue = {
 
 export const ItemsList = () => {
   const [items, setItems] = useState<ItemWithChildren[]>([]);
-  const [hasMore, setHasMore] = useState(false);
+  // const [hasMore, setHasMore] = useState(false);
   const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
@@ -44,12 +44,11 @@ export const ItemsList = () => {
   const [openLogDialog, setOpenLogDialog] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>();
 
-  const goToPreviousPage = () => router.push({ query: { page: page - 1 } });
-  const goToNextPage = () => router.push({ query: { page: page + 1 } });
   const goToPage = (page: number) => {
     void router.push({ query: { page: page } });
   };
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
+  const goToPreviewPage = (id: number) => router.push(Routes.ShowItemPage({ itemId: id }));
 
   const filterSuspectItems = (items: ItemWithChildren[]) => {
     let filteredItems: ItemWithChildren[];
@@ -91,7 +90,7 @@ export const ItemsList = () => {
     }
 
     if (Object.keys(where).length > 0) {
-      const { items, hasMore, count } = await invoke(getItems, {
+      const { items, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
         ...takeParam,
@@ -110,9 +109,9 @@ export const ItemsList = () => {
         setItems(items as ItemWithChildren[]);
         setCount(count);
       }
-      setHasMore(hasMore);
+      // setHasMore(hasMore);
     } else {
-      const { items, hasMore, count } = await invoke(getItems, {
+      const { items, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
         skip: ITEMS_PER_PAGE * page,
         ...takeParam,
@@ -130,7 +129,7 @@ export const ItemsList = () => {
         setItems(items as ItemWithChildren[]);
         setCount(count);
       }
-      setHasMore(hasMore);
+      // setHasMore(hasMore);
     }
   };
 
@@ -172,6 +171,9 @@ export const ItemsList = () => {
             <Grid item xs={6}>
               <button type='button' onClick={() => goToEditPage(Number(params.id))} style={{ marginLeft: '0.5rem' }}>
                 edit
+              </button>
+              <button type='button' onClick={() => goToPreviewPage(Number(params.id))} style={{ marginLeft: '0.5rem' }}>
+                preview
               </button>
               <button
                 type='button'
@@ -317,16 +319,6 @@ export const ItemsList = () => {
             paginationMode={filters.suspect ? 'client' : 'server'}
           />
         </Box>
-      </Grid>
-      <Grid item xs={12}>
-        <div>
-          <button disabled={page === 0} onClick={goToPreviousPage}>
-            Previous
-          </button>
-          <button disabled={!hasMore} onClick={goToNextPage}>
-            Next
-          </button>
-        </div>
       </Grid>
     </Grid>
   );
