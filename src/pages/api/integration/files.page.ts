@@ -68,7 +68,9 @@ export default api(async (req, res, _ctx) => {
   try {
     const runningIntegrations = await db.fileIntegration.findMany({
       where: {
-        OR: [{ status: FileIntegrationStatus.running }, { status: FileIntegrationStatus.runningSimulation }]
+        status: {
+          in: [FileIntegrationStatus.running, FileIntegrationStatus.runningSimulation]
+        }
       }
     });
 
@@ -438,7 +440,9 @@ const processIntegration = async () => {
 
   const params = await db.systemParameter.findMany({
     where: {
-      OR: [{ key: SystemParameterType.INTEGRATION_TYPE }, { key: SystemParameterType.INTEGRATION_START_TIME }]
+      key: {
+        in: [SystemParameterType.INTEGRATION_TYPE, SystemParameterType.INTEGRATION_START_TIME]
+      }
     }
   });
 
@@ -461,7 +465,9 @@ const processIntegration = async () => {
 
   const integrationList = (await db.fileIntegration.findMany({
     where: {
-      OR: [{ status: FileIntegrationStatus.pending }, { status: FileIntegrationStatus.pendingSimulation }]
+      status: {
+        in: [FileIntegrationStatus.pending, FileIntegrationStatus.pendingSimulation]
+      }
     },
     take: slice,
     include: {
@@ -519,16 +525,18 @@ const processIntegration = async () => {
       }
     });
 
-    const fileIntegrations = await db.fileIntegration.findMany({
-      where: {
-        OR: [
-          { status: FileIntegrationStatus.pendingSimulation },
-          { status: FileIntegrationStatus.pending },
-          { status: FileIntegrationStatus.simulated },
-          { status: FileIntegrationStatus.done }
-        ]
-      }
-    });
+    // const fileIntegrations = await db.fileIntegration.findMany({
+    //   where: {
+    //     OR: [
+    //       { status: FileIntegrationStatus.pendingSimulation },
+    //       { status: FileIntegrationStatus.pending },
+    //       { status: FileIntegrationStatus.simulated },
+    //       { status: FileIntegrationStatus.done }
+    //     ]
+    //   }
+    // });
+
+    const fileIntegrations = await db.fileIntegration.findMany();
 
     const pendingFileIntegrations = fileIntegrations.filter(
       (sim) => sim.status === FileIntegrationStatus.pendingSimulation || sim.status === FileIntegrationStatus.pending
@@ -536,11 +544,25 @@ const processIntegration = async () => {
     const finishedFileIntegrations = fileIntegrations.filter(
       (sim) => sim.status === FileIntegrationStatus.simulated || sim.status === FileIntegrationStatus.done
     );
+    const doneIntegrations = fileIntegrations.filter(
+      (i) => i.status === FileIntegrationStatus.done || i.status === FileIntegrationStatus.simulated
+    );
+
+    await db.integrationLog.updateMany({
+      where: {
+        key: ItemSimulationReference.percentage
+      },
+      data: {
+        value: String(Math.round((doneIntegrations.length * 100) / fileIntegrations.length))
+      }
+    });
 
     if (pendingFileIntegrations.length === 0) {
       const pendingItemIntegrations = await db.itemIntegration.count({
         where: {
-          OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.pending }]
+          status: {
+            in: [ItemIntegrationStatus.pendingSimulation, ItemIntegrationStatus.pending]
+          }
         }
       });
 
@@ -595,12 +617,14 @@ const processIntegration = async () => {
 
         await db.systemParameter.deleteMany({
           where: {
-            OR: [
-              { key: SystemParameterType.INTEGRATION_QUANTITY },
-              { key: SystemParameterType.INTEGRATION_START_TIME },
-              { key: SystemParameterType.INTEGRATION_ITEM_NAME },
-              { key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID }
-            ]
+            key: {
+              in: [
+                SystemParameterType.INTEGRATION_QUANTITY,
+                SystemParameterType.INTEGRATION_START_TIME,
+                SystemParameterType.INTEGRATION_ITEM_NAME,
+                SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+              ]
+            }
           }
         });
         console.log(`

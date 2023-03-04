@@ -83,12 +83,13 @@ const extractPageItem = async (
   return pageItems;
 };
 
-const saveItemIntegrations = async (
+//TODO try to improve speed
+const _saveItemIntegrations = async (
   pageItems: IPageItem[],
   setup: IntegrationSetup,
   type: IntegrationProcessingType
 ) => {
-  const msg = `[UrlIntegrationJOB] Creating ItemIntegrations for ${pageItems.map((p) => `\n${p.name}`)} ...`;
+  const msg = `${pageItems.map((p) => `[UrlIntegrationJOB] Creating ItemIntegrations for ${p.name}...\n`)}`;
   console.log(msg);
 
   const status =
@@ -102,53 +103,61 @@ const saveItemIntegrations = async (
       url: pageItem.url,
       status,
       setupId: setup.id,
-      categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
-      logs: {
-        create: {
-          key: ItemSimulationReference.hasCategory,
-          reference: pageItem.name!,
-          value: String(!!pageItem.categoryName)
-        }
-      }
+      categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1
+      // logs: {
+      //   create: {
+      //     key: ItemSimulationReference.hasCategory,
+      //     reference: pageItem.name!,
+      //     value: String(!!pageItem.categoryName)
+      //   }
+      // }
+    }))
+  });
+
+  await db.integrationLog.createMany({
+    data: pageItems.map((pageItem) => ({
+      key: ItemSimulationReference.hasCategory,
+      reference: pageItem.name!,
+      value: String(!!pageItem.categoryName)
     }))
   });
 };
 
-// const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
-//   console.log(`[UrlIntegrationJOB] Creating ItemIntegration for ${pageItem.name} ...`);
-//   try {
-//     const status =
-//       type === IntegrationProcessingType.SIMULATION
-//         ? ItemIntegrationStatus.pendingSimulation
-//         : ItemIntegrationStatus.pending;
+const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetup, type: IntegrationProcessingType) => {
+  console.log(`[UrlIntegrationJOB] Creating ItemIntegration for ${pageItem.name} ...`);
+  try {
+    const status =
+      type === IntegrationProcessingType.SIMULATION
+        ? ItemIntegrationStatus.pendingSimulation
+        : ItemIntegrationStatus.pending;
 
-//     await db.itemIntegration.create({
-//       data: {
-//         name: pageItem.name!,
-//         url: pageItem.url,
-//         status,
-//         setupId: setup.id,
-//         categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
-//         logs: {
-//           create: {
-//             key: ItemSimulationReference.hasCategory,
-//             reference: pageItem.name!,
-//             value: String(!!pageItem.categoryName)
-//           }
-//         }
-//       }
-//     });
-//   } catch (error) {
-//     await db.integrationLog.create({
-//       data: {
-//         key: ItemSimulationReference.error,
-//         reference: pageItem.name!,
-//         value: (error as Error).message,
-//         error: (error as Error).stack
-//       }
-//     });
-//   }
-// };
+    await db.itemIntegration.create({
+      data: {
+        name: pageItem.name!,
+        url: pageItem.url,
+        status,
+        setupId: setup.id,
+        categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
+        logs: {
+          create: {
+            key: ItemSimulationReference.hasCategory,
+            reference: pageItem.name!,
+            value: String(!!pageItem.categoryName)
+          }
+        }
+      }
+    });
+  } catch (error) {
+    await db.integrationLog.create({
+      data: {
+        key: ItemSimulationReference.error,
+        reference: pageItem.name!,
+        value: (error as Error).message,
+        error: (error as Error).stack
+      }
+    });
+  }
+};
 
 const processIntegration = async () => {
   const systemParams = await db.systemParameter.findMany({
@@ -204,7 +213,9 @@ const processIntegration = async () => {
   } else if (isReadUrl || isSimulation) {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
-        OR: [{ status: UrlIntegrationStatus.readingPending }, { status: UrlIntegrationStatus.simulationPending }]
+        status: {
+          in: [UrlIntegrationStatus.readingPending, UrlIntegrationStatus.simulationPending]
+        }
       },
       include: {
         setup: true
@@ -373,21 +384,21 @@ const processIntegration = async () => {
               }
             });
           }
-          // for await (const pageItem of pageItems) {
-          //   await createItemIntegration(pageItem, setup, type);
-          // }
-          try {
-            await saveItemIntegrations(pageItems, setup, type);
-          } catch (error) {
-            await db.integrationLog.create({
-              data: {
-                key: ItemSimulationReference.error,
-                reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
-                value: (error as Error).message,
-                error: (error as Error).stack
-              }
-            });
+          for await (const pageItem of pageItems) {
+            await createItemIntegration(pageItem, setup, type);
           }
+          // try {
+          //   await saveItemIntegrations(pageItems, setup, type);
+          // } catch (error) {
+          //   await db.integrationLog.create({
+          //     data: {
+          //       key: ItemSimulationReference.error,
+          //       reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
+          //       value: (error as Error).message,
+          //       error: (error as Error).stack
+          //     }
+          //   });
+          // }
         } else {
           await db.integrationLog.create({
             data: {
@@ -398,25 +409,25 @@ const processIntegration = async () => {
           });
         }
       } else {
-        // for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
-        //   await createItemIntegration(pageItem, setup, type);
-        // }
-        try {
-          await saveItemIntegrations(
-            uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0),
-            setup,
-            type
-          );
-        } catch (error) {
-          await db.integrationLog.create({
-            data: {
-              key: ItemSimulationReference.error,
-              reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
-              value: (error as Error).message,
-              error: (error as Error).stack
-            }
-          });
+        for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
+          await createItemIntegration(pageItem, setup, type);
         }
+        // try {
+        //   await saveItemIntegrations(
+        //     uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0),
+        //     setup,
+        //     type
+        //   );
+        // } catch (error) {
+        //   await db.integrationLog.create({
+        //     data: {
+        //       key: ItemSimulationReference.error,
+        //       reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
+        //       value: (error as Error).message,
+        //       error: (error as Error).stack
+        //     }
+        //   });
+        // }
       }
     }
   }

@@ -78,6 +78,12 @@ const processItemIntegration = async () => {
     }
   });
 
+  // const itemIntegrations = await db.itemIntegration.findMany({
+  //   include: {
+  //     setup: true
+  //   }
+  // });
+
   if (
     runningIntegrations.filter(
       (i) => i.status === ItemIntegrationStatus.running || i.status === ItemIntegrationStatus.runningSimulation
@@ -317,7 +323,9 @@ const processItemIntegration = async () => {
 
       const itemIntegrations = await db.itemIntegration.findMany({
         where: {
-          OR: [{ status: ItemIntegrationStatus.pendingSimulation }, { status: ItemIntegrationStatus.simulated }]
+          status: {
+            in: [ItemIntegrationStatus.pendingSimulation, ItemIntegrationStatus.simulated]
+          }
         },
         include: {
           logs: true
@@ -361,6 +369,19 @@ const processItemIntegration = async () => {
     }
 
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item first stage integration process finished.`);
+
+    // const doneIntegrations = itemIntegrations.filter(
+    //   (i) => i.status === ItemIntegrationStatus.done || i.status === ItemIntegrationStatus.simulated
+    // );
+
+    // await db.integrationLog.updateMany({
+    //   where: {
+    //     key: ItemSimulationReference.percentage
+    //   },
+    //   data: {
+    //     value: String(Math.round(doneIntegrations.length * 100 / itemIntegrations.length))
+    //   }
+    // })
 
     if (errors.length > 0) {
       await db.integrationLog.createMany({

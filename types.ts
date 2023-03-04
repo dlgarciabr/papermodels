@@ -1,5 +1,5 @@
 import { SimpleRolesIsAuthorized } from '@blitzjs/auth';
-import { IntegrationSetup, Item, ItemFile, ItemIntegrationLog, User } from 'db';
+import { Category, IntegrationSetup, Item, ItemFile, ItemIntegrationLog, User } from 'db';
 
 export type Role = 'ADMIN' | 'USER';
 
@@ -17,6 +17,7 @@ export interface ItemWithChildren extends Item {
   files: ItemFile[];
   setup: IntegrationSetup;
   itemIntegrationLogs: ItemIntegrationLog[];
+  category: Category;
 }
 
 export enum IntegrationSelectorType {

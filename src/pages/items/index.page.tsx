@@ -97,7 +97,8 @@ export const ItemsList = () => {
         ...takeParam,
         include: {
           itemIntegrationLogs: true,
-          files: true
+          files: true,
+          category: true
         },
         where
       });
@@ -117,7 +118,8 @@ export const ItemsList = () => {
         ...takeParam,
         include: {
           itemIntegrationLogs: true,
-          files: true
+          files: true,
+          category: true
         }
       });
       if (filters.suspect) {
@@ -151,16 +153,18 @@ export const ItemsList = () => {
   }, [page]);
 
   const columns: GridColDef[] = [
-    { field: 'id', width: 10 },
-    { field: 'name', headerName: 'Name', width: 600 },
-    { field: 'previewsQty', headerName: 'Previews', width: 5 },
-    { field: 'schemesQty', headerName: 'Squemes', width: 5 },
-    { field: 'schemesPdfs', headerName: 'PDFs', width: 5 },
-    { field: 'status', headerName: 'Status', width: 100 },
+    { field: 'id', width: 10, headerAlign: 'center' },
+    { field: 'name', headerName: 'Name', width: 500, headerAlign: 'center' },
+    { field: 'category', headerName: 'Category', width: 150, headerAlign: 'center', align: 'center' },
+    { field: 'previewsQty', headerName: 'Previews', width: 5, headerAlign: 'center', align: 'center' },
+    { field: 'schemesQty', headerName: 'Squemes', width: 5, headerAlign: 'center', align: 'center' },
+    { field: 'schemesPdfs', headerName: 'PDFs', width: 5, headerAlign: 'center', align: 'center' },
+    { field: 'status', headerName: 'Status', width: 100, headerAlign: 'center', align: 'center' },
     {
       field: 's',
       headerName: 'actions',
       sortable: false,
+      headerAlign: 'center',
       width: 300,
       renderCell: (params) => {
         return (
@@ -216,6 +220,7 @@ export const ItemsList = () => {
       name: item.name,
       status: item.status,
       setupId: item.setupId,
+      category: item.category.name,
       previewsQty: item.files.filter((file) => file.artifactType === FileType.preview).length,
       schemesQty: item.files.filter((file) => file.artifactType === FileType.scheme).length,
       schemesPdfs: item.files.filter(
