@@ -12,7 +12,6 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  CardActions,
   Button,
   Pagination
 } from '@mui/material';
@@ -27,11 +26,11 @@ import logo from 'public/images/logo.png';
 import dog from 'public/images/dog.png';
 import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
-import { ItemWithFiles } from 'types';
+import { ItemWithChildren } from 'types';
 
 const theme = createTheme();
 
-const ItemCard = ({ item }: { item: ItemWithFiles }) => {
+const ItemCard = ({ item }: { item: ItemWithChildren }) => {
   let mainImage = dog.src;
   if (item.files.length > 0) {
     mainImage = item.files[0]!.storagePath;
@@ -42,15 +41,9 @@ const ItemCard = ({ item }: { item: ItemWithFiles }) => {
         <CardMedia image={mainImage} title={mainImage} />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
-            {item.name}
-          </Typography>
-          <Typography variant='body2' color='text.secondary' noWrap>
-            {item.description}
+            {item.name.length <= 66 ? item.name : item.name.substring(0, 63).concat('...')}
           </Typography>
         </CardContent>
-        <CardActions>
-          <Button size='small'>See more</Button>
-        </CardActions>
       </Card>
     </Link>
   );
@@ -117,7 +110,7 @@ const Home: BlitzPage = () => {
     () =>
       data.items.map((item) => (
         <Grid item key={getSimpleRandomKey()}>
-          <ItemCard item={item as ItemWithFiles} />
+          <ItemCard item={item as ItemWithChildren} />
         </Grid>
       )),
     [data.items]

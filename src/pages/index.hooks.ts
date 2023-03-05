@@ -3,6 +3,8 @@ import { invoke } from '@blitzjs/rpc';
 import { Item, ItemFile } from 'db';
 import { useContext } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 import getItemsAnonymous from 'src/items/queries/getItemsAnonymous';
 import { getFileUrl } from 'src/utils/fileStorage';
 
@@ -12,7 +14,9 @@ const useSearch = () => {
   return (expression: string, page: number): Promise<{ items: Item[]; count: number }> =>
     new Promise(async (resolve) => {
       if (!executeRecaptcha) {
-        console.error('Execute recaptcha not yet available');
+        const message = 'Execute recaptcha not yet available';
+        console.error(message);
+        showToast(ToastType.SUCCESS, message);
         return Promise.reject();
       }
       const gRecaptchaToken = await executeRecaptcha('searchItems');

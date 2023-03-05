@@ -1,7 +1,7 @@
 import { FileType, ItemStatus } from 'db';
 import { z } from 'zod';
 
-const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating]);
+const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatus.integrating, ItemStatus.validate]);
 const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme]);
 
 export const basicValidation = {
@@ -14,7 +14,8 @@ export const basicValidation = {
   author: z.string().max(50).nullable(),
   authorLink: z.union([z.string().max(100).url().nullish(), z.literal('')]),
   licenseType: z.string().max(50).nullable(),
-  licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')])
+  licenseTypeLink: z.union([z.string().max(200).url().nullish(), z.literal('')]),
+  setupId: z.number().nullish()
 };
 
 export const CreateItemValidation = z.object({

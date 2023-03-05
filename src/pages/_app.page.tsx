@@ -23,12 +23,20 @@ const RootErrorFallback = ({ error }: ErrorFallbackProps) => {
   }
 };
 
-const dbKeepAlive = async () => {
+let timeout: NodeJS.Timeout | undefined;
+
+const runIntegration = async () => {
   if (typeof location !== 'undefined') {
     try {
       await fetch(`${location.origin}/api/integration`);
     } finally {
-      setTimeout(() => dbKeepAlive(), 240000);
+      if (!timeout) {
+        timeout = setTimeout(() => {
+          void runIntegration();
+          clearTimeout(timeout);
+          timeout = undefined;
+        }, 50000);
+      }
     }
   }
 };
@@ -36,7 +44,7 @@ const dbKeepAlive = async () => {
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const getLayout = Component.getLayout || ((page) => page);
   if (process.env.NODE_ENV === 'development') {
-    void dbKeepAlive();
+    void runIntegration();
   }
   return (
     <GoogleReCaptchaProvider

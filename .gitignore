@@ -21,6 +21,7 @@ blitz-log.log
 
 # misc
 .DS_Store
+download/*
 
 # local env files
 .env.local

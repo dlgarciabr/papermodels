@@ -79,25 +79,30 @@ enum ItemStatus {
   integrating
   enable
   disable
+  validate
 }
 
 model Item {
-  id              Int               @id @default(autoincrement())
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  name            String
-  description     String
-  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId      Int
-  files           ItemFile[]
-  fileIntegration FileIntegration[]
-  status          ItemStatus        @default(disable)
-  dificulty       Int?
-  assemblyTime    Decimal?
-  author          String?
-  authorLink      String?
-  licenseType     String?
-  licenseTypeLink String?
+  id                  Int                  @id @default(autoincrement())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  name                String               @unique
+  description         String
+  category            Category             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId          Int
+  files               ItemFile[]
+  itemIntegration     ItemIntegration[]
+  itemIntegrationLogs ItemIntegrationLog[]
+  status              ItemStatus           @default(disable)
+  setup               IntegrationSetup?    @relation(fields: [setupId], references: [id])
+  setupId             Int?
+  integrationUrl      String?
+  dificulty           Int?
+  assemblyTime        Decimal?
+  author              String?
+  authorLink          String?
+  licenseType         String?
+  licenseTypeLink     String?
 }
 
 enum FileType {
@@ -116,16 +121,30 @@ model ItemFile {
   itemId       Int
 }
 
+enum UrlIntegrationStatus {
+  readingPending
+  readingDone
+  simulationPending
+  simulationDone
+  pending
+  done
+}
+
 enum ItemIntegrationStatus {
   pending
+  pendingFiles
   running
   done
   error
+  pendingSimulation
+  runningSimulation
+  simulated
 }
 
 model IntegrationSetup {
   id                    Int               @id @default(autoincrement())
   name                  String
+  key                   String
   domain                String
   itemUrlSelector       String
   categorySelector      String
@@ -135,21 +154,41 @@ model IntegrationSetup {
   schemesSelector       String
   ignoreExpressions     String?
   integrationItems      ItemIntegration[]
+  items                 Item[]
+  urlIntegrations       UrlIntegration[]
+  author                String?
+  authorLink            String?
+  licenseType           String?
+  licenseTypeLink       String?
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
 }
 
+model UrlIntegration {
+  id        Int                  @id @default(autoincrement())
+  url       String               @unique
+  status    UrlIntegrationStatus
+  setup     IntegrationSetup     @relation(fields: [setupId], references: [id])
+  setupId   Int
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
 model ItemIntegration {
-  id         Int                   @id @default(autoincrement())
-  name       String
-  url        String                @unique
-  status     ItemIntegrationStatus
-  createdAt  DateTime              @default(now())
-  updatedAt  DateTime              @updatedAt
-  setup      IntegrationSetup      @relation(fields: [setupId], references: [id])
-  setupId    Int
-  categoryId Int
-  error      String?
+  id               Int                   @id @default(autoincrement())
+  name             String
+  url              String                @unique
+  status           ItemIntegrationStatus
+  fileIntegrations FileIntegration[]
+  logs             IntegrationLog[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  setup            IntegrationSetup      @relation(fields: [setupId], references: [id])
+  setupId          Int
+  categoryId       Int
+  itemId           Int?
+  item             Item?                 @relation(fields: [itemId], references: [id])
+  error            String?
 }
 
 enum FileIntegrationStatus {
@@ -157,17 +196,50 @@ enum FileIntegrationStatus {
   running
   done
   error
+  pendingSimulation
+  runningSimulation
+  simulated
 }
 
 model FileIntegration {
-  id              Int                   @id @default(autoincrement())
-  itemId          Int
-  item            Item                  @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  selector        String
-  url             String                @unique
-  status          FileIntegrationStatus
-  integrationType FileType
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  error           String?
+  id                Int                   @id @default(autoincrement())
+  itemIntegrationId Int
+  itemIntegration   ItemIntegration       @relation(fields: [itemIntegrationId], references: [id], onDelete: Cascade)
+  selector          String
+  url               String                @unique
+  status            FileIntegrationStatus
+  integrationType   FileType
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  error             String?
+}
+
+model IntegrationLog {
+  id            Int              @id @default(autoincrement())
+  integration   ItemIntegration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  integrationId Int?
+  key           String
+  reference     String
+  value         String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  error         String?
+}
+
+model ItemIntegrationLog {
+  id         Int      @id @default(autoincrement())
+  key        String
+  message    String
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId     Int
+  itemName   String
+  url        String?
+  errorStack String?
+  createdAt  DateTime @default(now())
+}
+
+model SystemParameter {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
 }
