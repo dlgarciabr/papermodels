@@ -25,6 +25,7 @@ beforeAll(() => {
   mockDefaultBlitzRPC();
   mockDefaultFileStorage();
   mockDefaultAllQueries();
+  mockDefaultUtilGlobal();
 });
 
 beforeEach(() => {
@@ -82,8 +83,25 @@ const mockDefaultFileStorage = () => {
   vi.mock('src/utils/fileStorage', () => ({
     deleteFile: vi.fn().mockImplementation(() => Promise.resolve()),
     getFilePath: vi.fn().mockResolvedValue('http://localhost:3000/testUrl'),
-    saveFile: vi.fn().mockImplementation(() => Promise.resolve())
+    saveFile: vi.fn().mockImplementation(() => Promise.resolve()),
+    getFileUrl: vi.fn().mockImplementation(() => ''),
+    getThumbnailUrl: vi.fn().mockImplementation(() => '')
   }));
+};
+
+const mockDefaultUtilGlobal = () => {
+  // vi.mock('src/utils/global', () => ({
+  //   downloadFile: vi.fn().mockImplementation(() => { }),
+  //   getSimpleRandomKey: vi.fn().mockImplementation(() => ''),
+  // }));
+
+  vi.mock('src/utils/global', async () => {
+    const actual = (await vi.importActual('src/utils/global')) as {};
+    return {
+      ...actual,
+      downloadFile: vi.fn().mockImplementation(() => {})
+    };
+  });
 };
 
 const initializeDefaultBlitzMock = () => {
