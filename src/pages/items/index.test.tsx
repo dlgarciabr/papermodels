@@ -25,7 +25,7 @@ import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
 import * as fileStorage from 'src/utils/fileStorage';
-import { FileType, ItemFile } from 'db';
+import { FileType, ItemFile, ItemStatus } from 'db';
 import { useQuery } from '@blitzjs/rpc';
 import getItem from 'src/items/queries/getItem';
 import getCategories from 'src/categories/queries/getCategories';
@@ -214,7 +214,55 @@ describe('Item listing', () => {
     // assert
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
+
+  test.todo('Open Item list and use filters to select items', async () => {
+    // arrange
+    const itemName = 'B-27';
+    const itemStatus = ItemStatus.disable;
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(0, 10),
+      hasMore: true
+    });
+
+    render(<ItemsPage />);
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(10),
+      hasMore: true
+    });
+
+    // act
+    const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Name'
+    });
+
+    const statusCombobox = screen.getAllByLabelText('Status').find((e) => e.role === ARIA_ROLE.WIDGET.BUTTON);
+
+    await userEvent.type(nameTexfield, itemName);
+    await userEvent.click(statusCombobox!);
+    // await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.OPTION, { name: itemStatus }));
+
+    const option = (await screen.findAllByText(itemStatus)).find((e) => e.role === ARIA_ROLE.WIDGET.OPTION);
+    await userEvent.click(option!);
+    // fireEvent.change(statusCombobox, { target: { value: itemStatus } });
+
+    const searchButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search' });
+
+    await userEvent.click(searchButton);
+
+    // assert
+    // expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByText(itemName)).toBeInTheDocument();
+  });
 });
+
+// const selectMUIOption = (screen, selectName: string, selectRole: string)=>{
+//   const select = screen.getAllByLabelText(selectName).find(e => e.role === selectRole);
+
+// }
 
 describe('Item creating', () => {
   test('User create a new item', async () => {
