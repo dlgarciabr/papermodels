@@ -63,6 +63,11 @@ export const ItemsList = () => {
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
   const goToPreviewPage = (id: number) => router.push(Routes.ShowItemPage({ itemId: id }));
 
+  //TODO
+  // const goToPreviewPage = (id: number) => {
+  //   window.open(`${location.pathname}/${id}`, '_blank');
+  // }
+
   const filterSuspectItems = (items: ItemWithChildren[]) => {
     let filteredItems: ItemWithChildren[];
 
