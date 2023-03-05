@@ -1,3 +1,4 @@
+/* istanbul ignore file -- @preserve */
 import { getAntiCSRFToken } from '@blitzjs/auth';
 import { Cloudinary } from '@cloudinary/url-gen';
 import { name } from '@cloudinary/url-gen/actions/namedTransformation';

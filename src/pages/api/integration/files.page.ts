@@ -1,3 +1,4 @@
+/* istanbul ignore file -- @preserve */
 import { api } from 'src/blitz-server';
 // import chromium from 'chrome-aws-lambda';
 import { chromium } from 'playwright-core';

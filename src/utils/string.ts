@@ -219,8 +219,8 @@ export const jsEscape = (text: string) => {
   });
 };
 
-export const shortenTextWithEllipsis = (value: string, limit: number) => {
-  if (value.length > limit) {
+export const shortenTextWithEllipsis = (value: string | null | undefined, limit: number) => {
+  if (value && limit > 0 && value.length > limit) {
     return value.substring(0, limit).concat('...');
   }
   return value;
