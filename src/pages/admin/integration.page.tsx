@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+//TODO implement tests with ChatGPT
 import { getAntiCSRFToken } from '@blitzjs/auth';
 import { invoke, useMutation } from '@blitzjs/rpc';
 import {

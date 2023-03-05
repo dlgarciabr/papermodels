@@ -90,11 +90,6 @@ const mockDefaultFileStorage = () => {
 };
 
 const mockDefaultUtilGlobal = () => {
-  // vi.mock('src/utils/global', () => ({
-  //   downloadFile: vi.fn().mockImplementation(() => { }),
-  //   getSimpleRandomKey: vi.fn().mockImplementation(() => ''),
-  // }));
-
   vi.mock('src/utils/global', async () => {
     const actual = (await vi.importActual('src/utils/global')) as {};
     return {

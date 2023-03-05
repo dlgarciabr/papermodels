@@ -138,4 +138,37 @@ describe('Index page tests', () => {
   test.todo('User search for a specific model and navigate to see the chosen model');
 
   test.todo('User search for a specific model and navigate through pages');
+
+  test('Google recaptcha is not available', async () => {
+    // arrange
+    const textToSearch = 'Train';
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: [
+        {
+          id: 1,
+          name: 'Train',
+          files: []
+        }
+      ],
+      hasMore: true
+    });
+
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: undefined
+    });
+
+    render(<Home />);
+
+    // act
+    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
+
+    await userEvent.type(searchInput, textToSearch);
+    await userEvent.click(searchButton);
+
+    // assert
+    expect(await screen.findByText('Execute recaptcha not yet available')).toBeInTheDocument();
+  });
 });

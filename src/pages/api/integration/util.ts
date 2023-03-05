@@ -1,3 +1,5 @@
+/* istanbul ignore file -- @preserve */
+//TODO implement tests with ChatGPT
 import { JSDOM } from 'jsdom';
 
 //TODO evaluate which function is not being used
