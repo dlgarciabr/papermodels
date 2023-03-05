@@ -228,7 +228,6 @@ describe('Item creating', () => {
       dificulty: 1,
       assemblyTime: 0.5,
       files: [],
-      itemIntegrationLogs: [],
       author: '',
       authorLink: '',
       licenseType: '',
@@ -249,7 +248,8 @@ describe('Item creating', () => {
               id: 11,
               category: {
                 name: 'category'
-              }
+              },
+              itemIntegrationLogs: []
             }
           ]
         };
@@ -368,7 +368,10 @@ describe('Item changing', () => {
       description: 'new desc test',
       categoryId: 1,
       files: [],
-      itemIntegrationLogs: []
+      itemIntegrationLogs: [],
+      category: {
+        name: 'category'
+      }
     };
 
     const paginatedQueryReturnData = {
@@ -391,7 +394,8 @@ describe('Item changing', () => {
     });
 
     // act
-    await userEvent.click(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+    const editButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'edit' });
+    await userEvent.click(editButton);
 
     const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Name'
@@ -681,7 +685,7 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
 
     // assert
-    expect(screen.getByText(fileName)).toBeInTheDocument();
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
   });
 });
 
