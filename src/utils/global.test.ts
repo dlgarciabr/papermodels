@@ -10,6 +10,13 @@ describe('Global Util', () => {
 
     vi.mocked(getFileUrl).mockResolvedValueOnce('url');
 
+    vi.mock('src/utils/global', async () => {
+      const actual = (await vi.importActual('src/utils/global')) as {};
+      return {
+        ...actual
+      };
+    });
+
     global.fetch = vi.fn(() =>
       Promise.resolve({
         blob: () => {}

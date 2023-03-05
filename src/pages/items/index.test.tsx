@@ -42,7 +42,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 2,
@@ -51,7 +52,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 3,
@@ -60,7 +62,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 4,
@@ -69,7 +72,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 5,
@@ -78,7 +82,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 6,
@@ -87,7 +92,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 7,
@@ -96,7 +102,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 8,
@@ -105,7 +112,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 9,
@@ -114,7 +122,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 10,
@@ -123,7 +132,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 11,
@@ -132,7 +142,8 @@ const items = [
     category: {
       name: 'category'
     },
-    files: []
+    files: [],
+    itemIntegrationLogs: []
   }
 ];
 
@@ -160,17 +171,17 @@ describe('Item listing', () => {
         case 0:
           return {
             items: items.slice(0, 10),
-            hasMore: true
+            count: 30
           };
         case 10:
           return {
             items: items.slice(10),
-            hasMore: false
+            count: 30
           };
         default:
           return {
             items: [],
-            hasMore: false
+            count: 30
           };
       }
     };
@@ -190,13 +201,15 @@ describe('Item listing', () => {
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
+    const nextButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to next page' });
+    await userEvent.click(nextButton);
 
     // assert
     expect(await screen.findByText(items[10]!.name)).toBeInTheDocument();
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
+    const prevButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to previous page' });
+    await userEvent.click(prevButton);
 
     // assert
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
@@ -215,6 +228,7 @@ describe('Item creating', () => {
       dificulty: 1,
       assemblyTime: 0.5,
       files: [],
+      itemIntegrationLogs: [],
       author: '',
       authorLink: '',
       licenseType: '',
@@ -335,6 +349,7 @@ describe('Item changing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [],
+      itemIntegrationLogs: [],
       dificulty: 1,
       assemblyTime: 0.5,
       author: '',
@@ -352,7 +367,8 @@ describe('Item changing', () => {
       name: 'new name test',
       description: 'new desc test',
       categoryId: 1,
-      files: []
+      files: [],
+      itemIntegrationLogs: []
     };
 
     const paginatedQueryReturnData = {
@@ -607,6 +623,7 @@ describe('Item changing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [],
+      itemIntegrationLogs: [],
       dificulty: 1,
       assemblyTime: 0.5,
       author: '',
@@ -682,7 +699,8 @@ describe('Item removing', () => {
           category: {
             name: 'category'
           },
-          files: []
+          files: [],
+          itemIntegrationLogs: []
         }
       ],
       hasMore: false
@@ -699,13 +717,14 @@ describe('Item removing', () => {
       items: [],
       hasMore: false
     });
-    screen.debug();
-    // act
-    // const button = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'delete' });
-    // await userEvent.click(button);
 
-    // // assert
-    // expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+    // act
+    const button = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'delete' });
+    await userEvent.click(button);
+
+    // assert
+    expect(await screen.findByText('Item successfully removed!')).toBeInTheDocument();
+    expect(screen.queryByText(itemName)).not.toBeInTheDocument();
   });
 });
 
@@ -775,7 +794,8 @@ describe('Item viewing', () => {
       licenseTypeLink: '',
       category: {
         name: 'category'
-      }
+      },
+      itemIntegrationLogs: []
     };
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);

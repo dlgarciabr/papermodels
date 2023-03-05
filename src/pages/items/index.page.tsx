@@ -317,6 +317,7 @@ export const ItemsList = () => {
             rowCount={count}
             page={page}
             paginationMode={filters.suspect ? 'client' : 'server'}
+            disableVirtualization={true}
           />
         </Box>
       </Grid>
