@@ -410,11 +410,15 @@ const checkDownloadFinished = async (): Promise<void> => {
 };
 
 const clearCachedFiles = () => {
-  const chachedFilesToRemove = fs.readdirSync(downloadPath);
-  if (chachedFilesToRemove.length > 0) {
-    chachedFilesToRemove.forEach((file) => {
-      fs.unlinkSync(`${downloadPath}/${file}`);
-    });
+  if (!fs.existsSync(downloadPath)) {
+    fs.mkdirSync(downloadPath);
+  } else {
+    const chachedFilesToRemove = fs.readdirSync(downloadPath);
+    if (chachedFilesToRemove.length > 0) {
+      chachedFilesToRemove.forEach((file) => {
+        fs.unlinkSync(`${downloadPath}/${file}`);
+      });
+    }
   }
 };
 
