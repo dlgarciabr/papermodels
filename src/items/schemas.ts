@@ -5,8 +5,8 @@ const zItemStatusEnum = z.enum([ItemStatus.disable, ItemStatus.enable, ItemStatu
 const zFileTypeEnum = z.enum([FileType.instruction, FileType.preview, FileType.scheme]);
 
 export const basicValidation = {
-  name: z.string().min(5, 'Field required and must contain at least 5 characters').max(30),
-  description: z.string().max(100),
+  name: z.string().min(5, 'Field required and must contain at least 5 characters').max(50),
+  description: z.string().max(1000),
   status: zItemStatusEnum,
   dificulty: z.number().min(1).max(5).optional(),
   assemblyTime: z.number().min(0.5).max(100).optional(),
