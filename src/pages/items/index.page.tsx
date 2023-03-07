@@ -44,7 +44,6 @@ const filtersInitialValue = {
 
 export const ItemsList = () => {
   const [items, setItems] = useState<ItemWithChildren[]>([]);
-  // const [hasMore, setHasMore] = useState(false);
   const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
@@ -61,12 +60,8 @@ export const ItemsList = () => {
     void router.push({ query: { page: page } });
   };
   const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
-  const goToPreviewPage = (id: number) => router.push(Routes.ShowItemPage({ itemId: id }));
 
-  //TODO
-  // const goToPreviewPage = (id: number) => {
-  //   window.open(`${location.pathname}/${id}`, '_blank');
-  // }
+  const goToPreviewPage = (id: number) => window.open(`${location.pathname}/${id}`, '_blank');
 
   const filterSuspectItems = (items: ItemWithChildren[]) => {
     let filteredItems: ItemWithChildren[];
@@ -77,12 +72,6 @@ export const ItemsList = () => {
         item.files.filter((file) => file.artifactType === FileType.scheme && file.storagePath.endsWith('.pdf'))
           .length === 0
     );
-
-    // filteredItems = filteredItems.filter(item =>
-    //   item.files.filter(
-    //     (file) => file.artifactType === FileType.preview
-    //   ).length === 0
-    // );
 
     return filteredItems;
   };
@@ -127,7 +116,6 @@ export const ItemsList = () => {
         setItems(items as ItemWithChildren[]);
         setCount(count);
       }
-      // setHasMore(hasMore);
     } else {
       const { items, count } = await invoke(getItems, {
         orderBy: { name: 'asc' },
@@ -147,7 +135,6 @@ export const ItemsList = () => {
         setItems(items as ItemWithChildren[]);
         setCount(count);
       }
-      // setHasMore(hasMore);
     }
   };
 
