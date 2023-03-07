@@ -78,12 +78,6 @@ const processItemIntegration = async () => {
     }
   });
 
-  // const itemIntegrations = await db.itemIntegration.findMany({
-  //   include: {
-  //     setup: true
-  //   }
-  // });
-
   if (
     runningIntegrations.filter(
       (i) => i.status === ItemIntegrationStatus.running || i.status === ItemIntegrationStatus.runningSimulation

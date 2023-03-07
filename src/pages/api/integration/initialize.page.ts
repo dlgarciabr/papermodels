@@ -25,11 +25,11 @@ export default api(async (req, res, _ctx) => {
     if (process.env.NODE_ENV === 'development') {
       const ARTIFACTS_PATH = 'papermodel_test';
 
-      console.log('[IntegrationInitializer] Cleaning Cloudinary old test files...');
-      await cloudinary.api.delete_resources_by_prefix(ARTIFACTS_PATH);
-
-      console.log('[IntegrationInitializer] Cleaning Cloudinary old test folders...');
       try {
+        console.log('[IntegrationInitializer] Cleaning Cloudinary old test files...');
+        await cloudinary.api.delete_resources_by_prefix(ARTIFACTS_PATH);
+
+        console.log('[IntegrationInitializer] Cleaning Cloudinary old test folders...');
         await cloudinary.api.delete_folder(ARTIFACTS_PATH);
       } catch (error) {
         console.log(`[IntegrationInitializer] Error: ${error.message}!`);
