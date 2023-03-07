@@ -12,8 +12,15 @@ export function ItemForm<S extends z.ZodType<any, any>>(props: FormProps<S> & { 
   const categoryDisabled = selectCategoryItems.length === 0;
   return (
     <Form<S> {...props}>
-      <LabeledTextField name='name' label='Name' placeholder='Name' maxLength={30} />
-      <LabeledTextField name='description' label='Description' placeholder='Description' maxLength={100} />
+      <LabeledTextField name='name' label='Name' placeholder='Name' maxLength={50} />
+      <LabeledTextField
+        name='description'
+        label='Description'
+        placeholder='Description'
+        maxLength={1000}
+        rows={6}
+        fullWidth
+      />
       <LabeledTextField
         name='assemblyTime'
         label='Assembly time'

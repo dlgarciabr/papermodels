@@ -5,7 +5,7 @@ import { UploadApiOptions, v2 as cloudinary } from 'cloudinary';
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '5mb'
+      sizeLimit: '15mb'
     }
   }
 };
@@ -20,14 +20,19 @@ export const uploadImage = async (src: string, path: string) => {
     transformation: ['papermodel_adjust_fit'] //TODO modify to have more control over transformations,
     // eager: ['t_papermodel_thumbnail']
   };
+  console.log('[FileUploader] Uploading file to Cloudinary...');
   const result = await cloudinary.uploader.upload(src, options);
   return result;
 };
 
 export default api(async (req, res, _ctx) => {
   if (req.body.src) {
-    const result = await uploadImage(req.body.src, req.body.path);
-    res.status(200).send(result);
+    try {
+      const result = await uploadImage(req.body.src, req.body.path);
+      res.status(200).send(result);
+    } catch (error) {
+      res.status(500).send({ ...error });
+    }
   } else {
     res.status(500).end();
   }
