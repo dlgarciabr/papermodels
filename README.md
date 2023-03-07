@@ -165,6 +165,14 @@ Blitz comes with a set of tools that corrects and formats your code, facilitatin
 - **Husky**: It adds [githooks](https://git-scm.com/docs/githooks), little pieces of code that get executed when certain Git events are triggerd. For example, `pre-commit` is triggered just before a commit is created. You can see the current hooks inside `.husky/`. If are having problems commiting and pushing, check out ther [troubleshooting](https://typicode.github.io/husky/#/?id=troubleshoot) guide. [Learn More](https://blitzjs.com/docs/husky-config).
 - **Prettier**: It formats your code to look the same everywhere. You can configure it via the `.prettierrc` file. The `.prettierignore` contains the files that should be ignored by Prettier; useful when you have large files or when you want to keep a custom formatting. [Learn More](https://blitzjs.com/docs/prettier-config).
 
+## Items Itengration
+
+To run Items integration execute the steps below:
+
+- Change the value of environment variable NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH to `papermodel`.
+- Change the value of environment variable DATABASE_URL to point to production DB.
+- Run project in development mode with `npm run dev` 
+
 ## Learn more
 
 Read the [Blitz.js Documentation](https://blitzjs.com/docs/getting-started) to learn more.
