@@ -1,6 +1,7 @@
 /* istanbul ignore file -- @preserve */
 import db, { IntegrationSetup, UrlIntegrationStatus } from 'db';
 import { api } from 'src/blitz-server';
+import { v2 as cloudinary } from 'cloudinary';
 import { IntegrationProcessingType, ItemSimulationReference, SystemParameterType } from 'types';
 import { getAllSiteUrls } from './util';
 
@@ -19,6 +20,20 @@ export default api(async (req, res, _ctx) => {
     if (!type) {
       res.status(500).send({ message: 'IntegrationProcessingType not defined' });
       return;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      const ARTIFACTS_PATH = 'papermodel_test';
+
+      console.log('[IntegrationInitializer] Cleaning Cloudinary old test files...');
+      await cloudinary.api.delete_resources_by_prefix(ARTIFACTS_PATH);
+
+      console.log('[IntegrationInitializer] Cleaning Cloudinary old test folders...');
+      try {
+        await cloudinary.api.delete_folder(ARTIFACTS_PATH);
+      } catch (error) {
+        console.log(`[IntegrationInitializer] Error: ${error.message}!`);
+      }
     }
 
     console.log(`[IntegrationInitializer] Creating support registries...`);
