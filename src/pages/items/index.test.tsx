@@ -629,6 +629,7 @@ describe('Item changing', () => {
         artifactType: FileType.scheme,
         index: 0,
         itemId: 1,
+        mainPreview: false,
         createdAt: new Date(),
         updatedAt: new Date()
       } as ItemFile)

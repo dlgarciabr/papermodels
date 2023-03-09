@@ -33,7 +33,12 @@ const theme = createTheme();
 const ItemCard = ({ item }: { item: ItemWithChildren }) => {
   let mainImage = dog.src;
   if (item.files.length > 0) {
-    mainImage = item.files[0]!.storagePath;
+    const mainPreviewImage = item.files.find((file) => file.mainPreview);
+    if (mainPreviewImage) {
+      mainImage = mainPreviewImage.storagePath;
+    } else {
+      mainImage = item.files[0]!.storagePath;
+    }
   }
   return (
     <Link href={Routes.ShowItemPage({ itemId: item.id })}>
