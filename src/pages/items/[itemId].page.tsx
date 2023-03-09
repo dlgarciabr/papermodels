@@ -30,9 +30,10 @@ import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { useDownloadFiles, useHasInstrunctionFile } from './items.hook';
+import { useDownloadFiles, useHasFileType } from './items.hook';
 import logo from 'public/images/logo.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
+import { LoadingButton } from '@mui/lab';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -112,7 +113,8 @@ export const Item = () => {
   const router = useContext(RouterContext);
   const [openDescriptionDialog, setOpenDescriptionDialog] = useState(false);
   const [item, setItem] = useState<ItemWithChildren>();
-  const hasInstrunctionFile = useHasInstrunctionFile();
+  const hasFileType = useHasFileType();
+  const [isDownloadingFile, setDownloadingFile] = useState<boolean>(false);
 
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
@@ -228,6 +230,12 @@ export const Item = () => {
     });
   };
 
+  const handleClickDownloadFile = async (artifactType: FileType) => {
+    setDownloadingFile(true);
+    await downloadFiles(artifactType);
+    setDownloadingFile(false);
+  };
+
   const thumbnails = () =>
     thumbnailsData.items.map((item, index) => (
       <Thumbnail
@@ -293,27 +301,26 @@ export const Item = () => {
               <Paper className='item-download' elevation={0}>
                 <Grid container spacing={2} justifyContent='center'>
                   <Grid item xs={10}>
-                    <Button
+                    <LoadingButton
+                      loading={isDownloadingFile}
                       variant='contained'
                       fullWidth
                       startIcon={<MdDownload />}
-                      onClick={() => {
-                        downloadFiles(FileType.scheme);
-                      }}>
+                      disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
+                      onClick={() => void handleClickDownloadFile(FileType.scheme)}>
                       Download schemes
-                    </Button>
+                    </LoadingButton>
                   </Grid>
                   <Grid item xs={10}>
-                    <Button
+                    <LoadingButton
+                      loading={isDownloadingFile}
                       variant='contained'
                       fullWidth
                       startIcon={<MdDownload />}
-                      disabled={item && !hasInstrunctionFile(item?.files!)}
-                      onClick={() => {
-                        downloadFiles(FileType.instruction);
-                      }}>
+                      disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
+                      onClick={() => void handleClickDownloadFile(FileType.instruction)}>
                       Download instrunctions
-                    </Button>
+                    </LoadingButton>
                   </Grid>
                   {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
