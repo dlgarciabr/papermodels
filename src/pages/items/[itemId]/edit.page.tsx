@@ -1,4 +1,4 @@
-import { Suspense, useState, useContext } from 'react';
+import { useState, useContext, Suspense } from 'react';
 import { Routes, RouterContext } from '@blitzjs/next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -12,19 +12,25 @@ import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
-import { sortFilesIndexes, uploadFiles, processFiles, saveItemFiles } from '../utils';
+import { uploadFiles, saveItemFiles } from '../utils';
 import { UploadItemFile } from '../../../items/types';
 import { Item, ItemFile } from 'db';
 import createItemFile from 'src/items/mutations/createItemFile';
 import { deleteFile } from 'src/utils/fileStorage';
 import deleteItemFile from 'src/items/mutations/deleteItemFile';
-import updateItemFile from 'src/items/mutations/updateItemFile';
 import getCategories from 'src/categories/queries/getCategories';
-import { UpdateItemValidation } from 'src/items/validations';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import Loading from 'src/core/components/Loading';
+import { UpdateItemValidation } from 'src/items/schemas';
+import { ItemWithChildren } from 'types';
+import { Checkbox } from '@mui/material';
 
-const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
+const Files = (props: {
+  files: ItemFile[];
+  onClickDelete: (file: ItemFile) => void;
+  onClickMain: (file: ItemFile) => void;
+}) => {
   return (
     <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
       <div>Files</div>
@@ -33,6 +39,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
           <tr>
             <td>Name</td>
             <td>Type</td>
+            <td>Main</td>
             <td>Operation</td>
           </tr>
           {props.files.length === 0 ? (
@@ -45,6 +52,9 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
                 <tr key={file.id}>
                   <td>{file.storagePath}</td>
                   <td>{file.artifactType}</td>
+                  <td>
+                    <Checkbox checked={file.mainPreview} onClick={() => props.onClickMain(file)} />
+                  </td>
                   <td>
                     <a href='#' onClick={() => downloadFile(file.storagePath)}>
                       Download
@@ -64,6 +74,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
 };
 
 export const EditItem = () => {
+  const [filesKey, setFilesKey] = useState<string>(getSimpleRandomKey());
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const [isSaving, setSaving] = useState(false);
@@ -87,7 +98,6 @@ export const EditItem = () => {
   );
 
   const [updateItemMutation] = useMutation(updateItem);
-  const [updateItemFileMutation] = useMutation(updateItemFile);
   const [createItemFileMutation] = useMutation(createItemFile);
   const [deleteItemFileMutation] = useMutation(deleteItemFile);
 
@@ -100,9 +110,8 @@ export const EditItem = () => {
       return;
     }
     try {
-      const processedFiles = await processFiles(filesToUpload);
-      await uploadFiles(processedFiles);
-      await saveItemFiles(processedFiles, createItemFileMutation);
+      const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
+      await saveItemFiles(uploadedFiles, createItemFileMutation);
       showToast(ToastType.SUCCESS, 'files added to item');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
@@ -118,8 +127,6 @@ export const EditItem = () => {
     if (confirm(`are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
-      const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
-      await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
       await queryResult.refetch();
       showToast(ToastType.SUCCESS, 'file removed');
     }
@@ -131,6 +138,15 @@ export const EditItem = () => {
       return file;
     });
     setFilesToUpload(files);
+  };
+
+  const handleClickMainPreview = async (fileToModify: ItemFile & { url: string; item: Item }) => {
+    item.files.forEach((file) => {
+      file.mainPreview = false;
+    });
+    const file = item.files.find((file) => file.id === fileToModify.id);
+    file!.mainPreview = true;
+    setFilesKey(getSimpleRandomKey());
   };
 
   const dropzoneOptions = {
@@ -161,7 +177,8 @@ export const EditItem = () => {
           initialValues={{
             ...item,
             categoryId: item.categoryId.toString(),
-            assemblyTime: parseFloat(item.assemblyTime.toString()),
+            dificulty: item.dificulty || undefined,
+            assemblyTime: item.assemblyTime ? parseFloat(item.assemblyTime.toString()) : undefined,
             author: item.author || '',
             authorLink: item.authorLink || '',
             licenseType: item.licenseType || '',
@@ -174,7 +191,7 @@ export const EditItem = () => {
                 ...values
               });
               showToast(ToastType.SUCCESS, 'Item successfully updated!');
-              await queryResult.setQueryData(updated as Item & { files: ItemFile[] });
+              await queryResult.setQueryData(updated as ItemWithChildren);
               await router.push(Routes.ItemsPage());
             } catch (error: any) {
               console.error(error);
@@ -184,7 +201,12 @@ export const EditItem = () => {
             }
           }}
         />
-        <Files files={item.files} onClickDelete={handleDeleteFile} /* key={filesKey} */ />
+        <Files
+          files={item.files}
+          onClickDelete={handleDeleteFile}
+          onClickMain={handleClickMainPreview}
+          key={filesKey}
+        />
         <Dropzone key={dropzoneKey} {...dropzoneOptions} />
         {filesToUpload.length > 0 ? (
           <p
@@ -205,7 +227,7 @@ export const EditItem = () => {
 const EditItemPage = () => {
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Loading />}>
         <EditItem />
       </Suspense>
       <p>

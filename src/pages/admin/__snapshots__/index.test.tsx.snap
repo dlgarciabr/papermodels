@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Admin page is rendered 1`] = `
 <body>
@@ -6,59 +6,67 @@ exports[`Admin page is rendered 1`] = `
     <div
       class="Toastify"
     />
-    <div
-      class="container"
-    >
-      <main>
-        <div
-          class="logo"
-        >
-          <img
-            alt="blitzjs"
-            height="160px"
-            layout="fixed"
-            src="undefined"
-            width="256px"
-          />
-        </div>
-        <div
-          class="buttons"
-          style="margin-top: 1rem; margin-bottom: 1rem;"
-        >
-          <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
-            tabindex="0"
-            type="button"
+    <div>
+      <div
+        class="container"
+      >
+        <main>
+          <div
+            class="logo"
           >
-            Logout
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            <img
+              alt="blitzjs"
+              height="160px"
+              layout="fixed"
+              src="undefined"
+              width="256px"
             />
-          </button>
-          <div>
-            Hello 
-            user@email.com
           </div>
-        </div>
-        <div>
-          <p>
-            <a
-              href="/categories"
+          <div
+            class="buttons"
+            style="margin-top: 1rem; margin-bottom: 1rem;"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-sghohy-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
             >
-              categories
-            </a>
-          </p>
-          <p>
-            <a
-              href="/items"
-            >
-              items
-            </a>
-          </p>
-        </div>
-      </main>
-      <style>
-        
+              Logout
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+            <div>
+              Hello 
+              user@email.com
+            </div>
+          </div>
+          <div>
+            <p>
+              <a
+                href="/categories"
+              >
+                categories
+              </a>
+            </p>
+            <p>
+              <a
+                href="/items"
+              >
+                items
+              </a>
+            </p>
+            <p>
+              <a
+                href="/admin/integration"
+              >
+                integration
+              </a>
+            </p>
+          </div>
+        </main>
+        <style>
+          
           @import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700&display=swap');
 
           html,
@@ -190,7 +198,15 @@ exports[`Admin page is rendered 1`] = `
             }
           }
         
-      </style>
+        </style>
+      </div>
+      <p>
+        <a
+          href="/items"
+        >
+          Back to List
+        </a>
+      </p>
     </div>
   </div>
 </body>

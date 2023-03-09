@@ -25,6 +25,7 @@ beforeAll(() => {
   mockDefaultBlitzRPC();
   mockDefaultFileStorage();
   mockDefaultAllQueries();
+  mockDefaultUtilGlobal();
 });
 
 beforeEach(() => {
@@ -82,8 +83,20 @@ const mockDefaultFileStorage = () => {
   vi.mock('src/utils/fileStorage', () => ({
     deleteFile: vi.fn().mockImplementation(() => Promise.resolve()),
     getFilePath: vi.fn().mockResolvedValue('http://localhost:3000/testUrl'),
-    saveFile: vi.fn().mockImplementation(() => Promise.resolve())
+    saveFile: vi.fn().mockImplementation(() => Promise.resolve()),
+    getFileUrl: vi.fn().mockImplementation(() => ''),
+    getThumbnailUrl: vi.fn().mockImplementation(() => '')
   }));
+};
+
+const mockDefaultUtilGlobal = () => {
+  vi.mock('src/utils/global', async () => {
+    const actual = (await vi.importActual('src/utils/global')) as {};
+    return {
+      ...actual,
+      downloadFile: vi.fn().mockImplementation(() => {})
+    };
+  });
 };
 
 const initializeDefaultBlitzMock = () => {
@@ -114,18 +127,26 @@ const mockDefaultAllQueries = () => {
     return { default: resolver };
   });
 
-  vi.mock('src/items/mutations/createItem', () => {
+  vi.mock('src/items/mutations/createItem', async () => {
+    const actual = (await vi.importActual('src/items/mutations/createItem')) as {};
     const resolver = vi.fn() as any;
     resolver._resolverType = 'query';
     resolver._routePath = '/api/rpc/createItem';
-    return { default: resolver };
+    return {
+      ...actual,
+      default: resolver
+    };
   });
 
-  vi.mock('src/categories/mutations/createCategory', () => {
+  vi.mock('src/categories/mutations/createCategory', async () => {
+    const actual = (await vi.importActual('src/categories/mutations/createCategory')) as {};
     const resolver = vi.fn() as any;
     resolver._resolverType = 'query';
     resolver._routePath = '/api/rpc/createCategory';
-    return { default: resolver };
+    return {
+      ...actual,
+      default: resolver
+    };
   });
 
   vi.mock('src/categories/queries/getCategories', () => {

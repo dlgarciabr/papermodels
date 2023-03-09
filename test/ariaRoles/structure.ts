@@ -4,24 +4,31 @@ export enum STRUCTURE {
    * ### Examples
    * `<article>`
    */
-  ARTICLE = "article",
+  ARTICLE = 'article',
+  /**
+   * A cell containing content information for a column.
+   *
+   * ### Examples
+   * `<td>`
+   */
+  CELL = 'cell',
   /**
    * A cell containing header information for a column.
    *
    * ### Examples
    * `<th scope="col">`
    */
-  COLUMNHEADER = "columnheader",
+  COLUMNHEADER = 'columnheader',
 
   /**
    * A definition of a term or concept.
    */
-  DEFINITION = "definition",
+  DEFINITION = 'definition',
 
   /**
    * A list of references to members of a group, such as a static table of contents.
    */
-  DIRECTORY = "directory",
+  DIRECTORY = 'directory',
 
   /**
    * A region containing related information that is declared as document content, as opposed to a web application.
@@ -29,7 +36,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<body>`
    */
-  DOCUMENT = "document",
+  DOCUMENT = 'document',
 
   /**
    * A set of user interface objects which are not intended to be included in a page summary or table of contents by assistive technologies.
@@ -37,7 +44,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<fieldset>`, `<optgroup>`
    */
-  GROUP = "group",
+  GROUP = 'group',
 
   /**
    * A heading for a section of the page.
@@ -47,7 +54,7 @@ export enum STRUCTURE {
    *
    * Note: aria-level must be set appropriately
    */
-  HEADING = "heading",
+  HEADING = 'heading',
 
   /**
    * A container for a collection of elements that form an image.
@@ -55,7 +62,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<img>`
    */
-  IMG = "img",
+  IMG = 'img',
 
   /**
    * A group of non-interactive list items. See related listbox.
@@ -63,7 +70,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<ul>`, `<ol>`
    */
-  LIST = "list",
+  LIST = 'list',
 
   /**
    * A single item in a list or directory.
@@ -71,17 +78,17 @@ export enum STRUCTURE {
    * ### Examples
    * `<li>`
    */
-  LISTITEM = "listitem",
+  LISTITEM = 'listitem',
 
   /**
    * Content that represents a mathematical expression.
    */
-  MATH = "math",
+  MATH = 'math',
 
   /**
    * A section whose content is parenthetic or ancillary to the main content of the resource.
    */
-  NOTE = "note",
+  NOTE = 'note',
 
   /**
    * An element whose implicit native role semantics will not be mapped to the accessibility API.
@@ -89,7 +96,7 @@ export enum STRUCTURE {
    * ### Examples
    * `alt=""`
    */
-  PRESENTATION = "presentation",
+  PRESENTATION = 'presentation',
 
   /**
    * A large perceivable section of a web page or document, that the author feels is important enough to be included in a page summary or table of contents, for example, an area of the page containing live sporting event statistics.
@@ -97,7 +104,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<div>`, `<frame>`, `<section>`
    */
-  REGION = "region",
+  REGION = 'region',
 
   /**
    * A row of cells in a grid.
@@ -105,7 +112,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<tr>`
    */
-  ROW = "row",
+  ROW = 'row',
 
   /**
    * A group containing one or more row elements in a grid.
@@ -113,7 +120,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<thead>`, `<tfoot>`, `<tbody>`
    */
-  ROWGROUP = "rowgroup",
+  ROWGROUP = 'rowgroup',
 
   /**
    * A cell containing header information for a row in a grid.
@@ -121,7 +128,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<th scope="row">`
    */
-  ROWHEADER = "rowheader",
+  ROWHEADER = 'rowheader',
 
   /**
    * A divider that separates and distinguishes sections of content or groups of menuitems.
@@ -129,7 +136,7 @@ export enum STRUCTURE {
    * ### Examples
    * `<hr>`
    */
-  SEPARATOR = "separator",
+  SEPARATOR = 'separator',
 
   /**
    * A collection of commonly used function buttons represented in compact visual form.
@@ -137,5 +144,5 @@ export enum STRUCTURE {
    * ### Examples
    * `<menu type="toolbar">`
    */
-  TOOLBAR = "toolbar",
+  TOOLBAR = 'toolbar'
 }

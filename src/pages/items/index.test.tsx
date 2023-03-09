@@ -25,70 +25,126 @@ import { ARIA_ROLE } from 'test/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
 import * as fileStorage from 'src/utils/fileStorage';
-import { FileType, ItemFile } from 'db';
+import { FileType, ItemFile, ItemStatus } from 'db';
 import { useQuery } from '@blitzjs/rpc';
 import getItem from 'src/items/queries/getItem';
 import getCategories from 'src/categories/queries/getCategories';
 import getItems from 'src/items/queries/getItems';
 import { Item } from './[itemId].page';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
+import * as utils from './utils';
 
 // global arrange
 const items = [
   {
     id: 1,
     name: 'B-17',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 2,
     name: 'B-18',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 3,
     name: 'B-19',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 4,
     name: 'B-20',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 5,
     name: 'B-21',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 6,
     name: 'B-22',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 7,
     name: 'B-23',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 8,
     name: 'B-24',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 9,
     name: 'B-25',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 10,
     name: 'B-26',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   },
   {
     id: 11,
     name: 'B-27',
-    decription: 'Flying fortress'
+    decription: 'Flying fortress',
+    category: {
+      name: 'category'
+    },
+    files: [],
+    itemIntegrationLogs: []
   }
 ];
 
@@ -116,17 +172,17 @@ describe('Item listing', () => {
         case 0:
           return {
             items: items.slice(0, 10),
-            hasMore: true
+            count: 30
           };
         case 10:
           return {
             items: items.slice(10),
-            hasMore: false
+            count: 30
           };
         default:
           return {
             items: [],
-            hasMore: false
+            count: 30
           };
       }
     };
@@ -145,17 +201,62 @@ describe('Item listing', () => {
 
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
 
-    // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Next' }));
+    // act to next
+    const nextButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to next page' });
+    await userEvent.click(nextButton);
 
-    // assert
+    // assert next
     expect(await screen.findByText(items[10]!.name)).toBeInTheDocument();
 
+    // act to prev
+    const prevButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to previous page' });
+    await userEvent.click(prevButton);
+
+    // assert prev
+    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
+  });
+
+  test.todo('Open Item list and use filters to select items', async () => {
+    // arrange
+    const itemName = 'B-27';
+    const itemStatus = ItemStatus.disable;
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(0, 10),
+      hasMore: true
+    });
+
+    render(<ItemsPage />);
+
+    setupUseInvokeOnce({
+      collectionName: 'items',
+      items: items.slice(10),
+      hasMore: true
+    });
+
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Previous' }));
+    const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
+      name: 'Name'
+    });
+
+    const statusCombobox = screen.getAllByLabelText('Status').find((e) => e.role === ARIA_ROLE.WIDGET.BUTTON);
+
+    await userEvent.type(nameTexfield, itemName);
+    await userEvent.click(statusCombobox!);
+    // await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.OPTION, { name: itemStatus }));
+
+    const option = (await screen.findAllByText(itemStatus)).find((e) => e.role === ARIA_ROLE.WIDGET.OPTION);
+    await userEvent.click(option!);
+    // fireEvent.change(statusCombobox, { target: { value: itemStatus } });
+
+    const searchButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search' });
+
+    await userEvent.click(searchButton);
 
     // assert
-    expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
+    // expect(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
+    expect(await screen.findByText(itemName)).toBeInTheDocument();
   });
 });
 
@@ -174,7 +275,8 @@ describe('Item creating', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable'
     };
 
     const createItemMutation = vi.fn();
@@ -184,7 +286,16 @@ describe('Item creating', () => {
     setupUseInvokeImplementation((queryFn: any): any => {
       if (queryFn === getItems) {
         return {
-          items: [item]
+          items: [
+            {
+              ...item,
+              id: 11,
+              category: {
+                name: 'category'
+              },
+              itemIntegrationLogs: []
+            }
+          ]
         };
       } else if (queryFn === getCategories) {
         return {
@@ -237,7 +348,7 @@ describe('Item creating', () => {
 
     expect(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Create Item' })).toBeInTheDocument();
 
-    expect(screen.getByText(item.name)).toBeInTheDocument();
+    expect(await screen.findByText(item.name)).toBeInTheDocument();
   });
 
   test('User receives an error trying to create an incomplete new item', async () => {
@@ -282,12 +393,17 @@ describe('Item changing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [],
+      itemIntegrationLogs: [],
       dificulty: 1,
       assemblyTime: 0.5,
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      status: 'enable',
+      category: {
+        name: 'category'
+      }
     };
 
     const modifiedItem = {
@@ -295,7 +411,11 @@ describe('Item changing', () => {
       name: 'new name test',
       description: 'new desc test',
       categoryId: 1,
-      files: []
+      files: [],
+      itemIntegrationLogs: [],
+      category: {
+        name: 'category'
+      }
     };
 
     const paginatedQueryReturnData = {
@@ -318,7 +438,8 @@ describe('Item changing', () => {
     });
 
     // act
-    await userEvent.click(await screen.findByRole(ARIA_ROLE.WIDGET.LINK, { name: 'edit' }));
+    const editButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'edit' });
+    await userEvent.click(editButton);
 
     const nameTexfield = screen.getByRole(ARIA_ROLE.WIDGET.TEXTBOX, {
       name: 'Name'
@@ -354,6 +475,7 @@ describe('Item changing', () => {
   test('User list all files of an item', async () => {
     // arrange
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
@@ -372,7 +494,10 @@ describe('Item changing', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      }
     };
     setupUseQueryReturn(item);
 
@@ -394,6 +519,7 @@ describe('Item changing', () => {
   test('User downloads a file from an item', async () => {
     // arrange
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
@@ -409,7 +535,10 @@ describe('Item changing', () => {
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      }
     };
     setupUseQueryReturn(item);
 
@@ -444,6 +573,9 @@ describe('Item changing', () => {
       authorLink: '',
       licenseType: '',
       licenseTypeLink: '',
+      category: {
+        name: 'category'
+      },
       files: [
         {
           id: 1,
@@ -453,6 +585,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         },
         {
@@ -463,6 +596,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         },
         {
@@ -473,6 +607,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         }
       ]
@@ -493,16 +628,23 @@ describe('Item changing', () => {
         artifactType: FileType.scheme,
         index: 0,
         itemId: 1,
+        mainPreview: false,
         createdAt: new Date(),
         updatedAt: new Date()
       } as ItemFile)
     ]);
 
+    vi.mocked(global.fetch).mockResolvedValue({
+      blob: vi.fn().mockResolvedValue({
+        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0))
+      })
+    } as any);
+
     const { rerender } = render(<EditItemPage />);
 
     // act
     const filesTable = screen.getByText('Files').nextSibling as HTMLTableElement;
-    const removeButton = filesTable.rows[2]?.cells[2]?.children[1] as HTMLAnchorElement;
+    const removeButton = filesTable.rows[2]?.cells[3]?.children[1] as HTMLAnchorElement;
     await userEvent.click(removeButton);
 
     rerender(<EditItemPage />);
@@ -517,6 +659,15 @@ describe('Item changing', () => {
     // arrange
     global.URL.createObjectURL = vi.fn().mockResolvedValueOnce('http://127.0.0.1');
 
+    vi.spyOn(utils, 'uploadFiles').mockResolvedValue([
+      {
+        artifactType: FileType.preview,
+        storagePath: 'asdas',
+        tempId: 'a',
+        item: {}
+      }
+    ]);
+
     const fileName = 'vet-clinic.jpg';
 
     const filesToBeDroped = mockFilesToDrop([
@@ -528,16 +679,21 @@ describe('Item changing', () => {
     ]);
 
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
       files: [],
+      itemIntegrationLogs: [],
       dificulty: 1,
       assemblyTime: 0.5,
       author: '',
       authorLink: '',
       licenseType: '',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      }
     };
 
     setupUseQueryImplementation((queryFn: any) => {
@@ -586,10 +742,8 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
 
     // assert
-    expect(screen.getByText(fileName)).toBeInTheDocument();
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.CELL, { name: fileName })).toBeInTheDocument();
   });
-
-  test.todo('User delete an item');
 });
 
 describe('Item removing', () => {
@@ -602,7 +756,12 @@ describe('Item removing', () => {
       items: [
         {
           id: 1,
-          name: itemName
+          name: itemName,
+          category: {
+            name: 'category'
+          },
+          files: [],
+          itemIntegrationLogs: []
         }
       ],
       hasMore: false
@@ -621,10 +780,15 @@ describe('Item removing', () => {
     });
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Delete' }));
+    const button = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'delete' });
+    await userEvent.click(button);
 
     // assert
-    expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+    expect(await screen.findByText('Item successfully removed!')).toBeInTheDocument();
+
+    await waitFor(async () => {
+      expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+    });
   });
 });
 
@@ -632,14 +796,11 @@ describe('Item viewing', () => {
   test('renders item, main image, thumbnails and table with content information', async () => {
     // arrange
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -650,7 +811,10 @@ describe('Item viewing', () => {
       author: 'Author Name',
       authorLink: '',
       licenseType: 'MIT',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      }
     };
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
@@ -672,14 +836,11 @@ describe('Item viewing', () => {
   test('renders item and click at download schemes button', async () => {
     // arrange
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -694,7 +855,11 @@ describe('Item viewing', () => {
       author: 'Author Name',
       authorLink: '',
       licenseType: 'MIT',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      },
+      itemIntegrationLogs: []
     };
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
@@ -714,20 +879,17 @@ describe('Item viewing', () => {
     await userEvent.click(schemesDownloadButton);
 
     // assert
-    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[2]?.storagePath);
+    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[1]?.storagePath);
   });
 
   test('renders item and click at download instrunctions button', async () => {
     // arrange
     const item = {
+      id: 11,
       name: 'name test',
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -742,7 +904,10 @@ describe('Item viewing', () => {
       author: 'Author Name',
       authorLink: '',
       licenseType: 'MIT',
-      licenseTypeLink: ''
+      licenseTypeLink: '',
+      category: {
+        name: 'category'
+      }
     };
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
@@ -762,7 +927,7 @@ describe('Item viewing', () => {
     await userEvent.click(schemesDownloadButton);
 
     // assert
-    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[2]?.storagePath);
+    expect(vi.mocked(globalUtils.downloadFile)).toHaveBeenCalledWith(item.files[1]?.storagePath);
   });
 
   test.skip('renders item, click on a thumbnail and and modify main image', async () => {
@@ -772,14 +937,6 @@ describe('Item viewing', () => {
       description: 'desc test',
       categoryId: 1,
       files: [
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abc.jpg'
-        },
-        {
-          artifactType: FileType.thumbnail,
-          storagePath: 'abcde.jpg'
-        },
         {
           artifactType: FileType.preview,
           storagePath: 'abcd.jpg'
@@ -795,7 +952,7 @@ describe('Item viewing', () => {
 
     vi.mocked(global.fetch).mockResolvedValueOnce({ blob: () => Promise.resolve(new Blob()) } as any);
     // vi.mock('src/utils/fileStorage/getFilePath', () => 'http://localhost:3000/testUrl2');
-    vi.spyOn(fileStorage, 'getFilePath').mockResolvedValue('http://localhost:3000/testUrl2');
+    vi.spyOn(fileStorage, 'getFileUrl').mockResolvedValue('http://localhost:3000/testUrl2');
     // getFilePath  = vi.fn();
 
     setupUseQueryReturn(item);

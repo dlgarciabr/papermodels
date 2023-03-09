@@ -55,6 +55,7 @@ Blitz comes with a powerful CLI that is designed to make development easy and fa
   * blitz db seed
   * blitz prisma migrate dev    Upgrade your database
   * blitz prisma generate       Generate client files according to schema.prisma
+  * blitz prisma migrate reset  Reset DB structure and data and apply all migrations
   generate  Generate new files for your Blitz project
   console   Run the Blitz console REPL
   install   Install a recipe
@@ -163,6 +164,14 @@ Blitz comes with a set of tools that corrects and formats your code, facilitatin
 - **ESLint**: It lints your code: searches for bad practices and tell you about it. You can customize it via the `.eslintrc.js`, and you can install (or even write) plugins to have it the way you like it. It already comes with the [`blitz`](https://github.com/blitz-js/blitz/tree/canary/packages/eslint-config) config, but you can remove it safely. [Learn More](https://blitzjs.com/docs/eslint-config).
 - **Husky**: It adds [githooks](https://git-scm.com/docs/githooks), little pieces of code that get executed when certain Git events are triggerd. For example, `pre-commit` is triggered just before a commit is created. You can see the current hooks inside `.husky/`. If are having problems commiting and pushing, check out ther [troubleshooting](https://typicode.github.io/husky/#/?id=troubleshoot) guide. [Learn More](https://blitzjs.com/docs/husky-config).
 - **Prettier**: It formats your code to look the same everywhere. You can configure it via the `.prettierrc` file. The `.prettierignore` contains the files that should be ignored by Prettier; useful when you have large files or when you want to keep a custom formatting. [Learn More](https://blitzjs.com/docs/prettier-config).
+
+## Items Itengration
+
+To run Items integration execute the steps below:
+
+- Change the value of environment variable NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH to `papermodel`.
+- Change the value of environment variable DATABASE_URL to point to production DB.
+- Run project in development mode with `npm run dev` 
 
 ## Learn more
 

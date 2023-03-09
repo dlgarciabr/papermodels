@@ -92,7 +92,7 @@ export const __ModelNames__List = () => {
                 </Link>
                 <else>
                   <a>{__modelName__.name}</a>
-                  <a href='#' onClick={() => goToEditPage(__modelId__.id)}>
+                  <a href='#' onClick={() => goToEditPage(__modelName__.id)}>
                     &nbsp;edit
                   </a>
                   <button

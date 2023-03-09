@@ -12,7 +12,6 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  CardActions,
   Button,
   Pagination
 } from '@mui/material';
@@ -24,16 +23,24 @@ import Image from 'next/image';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
+import dog from 'public/images/dog.png';
 import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
-import { ItemWithFiles } from 'types';
+import { ItemWithChildren } from 'types';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const theme = createTheme();
 
-const ItemCard = ({ item }: { item: ItemWithFiles }) => {
-  let mainImage = '/images/dog.png';
+const ItemCard = ({ item }: { item: ItemWithChildren }) => {
+  let mainImage = dog.src;
   if (item.files.length > 0) {
-    mainImage = item.files[0]!.storagePath;
+    const mainPreviewImage = item.files.find((file) => file.mainPreview);
+    if (mainPreviewImage) {
+      mainImage = mainPreviewImage.storagePath;
+    } else {
+      mainImage = item.files[0]!.storagePath;
+    }
   }
   return (
     <Link href={Routes.ShowItemPage({ itemId: item.id })}>
@@ -41,15 +48,9 @@ const ItemCard = ({ item }: { item: ItemWithFiles }) => {
         <CardMedia image={mainImage} title={mainImage} />
         <CardContent>
           <Typography gutterBottom variant='h5' component='div'>
-            {item.name}
-          </Typography>
-          <Typography variant='body2' color='text.secondary' noWrap>
-            {item.description}
+            {item.name.length <= 66 ? item.name : item.name.substring(0, 63).concat('...')}
           </Typography>
         </CardContent>
-        <CardActions>
-          <Button size='small'>See more</Button>
-        </CardActions>
       </Card>
     </Link>
   );
@@ -103,20 +104,24 @@ const Home: BlitzPage = () => {
     if (expression.trim() === '') {
       return;
     }
-    const { items, count } = await search(expression, page - 1);
-    setData({
-      items,
-      pages: Math.ceil(count / 9),
-      expression,
-      currentPage: page
-    });
+    try {
+      const { items, count } = await search(expression, page - 1);
+      setData({
+        items,
+        pages: Math.ceil(count / 9),
+        expression,
+        currentPage: page
+      });
+    } catch (error) {
+      showToast(ToastType.ERROR, error);
+    }
   };
 
   const renderCards = useMemo(
     () =>
       data.items.map((item) => (
         <Grid item key={getSimpleRandomKey()}>
-          <ItemCard item={item as ItemWithFiles} />
+          <ItemCard item={item as ItemWithChildren} />
         </Grid>
       )),
     [data.items]

@@ -4,16 +4,16 @@ import { Item, ItemFile } from 'db';
 import { useContext } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import getItemsAnonymous from 'src/items/queries/getItemsAnonymous';
-import { getFilePath } from 'src/utils/fileStorage';
+import { getFileUrl } from 'src/utils/fileStorage';
 
 const useSearch = () => {
   const router = useContext(RouterContext);
   const { executeRecaptcha } = useGoogleReCaptcha();
   return (expression: string, page: number): Promise<{ items: Item[]; count: number }> =>
-    new Promise(async (resolve) => {
+    new Promise(async (resolve, reject) => {
       if (!executeRecaptcha) {
-        console.error('Execute recaptcha not yet available');
-        return Promise.reject();
+        reject('Execute recaptcha not yet available');
+        return;
       }
       const gRecaptchaToken = await executeRecaptcha('searchItems');
       const { items, count } = await invoke(getItemsAnonymous, {
@@ -30,7 +30,7 @@ const useSearch = () => {
         items.map(async (item: Item & { files: ItemFile[] }) => {
           await Promise.all(
             item.files.map(async (file) => {
-              file.storagePath = await getFilePath(file.storagePath);
+              file.storagePath = getFileUrl(file.storagePath);
             })
           );
         })

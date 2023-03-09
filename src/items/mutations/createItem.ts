@@ -1,6 +1,6 @@
 import { resolver } from '@blitzjs/rpc';
 import db from 'db';
-import { CreateItemValidation } from '../validations';
+import { CreateItemValidation } from '../schemas';
 
 export default resolver.pipe(resolver.zod(CreateItemValidation), resolver.authorize(), async (input) => {
   const item = await db.item.create({
@@ -10,8 +10,7 @@ export default resolver.pipe(resolver.zod(CreateItemValidation), resolver.author
       files: {
         create: input.files.map((file) => ({
           storagePath: file.storagePath,
-          artifactType: file.artifactType,
-          index: file.index
+          artifactType: file.artifactType
         }))
       }
     }

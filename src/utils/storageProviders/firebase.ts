@@ -1,5 +1,9 @@
 /* istanbul ignore file -- @preserve */
 // TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
+/**
+ * @deprecated
+ * Must be used new provider from cloudinary
+ */
 import { FirebaseApp, FirebaseOptions, initializeApp, getApps } from 'firebase/app';
 import {
   getStorage as getFirebaseStorage,
@@ -34,7 +38,7 @@ const getFirebaseApp = (): FirebaseApp => {
       isTokenAutoRefreshEnabled: true
     });
   } else {
-    throw 'FirebaseApp not initialized\nEnvironment variable NEXT_RECAPTCHA_SITE_KEY not set';
+    throw 'FirebaseApp not initialized\nEnvironment variable NEXT_PUBLIC_RECAPTCHA_SITE_KEY not set';
   }
   return getApps()[0] as FirebaseApp;
 };
@@ -47,10 +51,10 @@ const getFilePath = (path: string) => {
   return getDownloadURL(ref(getStorage(), `${ARTIFACTS_PATH}/${path}`));
 };
 
-const saveFile = (file: File, path: string) => {
+const saveFile = (bytes: ArrayBuffer, path: string) => {
   const fileRef = ref(getStorage(), path);
   // return Promise.reject('forced error saving');
-  return uploadBytes(fileRef, file);
+  return uploadBytes(fileRef, bytes);
   // const uploadTask = storageRef.put(firstFile);
   // uploadTask.on(‘state_changed’, function progress(snapshot) {
   //    console.log(snapshot.totalBytesTransferred); // progress of upload

@@ -7,10 +7,10 @@ import Layout from 'src/core/layouts/Layout';
 import createItem from 'src/items/mutations/createItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
 import getCategories from 'src/categories/queries/getCategories';
-import { Category } from 'db';
-import { CreateItemValidation } from 'src/items/validations';
+import { Category, ItemStatus } from 'db';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { showToast } from 'src/core/components/Toast';
+import { CreateItemValidation } from 'src/items/schemas';
 
 const NewItemPage = () => {
   const router = useContext(RouterContext);
@@ -38,6 +38,7 @@ const NewItemPage = () => {
           description: '',
           name: '',
           files: [],
+          status: ItemStatus.enable,
           assemblyTime: 0,
           dificulty: 0,
           author: '',
