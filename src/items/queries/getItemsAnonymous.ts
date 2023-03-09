@@ -23,6 +23,14 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
               contains: (where?.name as Prisma.StringFilter).contains,
               mode: 'insensitive'
             }
+          },
+          {
+            category: {
+              name: {
+                contains: (where?.name as Prisma.StringFilter).contains,
+                mode: 'insensitive'
+              }
+            }
           }
         ]
       }
@@ -41,8 +49,7 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
           files: {
             where: {
               artifactType: FileType.preview
-            },
-            take: 1
+            }
           }
         }
       })

@@ -27,13 +27,20 @@ import dog from 'public/images/dog.png';
 import { useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithChildren }) => {
   let mainImage = dog.src;
   if (item.files.length > 0) {
-    mainImage = item.files[0]!.storagePath;
+    const mainPreviewImage = item.files.find((file) => file.mainPreview);
+    if (mainPreviewImage) {
+      mainImage = mainPreviewImage.storagePath;
+    } else {
+      mainImage = item.files[0]!.storagePath;
+    }
   }
   return (
     <Link href={Routes.ShowItemPage({ itemId: item.id })}>
@@ -97,13 +104,17 @@ const Home: BlitzPage = () => {
     if (expression.trim() === '') {
       return;
     }
-    const { items, count } = await search(expression, page - 1);
-    setData({
-      items,
-      pages: Math.ceil(count / 9),
-      expression,
-      currentPage: page
-    });
+    try {
+      const { items, count } = await search(expression, page - 1);
+      setData({
+        items,
+        pages: Math.ceil(count / 9),
+        expression,
+        currentPage: page
+      });
+    } catch (error) {
+      showToast(ToastType.ERROR, error);
+    }
   };
 
   const renderCards = useMemo(

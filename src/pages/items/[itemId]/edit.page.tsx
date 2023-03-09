@@ -24,8 +24,13 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
 import { ItemWithChildren } from 'types';
+import { Checkbox } from '@mui/material';
 
-const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => void }) => {
+const Files = (props: {
+  files: ItemFile[];
+  onClickDelete: (file: ItemFile) => void;
+  onClickMain: (file: ItemFile) => void;
+}) => {
   return (
     <section id='files' role={ARIA_ROLE.LANDMARK.CONTENTINFO}>
       <div>Files</div>
@@ -34,6 +39,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
           <tr>
             <td>Name</td>
             <td>Type</td>
+            <td>Main</td>
             <td>Operation</td>
           </tr>
           {props.files.length === 0 ? (
@@ -46,6 +52,9 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
                 <tr key={file.id}>
                   <td>{file.storagePath}</td>
                   <td>{file.artifactType}</td>
+                  <td>
+                    <Checkbox checked={file.mainPreview} onClick={() => props.onClickMain(file)} />
+                  </td>
                   <td>
                     <a href='#' onClick={() => downloadFile(file.storagePath)}>
                       Download
@@ -65,6 +74,7 @@ const Files = (props: { files: ItemFile[]; onClickDelete: (file: ItemFile) => vo
 };
 
 export const EditItem = () => {
+  const [filesKey, setFilesKey] = useState<string>(getSimpleRandomKey());
   const [filesToUpload, setFilesToUpload] = useState<UploadItemFile[]>([]);
   const [dropzoneKey, setDropzoneKey] = useState(getSimpleRandomKey());
   const [isSaving, setSaving] = useState(false);
@@ -117,8 +127,6 @@ export const EditItem = () => {
     if (confirm(`are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
-      // const remainingFiles = item.files.filter((itemFile) => itemFile.id !== file.id);
-      // await sortFilesIndexes(item, remainingFiles, updateItemFileMutation);
       await queryResult.refetch();
       showToast(ToastType.SUCCESS, 'file removed');
     }
@@ -130,6 +138,15 @@ export const EditItem = () => {
       return file;
     });
     setFilesToUpload(files);
+  };
+
+  const handleClickMainPreview = async (fileToModify: ItemFile & { url: string; item: Item }) => {
+    item.files.forEach((file) => {
+      file.mainPreview = false;
+    });
+    const file = item.files.find((file) => file.id === fileToModify.id);
+    file!.mainPreview = true;
+    setFilesKey(getSimpleRandomKey());
   };
 
   const dropzoneOptions = {
@@ -184,7 +201,12 @@ export const EditItem = () => {
             }
           }}
         />
-        <Files files={item.files} onClickDelete={handleDeleteFile} /* key={filesKey} */ />
+        <Files
+          files={item.files}
+          onClickDelete={handleDeleteFile}
+          onClickMain={handleClickMainPreview}
+          key={filesKey}
+        />
         <Dropzone key={dropzoneKey} {...dropzoneOptions} />
         {filesToUpload.length > 0 ? (
           <p

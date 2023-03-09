@@ -13,8 +13,8 @@ export default resolver.pipe(resolver.zod(UpdateItemValidation), resolver.author
           // Appears to be a prisma bug,
           // because `|| 0` shouldn't be needed
           where: { id: file.id },
-          create: { storagePath: file.storagePath, artifactType: file.artifactType },
-          update: { storagePath: file.storagePath, artifactType: file.artifactType }
+          create: { storagePath: file.storagePath, artifactType: file.artifactType, mainPreview: file.mainPreview },
+          update: { storagePath: file.storagePath, artifactType: file.artifactType, mainPreview: file.mainPreview }
         }))
       }
     },

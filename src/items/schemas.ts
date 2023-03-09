@@ -23,7 +23,8 @@ export const CreateItemValidation = z.object({
   files: z.array(
     z.object({
       storagePath: z.string(),
-      artifactType: zFileTypeEnum
+      artifactType: zFileTypeEnum,
+      mainPreview: z.boolean().default(false)
     })
   )
 });
@@ -35,7 +36,8 @@ export const UpdateItemValidation = z.object({
     z.object({
       id: z.number(),
       storagePath: z.string(),
-      artifactType: zFileTypeEnum
+      artifactType: zFileTypeEnum,
+      mainPreview: z.boolean().default(false)
     })
   )
 });

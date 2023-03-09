@@ -117,6 +117,7 @@ model ItemFile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   artifactType FileType
+  mainPreview  Boolean  @default(false)
   item         Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId       Int
 }

@@ -203,7 +203,7 @@ export const Item = () => {
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [itemId, executeRecaptcha]);
 
   useEffect(() => {
     if (thumbnailsData.items.length > 0) {
