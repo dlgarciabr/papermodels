@@ -32,6 +32,7 @@ import getCategories from 'src/categories/queries/getCategories';
 import getItems from 'src/items/queries/getItems';
 import { Item } from './[itemId].page';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
+import * as utils from './utils';
 
 // global arrange
 const items = [
@@ -200,18 +201,18 @@ describe('Item listing', () => {
 
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
 
-    // act
+    // act to next
     const nextButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to next page' });
     await userEvent.click(nextButton);
 
-    // assert
+    // assert next
     expect(await screen.findByText(items[10]!.name)).toBeInTheDocument();
 
-    // act
+    // act to prev
     const prevButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to previous page' });
     await userEvent.click(prevButton);
 
-    // assert
+    // assert prev
     expect(await screen.findByText(items[0]!.name)).toBeInTheDocument();
   });
 
@@ -589,6 +590,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         },
         {
@@ -599,6 +601,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         },
         {
@@ -609,6 +612,7 @@ describe('Item changing', () => {
           url: 'http://127.0.0.1/file.png',
           createdAt: new Date(),
           updatedAt: new Date(),
+          mainPreview: false,
           itemId: 1
         }
       ]
@@ -645,7 +649,7 @@ describe('Item changing', () => {
 
     // act
     const filesTable = screen.getByText('Files').nextSibling as HTMLTableElement;
-    const removeButton = filesTable.rows[2]?.cells[2]?.children[1] as HTMLAnchorElement;
+    const removeButton = filesTable.rows[2]?.cells[3]?.children[1] as HTMLAnchorElement;
     await userEvent.click(removeButton);
 
     rerender(<EditItemPage />);
@@ -659,6 +663,15 @@ describe('Item changing', () => {
   test('User adds a file to an item', async () => {
     // arrange
     global.URL.createObjectURL = vi.fn().mockResolvedValueOnce('http://127.0.0.1');
+
+    vi.spyOn(utils, 'uploadFiles').mockResolvedValue([
+      {
+        artifactType: FileType.preview,
+        storagePath: 'asdas',
+        tempId: 'a',
+        item: {}
+      }
+    ]);
 
     const fileName = 'vet-clinic.jpg';
 
@@ -734,7 +747,7 @@ describe('Item changing', () => {
     await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Save files' }));
 
     // assert
-    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.IMG, { name: fileName })).toBeInTheDocument();
+    expect(screen.getByRole(ARIA_ROLE.STRUCTURE.CELL, { name: fileName })).toBeInTheDocument();
   });
 });
 
