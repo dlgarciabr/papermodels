@@ -1,4 +1,4 @@
-import { FileType } from '@prisma/client';
+import { FileType, ItemFile } from '@prisma/client';
 import { downloadFile } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 
@@ -10,4 +10,8 @@ export const useDownloadFiles = (item?: ItemWithChildren) => (artifactType: File
   filesToDownload.forEach((file) => {
     void downloadFile(file.storagePath);
   });
+};
+
+export const useHasInstrunctionFile = () => (files: ItemFile[]) => {
+  return files.some((file) => file.artifactType === FileType.instruction);
 };

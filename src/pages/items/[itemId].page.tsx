@@ -30,7 +30,7 @@ import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { useDownloadFiles } from './items.hook';
+import { useDownloadFiles, useHasInstrunctionFile } from './items.hook';
 import logo from 'public/images/logo.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 
@@ -111,7 +111,8 @@ export const Item = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useContext(RouterContext);
   const [openDescriptionDialog, setOpenDescriptionDialog] = useState(false);
-  const [ItemWithChildren, setItemWithChildren] = useState<ItemWithChildren>();
+  const [item, setItem] = useState<ItemWithChildren>();
+  const hasInstrunctionFile = useHasInstrunctionFile();
 
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
@@ -121,7 +122,7 @@ export const Item = () => {
     items: []
   });
 
-  const downloadFiles = useDownloadFiles(ItemWithChildren);
+  const downloadFiles = useDownloadFiles(item);
 
   const setupThumbnails = (item: ItemWithChildren) => {
     const thumbnails = item.files
@@ -152,7 +153,7 @@ export const Item = () => {
   const renderDescriptionDialog = () => {
     return (
       <Dialog open={openDescriptionDialog}>
-        <DialogTitle>{ItemWithChildren?.name}</DialogTitle>
+        <DialogTitle>{item?.name}</DialogTitle>
         <DialogContent>
           <Box
             noValidate
@@ -163,7 +164,7 @@ export const Item = () => {
               m: 'auto',
               width: 'fit-content'
             }}>
-            <Typography>{ItemWithChildren?.description}</Typography>
+            <Typography>{item?.description}</Typography>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -193,7 +194,7 @@ export const Item = () => {
           gRecaptchaToken,
           id: itemId
         });
-        setItemWithChildren(item as ItemWithChildren);
+        setItem(item as ItemWithChildren);
         setupThumbnails(item as ItemWithChildren);
         const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
         if (!imageData.url && previewFiles.length >= 1) {
@@ -243,7 +244,7 @@ export const Item = () => {
     <>
       {renderDescriptionDialog()}
       <Head>
-        <title>Papermodels - {ItemWithChildren?.name}</title>
+        <title>Papermodels - {item?.name}</title>
       </Head>
       <Container component='main'>
         <Grid container spacing={2} justifyContent='center'>
@@ -277,11 +278,11 @@ export const Item = () => {
           <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
             <Grid item xs={12}>
               <Typography variant='h6' component='div'>
-                {ItemWithChildren?.name}
+                {item?.name}
               </Typography>
-              {ItemWithChildren?.description && (
+              {item?.description && (
                 <Typography variant='subtitle1'>
-                  {shortenTextWithEllipsis(ItemWithChildren?.description, 200)}
+                  {shortenTextWithEllipsis(item?.description, 200)}
                   <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
                     see more
                   </a>
@@ -307,6 +308,7 @@ export const Item = () => {
                       variant='contained'
                       fullWidth
                       startIcon={<MdDownload />}
+                      disabled={item && !hasInstrunctionFile(item?.files!)}
                       onClick={() => {
                         downloadFiles(FileType.instruction);
                       }}>
@@ -322,7 +324,7 @@ export const Item = () => {
               </Paper>
             </Grid>
             <Grid item container xs={12}>
-              {ItemWithChildren && <DetailsTable item={ItemWithChildren} />}
+              {item && <DetailsTable item={item} />}
             </Grid>
           </Grid>
           {/* </Grid> */}
