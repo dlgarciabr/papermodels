@@ -40,7 +40,16 @@ describe('Index page tests', () => {
         {
           id: 1,
           name: 'Train',
-          files: []
+          files: [
+            {
+              storagePath: 'vet-clinic.jpg',
+              artifactType: 'scheme'
+            },
+            {
+              storagePath: 'jetplane.jpg',
+              artifactType: 'scheme'
+            }
+          ]
         }
       ],
       hasMore: true
@@ -73,7 +82,17 @@ describe('Index page tests', () => {
         {
           id: 1,
           name: 'Train',
-          files: []
+          files: [
+            {
+              storagePath: 'vet-clinic.jpg',
+              artifactType: 'scheme',
+              mainPreview: true
+            },
+            {
+              storagePath: 'jetplane.jpg',
+              artifactType: 'scheme'
+            }
+          ]
         }
       ],
       hasMore: true
