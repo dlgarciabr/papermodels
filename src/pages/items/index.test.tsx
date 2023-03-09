@@ -260,11 +260,6 @@ describe('Item listing', () => {
   });
 });
 
-// const selectMUIOption = (screen, selectName: string, selectRole: string)=>{
-//   const select = screen.getAllByLabelText(selectName).find(e => e.role === selectRole);
-
-// }
-
 describe('Item creating', () => {
   test('User create a new item', async () => {
     // arrange
@@ -790,7 +785,10 @@ describe('Item removing', () => {
 
     // assert
     expect(await screen.findByText('Item successfully removed!')).toBeInTheDocument();
-    expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+
+    await waitFor(async () => {
+      expect(screen.queryByText(itemName)).not.toBeInTheDocument();
+    });
   });
 });
 
