@@ -3,8 +3,6 @@ import { invoke } from '@blitzjs/rpc';
 import { Item, ItemFile } from 'db';
 import { useContext } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { showToast } from 'src/core/components/Toast';
-import { ToastType } from 'src/core/components/Toast/types.d';
 import getItemsAnonymous from 'src/items/queries/getItemsAnonymous';
 import { getFileUrl } from 'src/utils/fileStorage';
 
@@ -12,12 +10,10 @@ const useSearch = () => {
   const router = useContext(RouterContext);
   const { executeRecaptcha } = useGoogleReCaptcha();
   return (expression: string, page: number): Promise<{ items: Item[]; count: number }> =>
-    new Promise(async (resolve) => {
+    new Promise(async (resolve, reject) => {
       if (!executeRecaptcha) {
-        const message = 'Execute recaptcha not yet available';
-        console.error(message);
-        showToast(ToastType.SUCCESS, message);
-        return Promise.reject();
+        reject('Execute recaptcha not yet available');
+        return;
       }
       const gRecaptchaToken = await executeRecaptcha('searchItems');
       const { items, count } = await invoke(getItemsAnonymous, {
