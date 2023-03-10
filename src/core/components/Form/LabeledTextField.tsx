@@ -23,7 +23,10 @@ export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldPro
         <label>
           {label}
           {rows ? (
-            <textarea rows={rows} {...input}></textarea>
+            <>
+              <textarea rows={rows} {...input}></textarea>
+              {input.value.length} characters
+            </>
           ) : (
             <input {...input} disabled={isSubmitting} {...props} ref={ref} />
           )}

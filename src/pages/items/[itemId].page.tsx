@@ -290,10 +290,12 @@ export const Item = () => {
               </Typography>
               {item?.description && (
                 <Typography variant='subtitle1'>
-                  {shortenTextWithEllipsis(item?.description, 200)}
-                  <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
-                    see more
-                  </a>
+                  {shortenTextWithEllipsis(item?.description, 200)}{' '}
+                  {item?.description.length >= 200 && (
+                    <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
+                      see more
+                    </a>
+                  )}
                 </Typography>
               )}
             </Grid>
