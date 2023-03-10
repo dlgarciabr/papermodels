@@ -6,8 +6,7 @@ const showToast = (type: ToastType, message: string) => {
     theme: 'colored',
     draggable: true,
     position: 'bottom-right',
-    hideProgressBar: type === ToastType.ERROR,
-    autoClose: type === ToastType.ERROR ? false : 5000
+    autoClose: type === ToastType.ERROR ? 20000 : 5000
   };
   toast[type](message, options);
 };

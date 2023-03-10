@@ -34,6 +34,8 @@ import { useDownloadFiles, useHasFileType } from './items.hook';
 import logo from 'public/images/logo.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 import { LoadingButton } from '@mui/lab';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -109,8 +111,8 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
 
 export const Item = () => {
   const itemId = useParam('itemId', 'number');
-  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useContext(RouterContext);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [openDescriptionDialog, setOpenDescriptionDialog] = useState(false);
   const [item, setItem] = useState<ItemWithChildren>();
   const hasFileType = useHasFileType();
@@ -191,17 +193,23 @@ export const Item = () => {
   useEffect(() => {
     if (executeRecaptcha) {
       void (async () => {
-        const gRecaptchaToken = await executeRecaptcha('viewItem');
-        const item = await invoke(getItemAnonymous, {
-          gRecaptchaToken,
-          id: itemId
-        });
-        setItem(item as ItemWithChildren);
-        setupThumbnails(item as ItemWithChildren);
-        const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-        if (!imageData.url && previewFiles.length >= 1) {
-          const file = previewFiles[0];
-          await loadMainImage(file!.storagePath);
+        try {
+          const gRecaptchaToken = await executeRecaptcha('viewItem');
+          const item = await invoke(getItemAnonymous, {
+            gRecaptchaToken,
+            id: itemId
+          });
+          setItem(item as ItemWithChildren);
+          setupThumbnails(item as ItemWithChildren);
+          const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+          if (!imageData.url && previewFiles.length >= 1) {
+            const file = previewFiles[0];
+            await loadMainImage(file!.storagePath);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast(ToastType.ERROR, 'An error has ocurred, try again later.');
+          void router.push(Routes.Home());
         }
       })();
     }
