@@ -61,7 +61,7 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
-  const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(true);
+  const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(false);
   const search = useSearch();
   const getSugestions = useGetSugestions();
 
@@ -172,7 +172,7 @@ const Home: BlitzPage = () => {
                   <TextField
                     margin='normal'
                     fullWidth
-                    label='Search on Papermodels'
+                    label='Search for a model'
                     name='searchModel'
                     autoFocus
                     hidden={true}
@@ -209,7 +209,12 @@ const Home: BlitzPage = () => {
             <Grid item container justifyContent='center' spacing={3}>
               {renderCards}
             </Grid>
-            <Grid item container justifyContent='center' spacing={3} className={data.pages === 0 ? 'hidden' : ''}>
+            <Grid
+              item
+              container
+              justifyContent='center'
+              spacing={3}
+              className={data.pages === 0 || showEmptySearchMessage ? 'hidden' : ''}>
               <Grid item container xs={12} justifyContent='center'>
                 <Pagination
                   count={data.pages}
