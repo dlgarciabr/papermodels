@@ -32,6 +32,7 @@ import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { LoadingButton } from '@mui/lab';
 import { FileType } from '@prisma/client';
+import { getPdfThumbnailUrl } from 'src/utils/fileStorage';
 
 const theme = createTheme();
 
@@ -48,7 +49,7 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
       }
     } else {
       const schemeUrl = item.files.filter((file) => file.artifactType === FileType.scheme)[0]?.storagePath!;
-      mainImage = `${schemeUrl.split('?')[0]}.png`.replace('v1', 't_papermodel_pdf_thumbnail/v1');
+      mainImage = getPdfThumbnailUrl(schemeUrl);
     }
   }
   return (

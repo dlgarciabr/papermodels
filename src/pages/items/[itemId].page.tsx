@@ -24,8 +24,8 @@ import Image from 'next/image';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { invoke } from '@blitzjs/rpc';
 
-import { IImageData, IThumbnailsData } from './types';
-import { getFileUrl, getThumbnailUrl } from 'src/utils/fileStorage';
+import { IImageData, IThumbnail, IThumbnailsData } from './types';
+import { getFileUrl, getPdfThumbnailUrl, getThumbnailUrl } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
@@ -129,20 +129,31 @@ export const Item = () => {
   const downloadFiles = useDownloadFiles(item);
 
   const setupThumbnails = (item: ItemWithChildren) => {
-    const thumbnails = item.files
+    const thumbnails: IThumbnail[] = item.files
       .filter((file) => file.artifactType === FileType.preview)
       .map((file) => ({
+        type: FileType.preview,
         storagePath: file.storagePath
       }));
+    if (thumbnails.length === 0) {
+      const schemeFile = item.files.find((file) => file.artifactType === FileType.scheme);
+      thumbnails.push({
+        type: FileType.scheme,
+        storagePath: schemeFile?.storagePath!
+      });
+    }
     setThumbnailsData({
       loading: true,
       items: thumbnails
     });
   };
 
-  const loadMainImage = async (storagePath: string) => {
+  const loadMainImage = async (storagePath: string, type: FileType) => {
     setImageData({ loading: true });
-    const url = getFileUrl(storagePath);
+    let url = getFileUrl(storagePath);
+    if (type === FileType.scheme) {
+      url = getPdfThumbnailUrl(url);
+    }
     const response = await fetch(url, { method: 'GET' });
     const blob = await response.blob();
     const urlCreator = window.URL || window.webkitURL;
@@ -180,14 +191,15 @@ export const Item = () => {
 
   /* istanbul ignore next -- @preserve */
   const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
-    const storagePathParts = thumbnailsData.items[thumbnailIndex]?.storagePath.split('.');
+    const thumbnail = thumbnailsData.items[thumbnailIndex]!;
+    const storagePathParts = thumbnail.storagePath.split('.');
     const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
     const extension = storagePathParts![1];
     const imageStoragePath = `${imageName}.${extension}`;
     if (imageData.name === imageStoragePath) {
       return;
     }
-    await loadMainImage(imageStoragePath);
+    await loadMainImage(imageStoragePath, thumbnail.type);
   };
 
   useEffect(() => {
@@ -204,7 +216,10 @@ export const Item = () => {
           const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
           if (!imageData.url && previewFiles.length >= 1) {
             const file = previewFiles[0];
-            await loadMainImage(file!.storagePath);
+            await loadMainImage(file!.storagePath, FileType.preview);
+          } else {
+            const file = item.files.find((file) => file.artifactType === FileType.scheme);
+            await loadMainImage(getPdfThumbnailUrl(file!.storagePath), FileType.scheme);
           }
         } catch (error) {
           console.error(error);
@@ -224,14 +239,17 @@ export const Item = () => {
   }, [thumbnailsData.items]);
 
   const loadThumbnailUrls = async () => {
-    for await (const item of thumbnailsData.items) {
-      const url = getThumbnailUrl(item.storagePath);
-      item.finalUrl = url;
+    thumbnailsData.items.forEach((thumbnail) => {
+      let url = getThumbnailUrl(thumbnail.storagePath);
+      if (thumbnail.type === FileType.scheme) {
+        url = getPdfThumbnailUrl(url);
+      }
+      thumbnail.finalUrl = url;
       setThumbnailsData({
         ...thumbnailsData,
         items: thumbnailsData.items
       });
-    }
+    });
     setThumbnailsData({
       ...thumbnailsData,
       loading: false
@@ -252,7 +270,7 @@ export const Item = () => {
         loading={!item.finalUrl}
         src={item.finalUrl}
         altText={item.storagePath}
-        onClick={loadMainImageFromThumbnail}
+        onClick={(index) => (thumbnailsData.items.length > 1 ? loadMainImageFromThumbnail(index) : '')}
       />
     ));
 
