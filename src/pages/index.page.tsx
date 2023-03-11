@@ -31,17 +31,24 @@ import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { LoadingButton } from '@mui/lab';
+import { FileType } from '@prisma/client';
 
 const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithChildren }) => {
   let mainImage = dog.src;
   if (item.files.length > 0) {
-    const mainPreviewImage = item.files.find((file) => file.mainPreview);
-    if (mainPreviewImage) {
-      mainImage = mainPreviewImage.storagePath;
+    const hasPreviewImage = item.files.some((file) => file.artifactType === FileType.preview);
+    if (hasPreviewImage) {
+      const mainPreviewImage = item.files.find((file) => file.mainPreview);
+      if (mainPreviewImage) {
+        mainImage = mainPreviewImage.storagePath;
+      } else {
+        mainImage = item.files[0]!.storagePath;
+      }
     } else {
-      mainImage = item.files[0]!.storagePath;
+      const schemeUrl = item.files.filter((file) => file.artifactType === FileType.scheme)[0]?.storagePath!;
+      mainImage = `${schemeUrl.split('?')[0]}.png`.replace('v1', 't_papermodel_pdf_thumbnail/v1');
     }
   }
   return (

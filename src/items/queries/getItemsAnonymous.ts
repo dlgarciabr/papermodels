@@ -1,6 +1,6 @@
 import { paginate } from 'blitz';
 import { resolver } from '@blitzjs/rpc';
-import db, { FileType, ItemStatus, Prisma } from 'db';
+import db, { ItemStatus, Prisma } from 'db';
 
 interface GetItemsInput extends Pick<Prisma.ItemFindManyArgs, 'where' | 'orderBy' | 'skip' | 'take' | 'include'> {}
 
@@ -46,11 +46,7 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
         where: whereClause,
         orderBy,
         include: {
-          files: {
-            where: {
-              artifactType: FileType.preview
-            }
-          }
+          files: true
         }
       })
   });
