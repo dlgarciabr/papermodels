@@ -1,22 +1,24 @@
-import { render } from '@testing-library/react';
 import { vi } from 'vitest';
 import Loading from './index';
+import { render, screen } from 'test/utils';
 import * as hooks from './hooks';
 
 describe('Loading component', async () => {
   test('renders the circular progress', () => {
-    const { getByRole } = render(<Loading />);
-    expect(getByRole('progressbar')).toBeInTheDocument();
+    render(<Loading />);
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
   test('applies the calculated margin top to the circular progress', () => {
     //arrange
-    vi.spyOn(hooks, 'useCalculateMarginTop').mockReturnValue(vi.fn(() => '10px'));
+    vi.spyOn(hooks, 'useCalculateMarginTop').mockReturnValue({ calculateMarginTop: vi.fn(() => '10px') });
 
     //act
-    const { getByRole } = render(<Loading />);
+    render(<Loading />);
 
     //assert
-    expect(getByRole('progressbar')).toHaveStyle('margin-top: 10px');
+    expect(screen.getByRole('progressbar')).toHaveStyle('margin-top: 10px');
+
+    vi.clearAllMocks();
   });
 });
