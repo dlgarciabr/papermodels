@@ -1,5 +1,6 @@
 import { forwardRef, PropsWithoutRef } from 'react';
 import { useField, useFormikContext, ErrorMessage } from 'formik';
+import { Box, TextField } from '@mui/material';
 
 export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElements['input']> {
   /** Field name. */
@@ -9,30 +10,37 @@ export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElem
   rows?: number;
   fullWidth?: boolean;
   multiline?: boolean;
+  counter?: boolean;
   /** Field type. Doesn't include radio buttons and checkboxes */
   type?: 'text' | 'password' | 'email' | 'number';
+  helperText?: string;
   outerProps?: PropsWithoutRef<JSX.IntrinsicElements['div']>;
 }
 
 export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldProps>(
-  ({ name, label, rows, outerProps, ...props }, ref) => {
+  ({ name, label, rows, outerProps, helperText, counter = false, ...props }, ref) => {
     const [input] = useField(name);
     const { isSubmitting } = useFormikContext();
     return (
       <div {...outerProps}>
-        <label>
-          {label}
-          {rows ? (
-            <>
-              <textarea rows={rows} {...input}></textarea>
-              {input.value.length} characters
-            </>
-          ) : (
-            <input {...input} disabled={isSubmitting} {...props} ref={ref} />
-          )}
-        </label>
-
-        {/* <TextField {...input} /> */}
+        <TextField
+          {...props}
+          label={label}
+          {...input}
+          rows={rows}
+          multiline={!!rows}
+          variant='outlined'
+          color='primary'
+          size='medium'
+          disabled={isSubmitting}
+          ref={ref}
+          helperText={
+            <Box component='span' sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>{helperText}</span>
+              {counter && <span>{`${(input.value as string).length} / ${props.maxLength}`}</span>}
+            </Box>
+          }
+        />
 
         <ErrorMessage name={name}>
           {(msg) => (

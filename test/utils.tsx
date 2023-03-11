@@ -39,7 +39,6 @@ let mockedRouter: NextRouter;
 export const getMockedRouter = (): NextRouter => mockedRouter;
 
 /**
- * //TODO fix this or remove, because its acctualy not working
  *
  * @param router
  * @returns
