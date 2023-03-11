@@ -12,7 +12,6 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  Button,
   Pagination,
   Alert,
   Collapse
@@ -31,6 +30,7 @@ import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { LoadingButton } from '@mui/lab';
 
 const theme = createTheme();
 
@@ -63,6 +63,7 @@ const Home: BlitzPage = () => {
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
   const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(false);
   const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
   const search = useSearch();
   const getSugestions = useGetSugestions();
 
@@ -110,6 +111,7 @@ const Home: BlitzPage = () => {
       setEmptySearchAtempt(true);
       return;
     }
+    setLoading(true);
     setEmptySearchAtempt(false);
     setShowEmptySearchMessage(false);
     try {
@@ -133,6 +135,8 @@ const Home: BlitzPage = () => {
       }
     } catch (error) {
       showToast(ToastType.ERROR, error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,13 +206,14 @@ const Home: BlitzPage = () => {
                   />
                 </Grid>
                 <Grid item xs={1}>
-                  <Button
+                  <LoadingButton
+                    loading={isLoading}
                     className='search-button'
                     onClick={() => handleSearch(data.expression, 1)}
                     variant='contained'
                     size='large'>
                     <MdSearch title='Search for a model' size='22' />
-                  </Button>
+                  </LoadingButton>
                 </Grid>
               </Grid>
             </Grid>
