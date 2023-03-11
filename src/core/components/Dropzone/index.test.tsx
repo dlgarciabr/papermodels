@@ -2,7 +2,7 @@ import { expect, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 
 import { render, screen, fireEvent, waitFor, act } from 'test/utils';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import Dropzone from '.';
 import { DropzoneProps } from './types';
 import { FileType } from 'db';

@@ -21,7 +21,7 @@ import {
 } from 'test/utils';
 import ItemsPage from './index.page';
 import NewItemPage from './new.page';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
 import * as fileStorage from 'src/utils/fileStorage';

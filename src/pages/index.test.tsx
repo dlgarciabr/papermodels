@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import { render, screen, setupUseInvokeOnce } from 'test/utils';
 import { vi } from 'vitest';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
