@@ -372,7 +372,6 @@ const downloadFileFromClick = async (url: string, selector: string, index: numbe
 
     await page.waitForSelector(selector);
 
-    // await page.click(selector);//TODO remove if the code below is working
     const locator = page.locator(selector).nth(index);
     await locator.click({ timeout: 60000 });
 
@@ -465,8 +464,6 @@ const processIntegration = async () => {
   if (isSimulation) {
     slice = 10;
   }
-
-  //TODO defile a better slice
 
   const integrationList = (await db.fileIntegration.findMany({
     where: {

@@ -9,7 +9,6 @@ const GetIntegrationSetup = z.object({
 });
 
 export default resolver.pipe(resolver.zod(GetIntegrationSetup), resolver.authorize(), async ({ id }) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
   const integrationSetup = await db.integrationSetup.findFirst({ where: { id } });
   if (!integrationSetup) {
     throw new NotFoundError();
