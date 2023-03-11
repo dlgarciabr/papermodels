@@ -13,7 +13,9 @@ import {
   CardContent,
   Typography,
   Button,
-  Pagination
+  Pagination,
+  Alert,
+  Collapse
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { useContext, useEffect, useMemo, useState } from 'react';
@@ -24,7 +26,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
 import dog from 'public/images/dog.png';
-import { useSearch } from './index.hooks';
+import { useGetSugestions, useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
@@ -59,7 +61,9 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
+  const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(true);
   const search = useSearch();
+  const getSugestions = useGetSugestions();
 
   const initialData = {
     expression: '',
@@ -104,6 +108,7 @@ const Home: BlitzPage = () => {
     if (expression.trim() === '') {
       return;
     }
+    setShowEmptySearchMessage(false);
     try {
       const { items, count } = await search(expression, page - 1);
       setData({
@@ -112,6 +117,17 @@ const Home: BlitzPage = () => {
         expression,
         currentPage: page
       });
+
+      if (items.length === 0) {
+        const { items, count } = await getSugestions();
+        setData({
+          items,
+          pages: Math.ceil(count / 9),
+          expression,
+          currentPage: page
+        });
+        setShowEmptySearchMessage(true);
+      }
     } catch (error) {
       showToast(ToastType.ERROR, error);
     }
@@ -145,6 +161,13 @@ const Home: BlitzPage = () => {
               justifyContent='center'
               style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
               <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
+                <Grid item xs={12} className='height50px'>
+                  <Collapse in={showEmptySearchMessage}>
+                    <Alert severity='info' onClose={() => setShowEmptySearchMessage(false)}>
+                      No results were found, showing some nice suggestions!
+                    </Alert>
+                  </Collapse>
+                </Grid>
                 <Grid item xs={11}>
                   <TextField
                     margin='normal'

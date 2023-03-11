@@ -1,3 +1,3 @@
-const calculateMarginTop = () => `${window.innerHeight / 3 - 160}px`;
+const calculateMarginTop = () => `${window.innerHeight / 3 - 210}px`;
 
 export { calculateMarginTop };

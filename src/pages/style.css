@@ -46,8 +46,12 @@ img.logo {
   height: 100%;
 }
 
-.height100px {
+.height50px {
   height: 100px;
+}
+
+.height50px {
+  height: 50px;
 }
 
 .width100pc {
