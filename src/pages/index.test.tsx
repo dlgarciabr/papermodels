@@ -22,7 +22,7 @@ describe('Index page tests', () => {
     // act
     render(<Home />);
 
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const submitButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     // assert
@@ -62,7 +62,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     await userEvent.type(searchInput, textToSearch);
@@ -105,7 +105,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
 
     await userEvent.type(searchInput, textToSearch);
     await userEvent.type(searchInput, '{enter}');
@@ -121,7 +121,7 @@ describe('Index page tests', () => {
     });
 
     render(<Home />);
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     await userEvent.type(searchInput, 'test');
 
     // act
@@ -158,7 +158,7 @@ describe('Index page tests', () => {
 
   test.todo('User search for a specific model and navigate through pages');
 
-  test('Google recaptcha is not available', async () => {
+  test('Show error toast if Google recaptcha is not available', async () => {
     // arrange
     const textToSearch = 'Train';
 
@@ -181,7 +181,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     await userEvent.type(searchInput, textToSearch);
