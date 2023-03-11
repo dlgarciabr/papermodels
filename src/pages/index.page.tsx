@@ -62,6 +62,7 @@ const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
   const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(false);
+  const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
   const search = useSearch();
   const getSugestions = useGetSugestions();
 
@@ -106,8 +107,10 @@ const Home: BlitzPage = () => {
 
   const handleSearch = async (expression: string, page: number) => {
     if (expression.trim() === '') {
+      setEmptySearchAtempt(true);
       return;
     }
+    setEmptySearchAtempt(false);
     setShowEmptySearchMessage(false);
     try {
       const { items, count } = await search(expression, page - 1);
@@ -160,7 +163,7 @@ const Home: BlitzPage = () => {
               container
               justifyContent='center'
               style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
-              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
+              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='flex-start' spacing='3'>
                 <Grid item xs={12} className='height50px'>
                   <Collapse in={showEmptySearchMessage}>
                     <Alert severity='info' onClose={() => setShowEmptySearchMessage(false)}>
@@ -170,10 +173,13 @@ const Home: BlitzPage = () => {
                 </Grid>
                 <Grid item xs={11}>
                   <TextField
-                    margin='normal'
+                    margin='dense'
                     fullWidth
+                    error={isEmptySearchAtempt}
+                    helperText={isEmptySearchAtempt ? 'Type something before search, like aircraft...' : ''}
                     label='Search for a model'
                     name='searchModel'
+                    className='search-input'
                     autoFocus
                     hidden={true}
                     value={data.expression}
