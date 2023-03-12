@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import { render, screen } from 'test/utils';
 import { showToast } from '.';
 import { ToastType } from './types.d';

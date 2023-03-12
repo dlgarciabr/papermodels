@@ -21,7 +21,7 @@ import {
 } from 'test/utils';
 import ItemsPage from './index.page';
 import NewItemPage from './new.page';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import EditItemPage from './[itemId]/edit.page';
 import * as globalUtils from 'src/utils/global';
 import * as fileStorage from 'src/utils/fileStorage';
@@ -482,11 +482,11 @@ describe('Item changing', () => {
       files: [
         {
           storagePath: 'vet-clinic.jpg',
-          artifactType: 'scheme'
+          artifactType: FileType.scheme
         },
         {
           storagePath: 'jetplane.jpg',
-          artifactType: 'scheme'
+          artifactType: FileType.preview
         }
       ],
       dificulty: 1,
@@ -526,7 +526,7 @@ describe('Item changing', () => {
       files: [
         {
           storagePath: 'vet-clinic.jpg',
-          artifactType: 'SCHEME',
+          artifactType: FileType.scheme,
           url: 'http://127.0.0.1/file.png'
         }
       ],

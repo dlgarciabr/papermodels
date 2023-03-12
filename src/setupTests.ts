@@ -85,7 +85,8 @@ const mockDefaultFileStorage = () => {
     getFilePath: vi.fn().mockResolvedValue('http://localhost:3000/testUrl'),
     saveFile: vi.fn().mockImplementation(() => Promise.resolve()),
     getFileUrl: vi.fn().mockImplementation(() => ''),
-    getThumbnailUrl: vi.fn().mockImplementation(() => '')
+    getThumbnailUrl: vi.fn().mockImplementation(() => ''),
+    getPdfThumbnailUrl: vi.fn().mockImplementation(() => '')
   }));
 };
 

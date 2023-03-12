@@ -9,7 +9,7 @@ import Layout from 'src/core/layouts/Layout';
 import getItem from 'src/items/queries/getItem';
 import updateItem from 'src/items/mutations/updateItem';
 import { ItemForm, FORM_ERROR } from 'src/items/components/ItemForm';
-import { ARIA_ROLE } from 'test/ariaRoles'; // TODO remove from tests if this will be used outside test
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import { downloadFile, getSimpleRandomKey } from 'src/utils/global';
 import Dropzone from 'src/core/components/Dropzone';
 import { uploadFiles, saveItemFiles } from '../utils';

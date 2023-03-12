@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import { render, screen, setupUseInvokeOnce } from 'test/utils';
 import { vi } from 'vitest';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
@@ -22,7 +22,7 @@ describe('Index page tests', () => {
     // act
     render(<Home />);
 
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const submitButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     // assert
@@ -40,7 +40,16 @@ describe('Index page tests', () => {
         {
           id: 1,
           name: 'Train',
-          files: []
+          files: [
+            {
+              storagePath: 'vet-clinic.jpg',
+              artifactType: 'scheme'
+            },
+            {
+              storagePath: 'jetplane.jpg',
+              artifactType: 'scheme'
+            }
+          ]
         }
       ],
       hasMore: true
@@ -53,7 +62,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     await userEvent.type(searchInput, textToSearch);
@@ -73,7 +82,17 @@ describe('Index page tests', () => {
         {
           id: 1,
           name: 'Train',
-          files: []
+          files: [
+            {
+              storagePath: 'vet-clinic.jpg',
+              artifactType: 'scheme',
+              mainPreview: true
+            },
+            {
+              storagePath: 'jetplane.jpg',
+              artifactType: 'scheme'
+            }
+          ]
         }
       ],
       hasMore: true
@@ -86,7 +105,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
 
     await userEvent.type(searchInput, textToSearch);
     await userEvent.type(searchInput, '{enter}');
@@ -102,7 +121,7 @@ describe('Index page tests', () => {
     });
 
     render(<Home />);
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     await userEvent.type(searchInput, 'test');
 
     // act
@@ -139,7 +158,7 @@ describe('Index page tests', () => {
 
   test.todo('User search for a specific model and navigate through pages');
 
-  test('Google recaptcha is not available', async () => {
+  test('Show error toast if Google recaptcha is not available', async () => {
     // arrange
     const textToSearch = 'Train';
 
@@ -162,7 +181,7 @@ describe('Index page tests', () => {
     render(<Home />);
 
     // act
-    const searchInput = screen.getByLabelText('Search on Papermodels');
+    const searchInput = screen.getByLabelText('Search for a model');
     const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
 
     await userEvent.type(searchInput, textToSearch);
