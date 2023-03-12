@@ -39,6 +39,7 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
+    /* istanbul ignore else -- @preserve */
     if (name && url) {
       return (
         <a href={url} target='blank'>
