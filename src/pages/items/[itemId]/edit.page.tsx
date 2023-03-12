@@ -105,14 +105,13 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
-      //TODO replace by a modal
-      alert('Choose a type for each file to be uploaded or remove the file from list');
+      showToast(ToastType.WARNING, 'Choose a type for each file(s)!');
       return;
     }
     try {
       const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
-      showToast(ToastType.SUCCESS, 'files added to item');
+      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
