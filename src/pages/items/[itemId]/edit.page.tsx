@@ -105,14 +105,13 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
-      //TODO replace by a modal
-      alert('Chose a type for each file to be uploaded or remove the file from list');
+      showToast(ToastType.WARNING, 'Choose a type for each file(s)!');
       return;
     }
     try {
       const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
-      showToast(ToastType.SUCCESS, 'files added to item');
+      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
@@ -124,7 +123,7 @@ export const EditItem = () => {
   };
 
   const handleDeleteFile = async (file: ItemFile & { url: string; item: Item }) => {
-    if (confirm(`are you sure to remove the file ${file.storagePath}`)) {
+    if (confirm(`Are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
       await queryResult.refetch();
@@ -188,7 +187,8 @@ export const EditItem = () => {
           onSubmit={async (values) => {
             try {
               const updated = await updateItemMutation({
-                ...values
+                ...values,
+                files: item.files
               });
               showToast(ToastType.SUCCESS, 'Item successfully updated!');
               await queryResult.setQueryData(updated as ItemWithChildren);
