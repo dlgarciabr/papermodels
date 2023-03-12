@@ -1,5 +1,4 @@
 /* istanbul ignore file -- @preserve */
-// TODO test coverage to be implemented (https://github.com/dlgarciabr/papermodels/issues/27)
 /**
  * @deprecated
  * Must be used new provider from cloudinary

@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { useCalculateMarginTop } from './hooks';
 
 export const Loading = () => {
-  const calculateMarginTop = useCalculateMarginTop();
+  const { calculateMarginTop } = useCalculateMarginTop();
 
   return (
     <Grid container justifyContent='center'>

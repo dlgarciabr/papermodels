@@ -15,7 +15,7 @@ import {
 } from 'test/utils';
 import CategoriesPage from './index.page';
 import NewCategoryPage from './new.page';
-import { ARIA_ROLE } from 'test/ariaRoles';
+import { ARIA_ROLE } from 'src/utils/ariaRoles';
 import EditCategoryPage from './[categoryId]/edit.page';
 
 // global arrange

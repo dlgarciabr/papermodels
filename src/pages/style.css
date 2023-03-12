@@ -21,6 +21,7 @@ img.logo {
 
 .MuiCard-root.search-card > .MuiCardMedia-root {
   height: 200px;
+  background-size: initial;
 }
 
 .MuiCardContent-root {
@@ -29,7 +30,7 @@ img.logo {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .MuiPaper-root.item-download {
@@ -46,8 +47,12 @@ img.logo {
   height: 100%;
 }
 
-.height100px {
+.height50px {
   height: 100px;
+}
+
+.height50px {
+  height: 50px;
 }
 
 .width100pc {
@@ -95,7 +100,7 @@ table.content-info tr td {
 
 button.search-button {
   height: 54px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .justify-content-center {

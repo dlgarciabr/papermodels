@@ -12,8 +12,9 @@ import {
   CardMedia,
   CardContent,
   Typography,
-  Button,
-  Pagination
+  Pagination,
+  Alert,
+  Collapse
 } from '@mui/material';
 import { MdClose, MdSearch } from 'react-icons/md';
 import { useContext, useEffect, useMemo, useState } from 'react';
@@ -24,22 +25,31 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
 import dog from 'public/images/dog.png';
-import { useSearch } from './index.hooks';
+import { useGetSugestions, useSearch } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { LoadingButton } from '@mui/lab';
+import { FileType } from '@prisma/client';
+import { getPdfThumbnailUrl } from 'src/utils/fileStorage';
 
 const theme = createTheme();
 
 const ItemCard = ({ item }: { item: ItemWithChildren }) => {
   let mainImage = dog.src;
   if (item.files.length > 0) {
-    const mainPreviewImage = item.files.find((file) => file.mainPreview);
-    if (mainPreviewImage) {
-      mainImage = mainPreviewImage.storagePath;
+    const hasPreviewImage = item.files.some((file) => file.artifactType === FileType.preview);
+    if (hasPreviewImage) {
+      const mainPreviewImage = item.files.find((file) => file.mainPreview);
+      if (mainPreviewImage) {
+        mainImage = mainPreviewImage.storagePath;
+      } else {
+        mainImage = item.files[0]!.storagePath;
+      }
     } else {
-      mainImage = item.files[0]!.storagePath;
+      const schemeUrl = item.files.filter((file) => file.artifactType === FileType.scheme)[0]?.storagePath!;
+      mainImage = getPdfThumbnailUrl(schemeUrl);
     }
   }
   return (
@@ -59,7 +69,11 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
 const Home: BlitzPage = () => {
   const router = useContext(RouterContext);
   const [marginTopProp, setMarginTopProp] = useState<{ marginTop?: string }>({});
+  const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(false);
+  const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
   const search = useSearch();
+  const getSugestions = useGetSugestions();
 
   const initialData = {
     expression: '',
@@ -102,8 +116,12 @@ const Home: BlitzPage = () => {
 
   const handleSearch = async (expression: string, page: number) => {
     if (expression.trim() === '') {
+      setEmptySearchAtempt(true);
       return;
     }
+    setLoading(true);
+    setEmptySearchAtempt(false);
+    setShowEmptySearchMessage(false);
     try {
       const { items, count } = await search(expression, page - 1);
       setData({
@@ -112,8 +130,21 @@ const Home: BlitzPage = () => {
         expression,
         currentPage: page
       });
+
+      if (items.length === 0) {
+        const { items, count } = await getSugestions();
+        setData({
+          items,
+          pages: Math.ceil(count / 9),
+          expression,
+          currentPage: page
+        });
+        setShowEmptySearchMessage(true);
+      }
     } catch (error) {
       showToast(ToastType.ERROR, error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,13 +175,23 @@ const Home: BlitzPage = () => {
               container
               justifyContent='center'
               style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
-              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='center' spacing='3'>
+              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='flex-start' spacing='3'>
+                <Grid item xs={12} className='height50px'>
+                  <Collapse in={showEmptySearchMessage}>
+                    <Alert severity='info' onClose={() => setShowEmptySearchMessage(false)}>
+                      No results were found, showing some nice suggestions!
+                    </Alert>
+                  </Collapse>
+                </Grid>
                 <Grid item xs={11}>
                   <TextField
-                    margin='normal'
+                    margin='dense'
                     fullWidth
-                    label='Search on Papermodels'
+                    error={isEmptySearchAtempt}
+                    helperText={isEmptySearchAtempt ? 'Type something before search, like aircraft...' : ''}
+                    label='Search for a model'
                     name='searchModel'
+                    className='search-input'
                     autoFocus
                     hidden={true}
                     value={data.expression}
@@ -173,20 +214,26 @@ const Home: BlitzPage = () => {
                   />
                 </Grid>
                 <Grid item xs={1}>
-                  <Button
+                  <LoadingButton
+                    loading={isLoading}
                     className='search-button'
                     onClick={() => handleSearch(data.expression, 1)}
                     variant='contained'
                     size='large'>
                     <MdSearch title='Search for a model' size='22' />
-                  </Button>
+                  </LoadingButton>
                 </Grid>
               </Grid>
             </Grid>
             <Grid item container justifyContent='center' spacing={3}>
               {renderCards}
             </Grid>
-            <Grid item container justifyContent='center' spacing={3} className={data.pages === 0 ? 'hidden' : ''}>
+            <Grid
+              item
+              container
+              justifyContent='center'
+              spacing={3}
+              className={data.pages === 0 || showEmptySearchMessage ? 'hidden' : ''}>
               <Grid item container xs={12} justifyContent='center'>
                 <Pagination
                   count={data.pages}

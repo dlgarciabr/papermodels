@@ -25,3 +25,5 @@ export const getThumbnailUrl = (path: string) => storageProvider.getThumbnailUrl
 export const saveFile = (file: UploadItemFile) => storageProvider.saveFile(file, `${ARTIFACTS_PATH}/${file.item.id}`);
 
 export const deleteFile = async (path: string) => storageProvider.deleteFile(path);
+
+export const getPdfThumbnailUrl = (path: string) => storageProvider.getPdfThumbnailUrl(path);

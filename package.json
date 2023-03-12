@@ -33,6 +33,7 @@
     "@emotion/styled": "11.10.5",
     "@fontsource/roboto": "4.5.8",
     "@jorgeferrero/stream-to-buffer": "2.0.6",
+    "@mui/lab": "5.0.0-alpha.122",
     "@mui/material": "5.11.5",
     "@mui/x-data-grid": "5.17.22",
     "@prisma/client": "4.6.0",

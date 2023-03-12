@@ -24,18 +24,22 @@ import Image from 'next/image';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { invoke } from '@blitzjs/rpc';
 
-import { IImageData, IThumbnailsData } from './types';
-import { getFileUrl, getThumbnailUrl } from 'src/utils/fileStorage';
+import { IImageData, IThumbnail, IThumbnailsData } from './types';
+import { getFileUrl, getPdfThumbnailUrl, getThumbnailUrl } from 'src/utils/fileStorage';
 import Thumbnail from 'src/core/components/Thumbnail';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
-import { useDownloadFiles } from './items.hook';
+import { useDownloadFiles, useHasFileType } from './items.hook';
 import logo from 'public/images/logo.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
+import { LoadingButton } from '@mui/lab';
+import { showToast } from 'src/core/components/Toast';
+import { ToastType } from 'src/core/components/Toast/types.d';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
+    /* istanbul ignore else -- @preserve */
     if (name && url) {
       return (
         <a href={url} target='blank'>
@@ -108,10 +112,12 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
 
 export const Item = () => {
   const itemId = useParam('itemId', 'number');
-  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useContext(RouterContext);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [openDescriptionDialog, setOpenDescriptionDialog] = useState(false);
-  const [ItemWithChildren, setItemWithChildren] = useState<ItemWithChildren>();
+  const [item, setItem] = useState<ItemWithChildren>();
+  const hasFileType = useHasFileType();
+  const [isDownloadingFile, setDownloadingFile] = useState<boolean>(false);
 
   const [imageData, setImageData] = useState<IImageData>({
     loading: false
@@ -121,23 +127,34 @@ export const Item = () => {
     items: []
   });
 
-  const downloadFiles = useDownloadFiles(ItemWithChildren);
+  const downloadFiles = useDownloadFiles(item);
 
   const setupThumbnails = (item: ItemWithChildren) => {
-    const thumbnails = item.files
+    const thumbnails: IThumbnail[] = item.files
       .filter((file) => file.artifactType === FileType.preview)
       .map((file) => ({
+        type: FileType.preview,
         storagePath: file.storagePath
       }));
+    if (thumbnails.length === 0) {
+      const schemeFile = item.files.find((file) => file.artifactType === FileType.scheme);
+      thumbnails.push({
+        type: FileType.scheme,
+        storagePath: schemeFile?.storagePath!
+      });
+    }
     setThumbnailsData({
       loading: true,
       items: thumbnails
     });
   };
 
-  const loadMainImage = async (storagePath: string) => {
+  const loadMainImage = async (storagePath: string, type: FileType) => {
     setImageData({ loading: true });
-    const url = getFileUrl(storagePath);
+    let url = getFileUrl(storagePath);
+    if (type === FileType.scheme) {
+      url = getPdfThumbnailUrl(url);
+    }
     const response = await fetch(url, { method: 'GET' });
     const blob = await response.blob();
     const urlCreator = window.URL || window.webkitURL;
@@ -152,7 +169,7 @@ export const Item = () => {
   const renderDescriptionDialog = () => {
     return (
       <Dialog open={openDescriptionDialog}>
-        <DialogTitle>{ItemWithChildren?.name}</DialogTitle>
+        <DialogTitle>{item?.name}</DialogTitle>
         <DialogContent>
           <Box
             noValidate
@@ -163,7 +180,7 @@ export const Item = () => {
               m: 'auto',
               width: 'fit-content'
             }}>
-            <Typography>{ItemWithChildren?.description}</Typography>
+            <Typography>{item?.description}</Typography>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -175,30 +192,40 @@ export const Item = () => {
 
   /* istanbul ignore next -- @preserve */
   const loadMainImageFromThumbnail = async (thumbnailIndex: number) => {
-    const storagePathParts = thumbnailsData.items[thumbnailIndex]?.storagePath.split('.');
+    const thumbnail = thumbnailsData.items[thumbnailIndex]!;
+    const storagePathParts = thumbnail.storagePath.split('.');
     const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
     const extension = storagePathParts![1];
     const imageStoragePath = `${imageName}.${extension}`;
     if (imageData.name === imageStoragePath) {
       return;
     }
-    await loadMainImage(imageStoragePath);
+    await loadMainImage(imageStoragePath, thumbnail.type);
   };
 
   useEffect(() => {
     if (executeRecaptcha) {
       void (async () => {
-        const gRecaptchaToken = await executeRecaptcha('viewItem');
-        const item = await invoke(getItemAnonymous, {
-          gRecaptchaToken,
-          id: itemId
-        });
-        setItemWithChildren(item as ItemWithChildren);
-        setupThumbnails(item as ItemWithChildren);
-        const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-        if (!imageData.url && previewFiles.length >= 1) {
-          const file = previewFiles[0];
-          await loadMainImage(file!.storagePath);
+        try {
+          const gRecaptchaToken = await executeRecaptcha('viewItem');
+          const item = await invoke(getItemAnonymous, {
+            gRecaptchaToken,
+            id: itemId
+          });
+          setItem(item as ItemWithChildren);
+          setupThumbnails(item as ItemWithChildren);
+          const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+          if (!imageData.url && previewFiles.length >= 1) {
+            const file = previewFiles[0];
+            await loadMainImage(file!.storagePath, FileType.preview);
+          } else {
+            const file = item.files.find((file) => file.artifactType === FileType.scheme);
+            await loadMainImage(getPdfThumbnailUrl(file!.storagePath), FileType.scheme);
+          }
+        } catch (error) {
+          console.error(error);
+          showToast(ToastType.ERROR, 'An error has ocurred, try again later.');
+          void router.push(Routes.Home());
         }
       })();
     }
@@ -213,18 +240,27 @@ export const Item = () => {
   }, [thumbnailsData.items]);
 
   const loadThumbnailUrls = async () => {
-    for await (const item of thumbnailsData.items) {
-      const url = getThumbnailUrl(item.storagePath);
-      item.finalUrl = url;
+    thumbnailsData.items.forEach((thumbnail) => {
+      let url = getThumbnailUrl(thumbnail.storagePath);
+      if (thumbnail.type === FileType.scheme) {
+        url = getPdfThumbnailUrl(url);
+      }
+      thumbnail.finalUrl = url;
       setThumbnailsData({
         ...thumbnailsData,
         items: thumbnailsData.items
       });
-    }
+    });
     setThumbnailsData({
       ...thumbnailsData,
       loading: false
     });
+  };
+
+  const handleClickDownloadFile = async (artifactType: FileType) => {
+    setDownloadingFile(true);
+    await downloadFiles(artifactType);
+    setDownloadingFile(false);
   };
 
   const thumbnails = () =>
@@ -235,7 +271,7 @@ export const Item = () => {
         loading={!item.finalUrl}
         src={item.finalUrl}
         altText={item.storagePath}
-        onClick={loadMainImageFromThumbnail}
+        onClick={(index) => (thumbnailsData.items.length > 1 ? loadMainImageFromThumbnail(index) : '')}
       />
     ));
 
@@ -243,7 +279,7 @@ export const Item = () => {
     <>
       {renderDescriptionDialog()}
       <Head>
-        <title>Papermodels - {ItemWithChildren?.name}</title>
+        <title>Papermodels - {item?.name}</title>
       </Head>
       <Container component='main'>
         <Grid container spacing={2} justifyContent='center'>
@@ -277,14 +313,16 @@ export const Item = () => {
           <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
             <Grid item xs={12}>
               <Typography variant='h6' component='div'>
-                {ItemWithChildren?.name}
+                {item?.name}
               </Typography>
-              {ItemWithChildren?.description && (
+              {item?.description && (
                 <Typography variant='subtitle1'>
-                  {shortenTextWithEllipsis(ItemWithChildren?.description, 200)}
-                  <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
-                    see more
-                  </a>
+                  {shortenTextWithEllipsis(item?.description, 200)}{' '}
+                  {item?.description.length >= 200 && (
+                    <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
+                      see more
+                    </a>
+                  )}
                 </Typography>
               )}
             </Grid>
@@ -292,26 +330,26 @@ export const Item = () => {
               <Paper className='item-download' elevation={0}>
                 <Grid container spacing={2} justifyContent='center'>
                   <Grid item xs={10}>
-                    <Button
+                    <LoadingButton
+                      loading={isDownloadingFile}
                       variant='contained'
                       fullWidth
                       startIcon={<MdDownload />}
-                      onClick={() => {
-                        downloadFiles(FileType.scheme);
-                      }}>
+                      disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
+                      onClick={() => void handleClickDownloadFile(FileType.scheme)}>
                       Download schemes
-                    </Button>
+                    </LoadingButton>
                   </Grid>
                   <Grid item xs={10}>
-                    <Button
+                    <LoadingButton
+                      loading={isDownloadingFile}
                       variant='contained'
                       fullWidth
                       startIcon={<MdDownload />}
-                      onClick={() => {
-                        downloadFiles(FileType.instruction);
-                      }}>
+                      disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
+                      onClick={() => void handleClickDownloadFile(FileType.instruction)}>
                       Download instrunctions
-                    </Button>
+                    </LoadingButton>
                   </Grid>
                   {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
@@ -322,7 +360,7 @@ export const Item = () => {
               </Paper>
             </Grid>
             <Grid item container xs={12}>
-              {ItemWithChildren && <DetailsTable item={ItemWithChildren} />}
+              {item && <DetailsTable item={item} />}
             </Grid>
           </Grid>
           {/* </Grid> */}

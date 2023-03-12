@@ -20,6 +20,7 @@ export function ItemForm<S extends z.ZodType<any, any>>(props: FormProps<S> & { 
         maxLength={1000}
         rows={6}
         fullWidth
+        counter
       />
       <LabeledTextField
         name='assemblyTime'

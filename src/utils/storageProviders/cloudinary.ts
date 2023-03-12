@@ -64,11 +64,16 @@ export const deleteFile = async (path: string) => {
   throw new Error('parameter contains no path');
 };
 
+export const getPdfThumbnailUrl = (path: string) => {
+  return `${path.split('?')[0]}.png`.replace('v1', 't_papermodel_pdf_thumbnail/v1').replace('.pdf', '');
+};
+
 const cloudinary = {
   getFileUrl,
   getThumbnailUrl,
   saveFile,
-  deleteFile
+  deleteFile,
+  getPdfThumbnailUrl
 };
 
 export default cloudinary;

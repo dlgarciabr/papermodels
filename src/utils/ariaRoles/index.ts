@@ -1,6 +1,6 @@
-import { WIDGET } from "./widget";
-import { LANDMARK } from "./landmark";
-import { STRUCTURE } from "./structure";
+import { WIDGET } from './widget';
+import { LANDMARK } from './landmark';
+import { STRUCTURE } from './structure';
 
 /**
  * Extracted from [a11y-types](https://github.com/natemoo-re/a11y-types),
@@ -21,5 +21,5 @@ export const ARIA_ROLE = {
    *
    * Document structures are not usually interactive.
    */
-  STRUCTURE,
+  STRUCTURE
 };
