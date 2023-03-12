@@ -45,7 +45,7 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
       if (mainPreviewImage) {
         mainImage = mainPreviewImage.storagePath;
       } else {
-        mainImage = item.files[0]!.storagePath;
+        mainImage = item.files.filter((file) => file.artifactType === FileType.preview)[0]!.storagePath;
       }
     } else {
       const schemeUrl = item.files.filter((file) => file.artifactType === FileType.scheme)[0]?.storagePath!;
