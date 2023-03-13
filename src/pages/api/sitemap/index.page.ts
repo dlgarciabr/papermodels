@@ -1,8 +1,6 @@
 import db, { ItemStatus } from 'db';
 import { getServerSideSitemap } from 'next-sitemap';
 import { api } from 'src/blitz-server';
-import path from 'path';
-import fs from 'fs';
 
 export default api(async (_req, res, _ctx) => {
   console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process started.`);
@@ -20,12 +18,12 @@ export default api(async (_req, res, _ctx) => {
     lastmod: new Date().toISOString()
   });
   const siteMapResponse = await getServerSideSitemap(urls);
-  const buffer = await (await siteMapResponse.blob()).arrayBuffer();
-  const filePath = `${path.resolve('./public')}/sitemap.xml`;
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
-  }
-  fs.appendFileSync(filePath, Buffer.from(buffer));
-  console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished.`);
-  res.status(200).end();
+  // const buffer = await (await siteMapResponse.blob()).arrayBuffer();
+  // const filePath = `${path.resolve('./public')}/sitemap.xml`;
+  // if (fs.existsSync(filePath)) {
+  // fs.unlinkSync(filePath);
+  // }
+  // fs.appendFileSync(filePath, Buffer.from(buffer));
+  // console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished.`);
+  res.status(siteMapResponse.status).send(siteMapResponse.body);
 });
