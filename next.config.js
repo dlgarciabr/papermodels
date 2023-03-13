@@ -8,15 +8,15 @@ const config = {
   pageExtensions: ['page.tsx', 'page.ts'],
   images: {
     domains: ['firebasestorage.googleapis.com']
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/sitemap.xml',
+        destination: '/api/sitemap'
+      }
+    ];
   }
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/sitemap.xml',
-  //       destination: '/api/sitemap'
-  //     }
-  //   ];
-  // }
 };
 
 module.exports = withBlitz(config);
