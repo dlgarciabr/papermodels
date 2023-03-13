@@ -193,6 +193,7 @@ export const EditItem = () => {
               showToast(ToastType.SUCCESS, 'Item successfully updated!');
               await queryResult.setQueryData(updated as ItemWithChildren);
               await router.push(Routes.ItemsPage());
+              void fetch(`${location.origin}/api/sitemap-gen`);
             } catch (error: any) {
               console.error(error);
               return {
