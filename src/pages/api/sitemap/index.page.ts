@@ -25,5 +25,5 @@ export default api(async (_req, res, _ctx) => {
   // }
   // fs.appendFileSync(filePath, Buffer.from(buffer));
   // console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished.`);
-  res.status(siteMapResponse.status).send(siteMapResponse.body);
+  res.setHeader('Content-Type', 'text/xml').status(siteMapResponse.status).send(siteMapResponse.body);
 });
