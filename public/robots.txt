@@ -6,4 +6,4 @@ Allow: /
 Host: https://papermodels.vercel.app/
 
 # Sitemaps
-Sitemap: https://papermodels.vercel.app/sitemap
+Sitemap: https://papermodels.vercel.app/sitemap.xml
