@@ -21,6 +21,9 @@ export default api(async (_req, res, _ctx) => {
       lastmod: now
     });
     const siteMapResponse = await getServerSideSitemap(urls);
+    console.log('###################################################################');
+    console.log(siteMapResponse.body);
+    console.log('###################################################################');
     console.log(`[SitemapGenerator] ${now} - Sitemap generation process finished.`);
     res
       .setHeader('Content-Type', 'text/xml')
