@@ -21,16 +21,16 @@ export default api(async (_req, res, _ctx) => {
       lastmod: now
     });
     const siteMapResponse = await getServerSideSitemap(urls);
-    console.log('###################################################################');
-    const t = await siteMapResponse.text();
-    console.log(t);
-    console.log('###################################################################');
+    // console.log('###################################################################');
+    const text = await siteMapResponse.text();
+    // console.log(t);
+    // console.log('###################################################################');
     console.log(`[SitemapGenerator] ${now} - Sitemap generation process finished.`);
     res
       .setHeader('Content-Type', 'text/xml')
       .setHeader('Cache-control', 'stale-while-revalidate, s-maxage=3600')
       .status(siteMapResponse.status)
-      .send(siteMapResponse.body);
+      .send(text);
   } catch (error) {
     console.log(`[SitemapGenerator] ${now} - Sitemap generation process finished with error.`);
     res.status(500).send({ ...error });
