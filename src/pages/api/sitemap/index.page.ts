@@ -26,7 +26,7 @@ export default api(async (_req, res, _ctx) => {
       .setHeader('Content-Type', 'text/xml')
       .setHeader('Cache-control', 'stale-while-revalidate, s-maxage=3600')
       .status(siteMapResponse.status)
-      .end(siteMapResponse.body);
+      .send(siteMapResponse.body);
   } catch (error) {
     console.log(`[SitemapGenerator] ${now} - Sitemap generation process finished with error.`);
     res.status(500).send({ ...error });
