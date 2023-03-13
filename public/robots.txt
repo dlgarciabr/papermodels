@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://papermodels.vercel.app/
+
+# Sitemaps
+Sitemap: https://papermodels.vercel.app/sitemap.xml
