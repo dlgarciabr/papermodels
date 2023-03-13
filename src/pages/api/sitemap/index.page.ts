@@ -22,7 +22,8 @@ export default api(async (_req, res, _ctx) => {
     });
     const siteMapResponse = await getServerSideSitemap(urls);
     console.log('###################################################################');
-    console.log(siteMapResponse.body);
+    const t = await siteMapResponse.text();
+    console.log(t);
     console.log('###################################################################');
     console.log(`[SitemapGenerator] ${now} - Sitemap generation process finished.`);
     res
