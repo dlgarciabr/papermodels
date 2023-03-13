@@ -4,26 +4,25 @@ import { api } from 'src/blitz-server';
 
 export default api(async (_req, res, _ctx) => {
   console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process started.`);
-  const enabledItems = await db.item.findMany({
-    where: {
-      status: ItemStatus.enable
-    }
-  });
-  const urls = enabledItems.map((item) => ({
-    loc: `${process.env.SITE_URL}/items/${item.id}`,
-    lastmod: new Date().toISOString()
-  }));
-  urls.splice(0, 0, {
-    loc: `${process.env.SITE_URL}`,
-    lastmod: new Date().toISOString()
-  });
-  const siteMapResponse = await getServerSideSitemap(urls);
-  // const buffer = await (await siteMapResponse.blob()).arrayBuffer();
-  // const filePath = `${path.resolve('./public')}/sitemap.xml`;
-  // if (fs.existsSync(filePath)) {
-  // fs.unlinkSync(filePath);
-  // }
-  // fs.appendFileSync(filePath, Buffer.from(buffer));
-  // console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished.`);
-  res.setHeader('Content-Type', 'text/xml').status(siteMapResponse.status).send(siteMapResponse.body);
+  try {
+    const enabledItems = await db.item.findMany({
+      where: {
+        status: ItemStatus.enable
+      }
+    });
+    const urls = enabledItems.map((item) => ({
+      loc: `${process.env.SITE_URL}/items/${item.id}`,
+      lastmod: new Date().toISOString()
+    }));
+    urls.splice(0, 0, {
+      loc: `${process.env.SITE_URL}`,
+      lastmod: new Date().toISOString()
+    });
+    const siteMapResponse = await getServerSideSitemap(urls);
+    console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished.`);
+    res.setHeader('Content-Type', 'text/xml').status(siteMapResponse.status).send(siteMapResponse.body);
+  } catch (error) {
+    console.log(`[SitemapGenerator] ${new Date().toISOString()} - Sitemap generation process finished with error.`);
+    res.status(500).send({ ...error });
+  }
 });
