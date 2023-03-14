@@ -19,10 +19,10 @@ const ignoredConsoleErrors = [
 
 const originalError = global.console.error;
 
-beforeAll(() => {
+beforeAll(async () => {
   mockDefaultGlobal();
   mockDefaultWindow();
-  mockDefaultBlitzRPC();
+  await mockDefaultBlitzRPC();
   mockDefaultFileStorage();
   mockDefaultAllQueries();
   mockDefaultUtilGlobal();
@@ -63,7 +63,7 @@ const hideTestErrorsFromConsole = () => {
   });
 };
 
-const mockDefaultBlitzRPC = () => {
+const mockDefaultBlitzRPC = async () => {
   vi.mock('@blitzjs/rpc', () => ({
     useMutation: vi.fn(),
     usePaginatedQuery: vi.fn(),
