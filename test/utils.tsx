@@ -191,6 +191,23 @@ export const setupUseInvokeOnce = (params: ISetupUseInvoke) => {
   );
 };
 
+// export const setupUseInvokeStack = (params: ISetupUseInvoke[]) => {
+//   let paramsStack = [...params];
+//   const mockInvokeOnce = (returnInvoke) => {
+//     vi.mocked(invoke).mockImplementationOnce(() => {
+//       paramsStack.pop();
+//       if (paramsStack) {
+//         mockInvokeOnce(paramsStack[0]);
+//       }
+//       return {
+//         [paramsStack[0].collectionName]: paramsStack[0].items,
+//         hasMore: paramsStack[0].hasMore
+//       };
+//     });
+//   }
+//   mockInvokeOnce(paramsStack[0]);
+// };
+
 export const setupUseInvokeImplementation = <T,>(implementation: (queryFn: T) => any[]) => {
   vi.mocked(invoke).mockImplementation(implementation as any);
 };

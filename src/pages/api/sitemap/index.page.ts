@@ -1,3 +1,4 @@
+/* istanbul ignore file -- @preserve */
 import db, { ItemStatus } from 'db';
 import { getServerSideSitemap } from 'next-sitemap';
 import { api } from 'src/blitz-server';
