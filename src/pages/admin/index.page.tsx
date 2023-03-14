@@ -25,8 +25,6 @@ const UserInfo = () => {
   /* istanbul ignore next -- @preserve */
   const handleLogout = async () => await logoutMutation();
 
-  // TODO implement tests to cover all branches
-  /* istanbul ignore else -- @preserve */
   if (currentUser) {
     return (
       <>
