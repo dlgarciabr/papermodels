@@ -1,4 +1,4 @@
-import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { Alert, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { FileType } from 'db';
 import { memo, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -32,7 +32,7 @@ export const Dropzone = (props: DropzoneProps) => {
       props.onDropedFilesChange(newFileList);
     }
     if (props.onDrop) {
-      props.onDrop(filesToAdd);
+      props.onDrop(filesToAdd as unknown as File[], [], {} as any);
     }
   };
 
@@ -90,18 +90,14 @@ export const Dropzone = (props: DropzoneProps) => {
 
   const renderRejections = () => {
     if (fileRejections.length > 0) {
-      return fileRejections.map((rejection) => {
-        return (
-          <>
-            <p key={rejection.file.name}>{rejection.file.name}</p>
-            <ul>
-              {rejection.errors.map((error) => (
-                <li key={error.code}>{error.message}</li>
-              ))}
-            </ul>
-          </>
-        );
-      });
+      return fileRejections.map((rejection) => (
+        <Alert key={getSimpleRandomKey()} severity='warning'>
+          Problem(s) found with file <b>{rejection.file.name}</b>
+          {rejection.errors.map((error) => (
+            <li key={error.code}>{error.message}</li>
+          ))}
+        </Alert>
+      ));
     }
   };
 

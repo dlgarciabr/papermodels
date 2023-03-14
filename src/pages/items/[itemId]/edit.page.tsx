@@ -25,6 +25,7 @@ import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
 import { ItemWithChildren } from 'types';
 import { Checkbox } from '@mui/material';
+import { DropzoneProps } from 'src/core/components/Dropzone/types';
 
 const Files = (props: {
   files: ItemFile[];
@@ -80,6 +81,7 @@ export const EditItem = () => {
   const [isSaving, setSaving] = useState(false);
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [item, queryResult] = useQuery(
     getItem,
     { id: itemId },
@@ -105,9 +107,10 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
-      showToast(ToastType.WARNING, 'Choose a type for each file(s)!');
+      showToast(ToastType.WARNING, 'Choose a type for each file!');
       return;
     }
+    setLoading(true);
     try {
       const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
@@ -115,10 +118,11 @@ export const EditItem = () => {
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
-      setSaving(false);
     } catch (error) {
       showToast(ToastType.ERROR, error);
+    } finally {
       setSaving(false);
+      setLoading(false);
     }
   };
 
@@ -148,8 +152,9 @@ export const EditItem = () => {
     setFilesKey(getSimpleRandomKey());
   };
 
-  const dropzoneOptions = {
+  const dropzoneOptions: DropzoneProps = {
     maxFiles: 5,
+    maxSize: 3145728,
     accept: {
       'image/png': ['.png'],
       'image/jpeg': ['.jpeg', '.jpg'],
@@ -167,60 +172,64 @@ export const EditItem = () => {
         <title>Edit Item {item.id}</title>
       </Head>
 
-      <div>
-        <h1>Edit Item {item.name}</h1>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <div>
+          <h1>Edit Item {item.name}</h1>
 
-        <ItemForm
-          submitText='Update Item'
-          schema={UpdateItemValidation}
-          initialValues={{
-            ...item,
-            categoryId: item.categoryId.toString(),
-            dificulty: item.dificulty || undefined,
-            assemblyTime: item.assemblyTime ? parseFloat(item.assemblyTime.toString()) : undefined,
-            author: item.author || '',
-            authorLink: item.authorLink || '',
-            licenseType: item.licenseType || '',
-            licenseTypeLink: item.licenseTypeLink || ''
-          }}
-          categories={categoryResult.categories}
-          onSubmit={async (values) => {
-            try {
-              const updated = await updateItemMutation({
-                ...values,
-                files: item.files
-              });
-              showToast(ToastType.SUCCESS, 'Item successfully updated!');
-              await queryResult.setQueryData(updated as ItemWithChildren);
-              await router.push(Routes.ItemsPage());
-              void fetch(`${location.origin}/api/sitemap-gen`);
-            } catch (error: any) {
-              console.error(error);
-              return {
-                [FORM_ERROR]: error.toString()
-              };
-            }
-          }}
-        />
-        <Files
-          files={item.files}
-          onClickDelete={handleDeleteFile}
-          onClickMain={handleClickMainPreview}
-          key={filesKey}
-        />
-        <Dropzone key={dropzoneKey} {...dropzoneOptions} />
-        {filesToUpload.length > 0 ? (
-          <p
-            style={{
-              color: 'red'
-            }}>{`The selected files were not saved yet, to confirm press the button "Save files" below`}</p>
-        ) : (
-          ''
-        )}
-        <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
-          Save files
-        </button>
-      </div>
+          <ItemForm
+            submitText='Update Item'
+            schema={UpdateItemValidation}
+            initialValues={{
+              ...item,
+              categoryId: item.categoryId.toString(),
+              dificulty: item.dificulty || undefined,
+              assemblyTime: item.assemblyTime ? parseFloat(item.assemblyTime.toString()) : undefined,
+              author: item.author || '',
+              authorLink: item.authorLink || '',
+              licenseType: item.licenseType || '',
+              licenseTypeLink: item.licenseTypeLink || ''
+            }}
+            categories={categoryResult.categories}
+            onSubmit={async (values) => {
+              try {
+                const updated = await updateItemMutation({
+                  ...values,
+                  files: item.files
+                });
+                showToast(ToastType.SUCCESS, 'Item successfully updated!');
+                await queryResult.setQueryData(updated as ItemWithChildren);
+                await router.push(Routes.ItemsPage());
+                void fetch(`${location.origin}/api/sitemap-gen`);
+              } catch (error: any) {
+                console.error(error);
+                return {
+                  [FORM_ERROR]: error.toString()
+                };
+              }
+            }}
+          />
+          <Files
+            files={item.files}
+            onClickDelete={handleDeleteFile}
+            onClickMain={handleClickMainPreview}
+            key={filesKey}
+          />
+          <Dropzone key={dropzoneKey} {...dropzoneOptions} />
+          {filesToUpload.length > 0 ? (
+            <p
+              style={{
+                color: 'red'
+              }}>{`The selected files were not saved yet, to confirm press the button "Save files" below`}</p>
+          ) : (
+            ''
+          )}
+          <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
+            Save files
+          </button>
+        </div>
+      )}
     </>
   );
 };
