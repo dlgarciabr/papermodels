@@ -130,7 +130,6 @@ const Home: BlitzPage = () => {
         expression,
         currentPage: page
       });
-
       if (items.length === 0) {
         const { items, count } = await getSugestions();
         setData({

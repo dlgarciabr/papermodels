@@ -1,9 +1,10 @@
 import userEvent from '@testing-library/user-event';
 import { ARIA_ROLE } from 'src/utils/ariaRoles';
-import { render, screen, setupUseInvokeOnce } from 'test/utils';
+import { render, screen, setupUseInvokeImplementation, setupUseInvokeOnce } from 'test/utils';
 import { vi } from 'vitest';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
 import Home from './index.page';
+import { FileType } from '@prisma/client';
 
 describe('Index page tests', () => {
   test('Index page is rendered', () => {
@@ -43,11 +44,11 @@ describe('Index page tests', () => {
           files: [
             {
               storagePath: 'vet-clinic.jpg',
-              artifactType: 'scheme'
+              artifactType: FileType.scheme
             },
             {
               storagePath: 'jetplane.jpg',
-              artifactType: 'scheme'
+              artifactType: FileType.preview
             }
           ]
         }
@@ -85,12 +86,12 @@ describe('Index page tests', () => {
           files: [
             {
               storagePath: 'vet-clinic.jpg',
-              artifactType: 'scheme',
+              artifactType: FileType.preview,
               mainPreview: true
             },
             {
               storagePath: 'jetplane.jpg',
-              artifactType: 'scheme'
+              artifactType: FileType.scheme
             }
           ]
         }
@@ -114,6 +115,62 @@ describe('Index page tests', () => {
     expect(await screen.findByText(textToSearch)).toBeInTheDocument();
   });
 
+  test('User search for a model and see random results', async () => {
+    // arrange
+    const textToSearch = 'Train';
+
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
+        {
+          collectionName: 'items',
+          items: [],
+          hasMore: false
+        },
+        5,
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: true
+        }
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
+    });
+
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    render(<Home />);
+
+    // act
+    const searchInput = screen.getByLabelText('Search for a model');
+    const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
+
+    await userEvent.type(searchInput, textToSearch);
+    await userEvent.click(searchButton);
+
+    // assert
+    expect(await screen.findByText(textToSearch)).toBeInTheDocument();
+  });
+
   test('User cleans the search when the X icon button is clicked', async () => {
     // arrange
     vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
@@ -130,6 +187,23 @@ describe('Index page tests', () => {
 
     // assert
     expect((searchInput as HTMLInputElement).value).toBe('');
+  });
+
+  test('User tries to search with empty input field and see a warning message', async () => {
+    // arrange
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    render(<Home />);
+
+    // act
+    const searchInput = screen.getByLabelText('Search for a model');
+
+    await userEvent.type(searchInput, '{enter}');
+
+    // assert
+    expect(await screen.findByText('Type something before search, like aircraft...')).toBeInTheDocument();
   });
 
   test.todo('renders a SearchCard component for each item in the data.items array', () => {
