@@ -126,6 +126,10 @@ export const EditItem = () => {
     }
   };
 
+  const goToPreviewPage = (id: number) => {
+    window.open(`${location.origin}/items/${id}`, '_blank');
+  };
+
   const handleDeleteFile = async (file: ItemFile & { url: string; item: Item }) => {
     if (confirm(`Are you sure to remove the file ${file.storagePath}`)) {
       await deleteFile(file.storagePath);
@@ -177,7 +181,6 @@ export const EditItem = () => {
       ) : (
         <div>
           <h1>Edit Item {item.name}</h1>
-
           <ItemForm
             submitText='Update Item'
             schema={UpdateItemValidation}
@@ -225,6 +228,9 @@ export const EditItem = () => {
           ) : (
             ''
           )}
+          <button type='button' onClick={() => goToPreviewPage(item.id)} style={{ marginLeft: '0.5rem' }}>
+            preview
+          </button>
           <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
             Save files
           </button>
