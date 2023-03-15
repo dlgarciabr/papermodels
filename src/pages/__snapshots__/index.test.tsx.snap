@@ -19,10 +19,9 @@ exports[`Index page tests > Index page is rendered 1`] = `
             class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
           >
             <img
-              alt="blitzjs"
+              alt="papermodel"
               height="160px"
               layout="fixed"
-              src="undefined"
               width="256px"
             />
           </div>
