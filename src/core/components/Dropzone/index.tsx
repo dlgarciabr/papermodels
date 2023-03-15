@@ -42,22 +42,6 @@ export const Dropzone = (props: DropzoneProps) => {
   });
 
   // TODO remove to a css file
-  const baseStyle = {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    borderWidth: 2,
-    borderRadius: 2,
-    borderColor: '#eeeeee',
-    borderStyle: 'dashed',
-    backgroundColor: '#fafafa',
-    color: '#bdbdbd',
-    outline: 'none',
-    transition: 'border .24s ease-in-out'
-  };
-  // TODO remove to a css file
   const focusedStyle = {
     borderColor: '#2196f3'
   };
@@ -69,17 +53,9 @@ export const Dropzone = (props: DropzoneProps) => {
   const rejectStyle = {
     borderColor: '#ff1744'
   };
-  // TODO remove to a css file
-  const thumbsContainer = {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 16
-  };
 
   const style = useMemo(
     () => ({
-      ...baseStyle,
       ...(isFocused ? focusedStyle : {}),
       ...(isDragAccept ? acceptStyle : {}),
       ...(isDragReject ? rejectStyle : {})
@@ -150,13 +126,13 @@ export const Dropzone = (props: DropzoneProps) => {
   );
 
   return (
-    <section className='container'>
-      <div {...getRootProps({ className: 'dropzone', style: style as any })}>
+    <section className='dropzone-container'>
+      <div {...getRootProps({ style: style as any })}>
         <input {...getInputProps()} />
         <p>Drag and drop some files here, or click to select files</p>
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
-      <aside style={thumbsContainer as any}>{thumbnails}</aside>
+      <aside>{thumbnails}</aside>
       {renderRejections()}
     </section>
   );
