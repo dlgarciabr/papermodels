@@ -170,7 +170,7 @@ export const Item = () => {
 
   const renderDescriptionDialog = () => {
     return (
-      <Dialog open={openDescriptionDialog}>
+      <Dialog open={openDescriptionDialog} onClose={() => setOpenDescriptionDialog(false)}>
         <DialogTitle>{item?.name}</DialogTitle>
         <DialogContent>
           <Box
