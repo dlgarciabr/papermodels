@@ -86,7 +86,7 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
           {renderContentAndUrlRow('Author', item.author, item.authorLink)}
           <tr>
             <td>
-              <Typography variant='body2'>Approx. assembly time</Typography>
+              <Typography variant='body2'>Assembly time</Typography>
             </td>
             <td>
               <Typography variant='body2'>
@@ -315,7 +315,7 @@ export const Item = () => {
               {thumbnails()}
             </Grid>
           </Grid>
-          <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
+          <Grid item container xs={12} md={6} spacing={4} alignItems='flex-start' direction='row'>
             <Grid item xs={12}>
               <Typography variant='h6' component='div'>
                 {item?.name}
@@ -333,7 +333,7 @@ export const Item = () => {
             </Grid>
             <Grid item xs={12}>
               <Paper className='download-buttons-container' elevation={0}>
-                <Grid container spacing={2} justifyContent='center'>
+                <Grid container spacing={4} justifyContent='center'>
                   <Grid item xs={10}>
                     <LoadingButton
                       loading={isDownloadingFile}
