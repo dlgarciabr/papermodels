@@ -49,7 +49,10 @@ const ItemCard = ({ item }: { item: ItemWithChildren }) => {
       }
     } else {
       const schemeUrl = item.files.filter((file) => file.artifactType === FileType.scheme)[0]?.storagePath!;
-      mainImage = getPdfThumbnailUrl(schemeUrl);
+      const thumbnailUrl = getPdfThumbnailUrl(schemeUrl);
+      if (thumbnailUrl) {
+        mainImage = thumbnailUrl;
+      }
     }
   }
   return (

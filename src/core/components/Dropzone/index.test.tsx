@@ -69,7 +69,7 @@ describe('Dropzone', () => {
     await act(() => fireEvent.drop(dropzoneContainer, files));
 
     // assert
-    const containsThumbnail = container.querySelector(`img[alt='${fileName}']`)?.closest('div.thumbnail-dropzone');
+    const containsThumbnail = container.querySelector(`img[alt='${fileName}']`)?.closest('div.dropzone-thumbnail');
     expect(containsThumbnail).not.toBeNull();
   });
 
@@ -198,7 +198,7 @@ describe('Dropzone', () => {
     // assert
     const containsError = container
       .querySelector(`img[alt='${fileName}']`)
-      ?.closest('div.thumbnail-dropzone')
+      ?.closest('div.dropzone-thumbnail')
       ?.classList.contains('thumbnail-error');
     expect(containsError).toBeTruthy();
   });

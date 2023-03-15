@@ -125,9 +125,7 @@ export const Dropzone = (props: DropzoneProps) => {
           index={index}
           src={file.uploadPreview}
           altText={file.storagePath}
-          className={
-            props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
-          }>
+          className={props.validateFiles && !file.artifactType ? 'dropzone-thumbnail error' : 'dropzone-thumbnail'}>
           <>
             <RadioGroup
               aria-labelledby='radio-group-file-type-label'

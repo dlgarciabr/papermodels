@@ -151,19 +151,21 @@ export const Item = () => {
 
   const loadMainImage = async (storagePath: string, type: FileType) => {
     setImageData({ loading: true });
-    let url = getFileUrl(storagePath);
+    let url: string | null = getFileUrl(storagePath);
     if (type === FileType.scheme) {
       url = getPdfThumbnailUrl(url);
     }
-    const response = await fetch(url, { method: 'GET' });
-    const blob = await response.blob();
-    const urlCreator = window.URL || window.webkitURL;
-    var imageUrl = urlCreator.createObjectURL(blob);
-    setImageData({
-      loading: false,
-      url: imageUrl,
-      name: storagePath
-    });
+    if (url && url !== '') {
+      const response = await fetch(url, { method: 'GET' });
+      const blob = await response.blob();
+      const urlCreator = window.URL || window.webkitURL;
+      var imageUrl = urlCreator.createObjectURL(blob);
+      setImageData({
+        loading: false,
+        url: imageUrl,
+        name: storagePath
+      });
+    }
   };
 
   const renderDescriptionDialog = () => {
@@ -213,14 +215,19 @@ export const Item = () => {
             id: itemId
           });
           setItem(item as ItemWithChildren);
-          setupThumbnails(item as ItemWithChildren);
-          const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-          if (!imageData.url && previewFiles.length >= 1) {
-            const file = previewFiles[0];
-            await loadMainImage(file!.storagePath, FileType.preview);
-          } else {
-            const file = item.files.find((file) => file.artifactType === FileType.scheme);
-            await loadMainImage(getPdfThumbnailUrl(file!.storagePath), FileType.scheme);
+          if (item.files.length > 0) {
+            setupThumbnails(item as ItemWithChildren);
+            const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+            if (!imageData.url && previewFiles.length >= 1) {
+              const file = previewFiles[0];
+              await loadMainImage(file!.storagePath, FileType.preview);
+            } else {
+              const file = item.files.find((file) => file.artifactType === FileType.scheme);
+              const url = getPdfThumbnailUrl(file!.storagePath);
+              if (url) {
+                await loadMainImage(url, FileType.scheme);
+              }
+            }
           }
         } catch (error) {
           console.error(error);
@@ -242,10 +249,10 @@ export const Item = () => {
   const loadThumbnailUrls = async () => {
     thumbnailsData.items.forEach((thumbnail) => {
       let url = getThumbnailUrl(thumbnail.storagePath);
-      if (thumbnail.type === FileType.scheme) {
+      if (thumbnail.type === FileType.scheme && !!url) {
         url = getPdfThumbnailUrl(url);
       }
-      thumbnail.finalUrl = url;
+      thumbnail.finalUrl = url || undefined;
       setThumbnailsData({
         ...thumbnailsData,
         items: thumbnailsData.items
@@ -327,7 +334,7 @@ export const Item = () => {
               )}
             </Grid>
             <Grid item xs={12}>
-              <Paper className='item-download' elevation={0}>
+              <Paper className='download-buttons-container' elevation={0}>
                 <Grid container spacing={2} justifyContent='center'>
                   <Grid item xs={10}>
                     <LoadingButton

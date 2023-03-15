@@ -107,7 +107,7 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
-      showToast(ToastType.WARNING, 'Choose a type for each file!');
+      showToast(ToastType.WARNING, 'Choose a type for each file before save!');
       return;
     }
     setLoading(true);

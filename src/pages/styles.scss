@@ -1,0 +1,123 @@
+@use 'variables';
+
+body {
+  background-image: url(variables.$body-background-image);
+}
+
+button {
+  &.search-button {
+    height: 54px;
+    margin-top: 8px;
+  }
+}
+
+img {
+  &.logo {
+    cursor: pointer;
+  }
+}
+
+table.content-info {
+  thead {
+    tr {
+      td {
+        background-color: #000000;
+        color: #ffffff;
+        padding: 5px;
+      }
+    }
+  }
+
+  tr {
+    td {
+      padding: 5px;
+      background-color: variables.$primary-backgroud-color;
+    }
+  }
+}
+
+.MuiInputBase-root {
+  background-color: variables.$field-background-color;
+}
+
+.MuiCard-root.search-card {
+  width: 300px;
+  cursor: pointer;
+
+  .MuiCardMedia-root {
+    height: 200px;
+    background-size: cover;
+  }
+
+  .MuiCardContent-root {
+    height: 90px;
+    padding-bottom: 0;
+  }
+}
+
+.MuiPaper-root {
+  &.download-buttons-container {
+    background-color: variables.$primary-backgroud-color;
+    text-align: center;
+    height: 125px;
+  }
+
+  &.dropzone-thumbnail {
+    padding: 10px;
+    width: 130px;
+    height: 240px;
+    text-align: center;
+
+    &.error {
+      border: {
+        style: double;
+        width: 1px;
+        color: variables.$error-border-color;
+      }
+    }
+  }
+
+  &.item-main-image {
+    height: 500px;
+  }
+
+  &.thumbnail-clickable {
+    cursor: pointer;
+  }
+}
+
+.MuiRating-root.assembly-dificulty {
+  span {
+    span.MuiRating-iconFilled {
+      color: #000000;
+    }
+  }
+}
+
+.justify-content-center {
+  text-align: center;
+}
+
+.height100pc {
+  height: 100%;
+}
+
+.height50px {
+  height: 50px;
+}
+
+.height100px {
+  height: 100px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.width30pc {
+  width: 30%;
+}
+
+.width100pc {
+  width: 100%;
+}

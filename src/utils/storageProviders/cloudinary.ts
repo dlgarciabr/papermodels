@@ -17,6 +17,9 @@ const getFileUrl = (path: string) => {
 };
 
 const getThumbnailUrl = (path: string) => {
+  if (!path || path === '') {
+    return null;
+  }
   const transformation = name('papermodel_thumbnail');
   const image = getCloudinary().image(path.split('.')[0]).namedTransformation(transformation);
   return image.toURL();
@@ -65,6 +68,9 @@ export const deleteFile = async (path: string) => {
 };
 
 export const getPdfThumbnailUrl = (path: string) => {
+  if (!path || path === '') {
+    return null;
+  }
   return `${path.split('?')[0]}.png`.replace('v1', 't_papermodel_pdf_thumbnail/v1').replace('.pdf', '');
 };
 
