@@ -31,7 +31,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { useDownloadFiles, useHasFileType } from './items.hook';
-import logo from 'public/images/logo.png';
+import logo2 from 'public/images/logo2.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 import { LoadingButton } from '@mui/lab';
 import { showToast } from 'src/core/components/Toast';
@@ -292,7 +292,7 @@ export const Item = () => {
         <Grid container spacing={2} justifyContent='center'>
           <Grid item xs={12} className='justify-content-center'>
             <a href={process.env.NEXT_PUBLIC_SITE_URL}>
-              <Image src={logo.src} alt='papermodel' width='256px' height='160px' layout='fixed' className='logo' />
+              <Image src={logo2.src} alt='papermodel' width='430px' height='100px' layout='fixed' className='logo' />
             </a>
           </Grid>
           {/* <Grid container item spacing={1}> */}
@@ -315,59 +315,62 @@ export const Item = () => {
               {thumbnails()}
             </Grid>
           </Grid>
-          <Grid item container xs={12} md={6} spacing={4} alignItems='flex-start' direction='row'>
-            <Grid item xs={12}>
-              <Typography variant='h6' component='div'>
-                {item?.name}
-              </Typography>
-              {item?.description && (
-                <Typography variant='subtitle1'>
-                  {shortenTextWithEllipsis(item?.description, 200)}{' '}
-                  {item?.description.length >= 200 && (
-                    <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
-                      see more
-                    </a>
-                  )}
+          <Grid item container xs={12} md={6} alignItems='flex-start' direction='row'>
+            <Grid item container xs={12} md={12} rowSpacing={5} alignItems='flex-start' direction='row'>
+              <Grid item xs={12}>
+                <Typography variant='h6' component='div'>
+                  {item?.name}
                 </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12}>
-              <Paper className='download-buttons-container' elevation={0}>
-                <Grid container spacing={4} justifyContent='center'>
-                  <Grid item xs={10}>
-                    <LoadingButton
-                      loading={isDownloadingFile}
-                      variant='contained'
-                      fullWidth
-                      startIcon={<MdDownload />}
-                      disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
-                      onClick={() => void handleClickDownloadFile(FileType.scheme)}>
-                      Download schemes
-                    </LoadingButton>
-                  </Grid>
-                  <Grid item xs={10}>
-                    <LoadingButton
-                      loading={isDownloadingFile}
-                      variant='contained'
-                      fullWidth
-                      startIcon={<MdDownload />}
-                      disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
-                      onClick={() => void handleClickDownloadFile(FileType.instruction)}>
-                      Download instrunctions
-                    </LoadingButton>
-                  </Grid>
-                  {/* <Grid item xs={10}>
+                {item?.description && (
+                  <Typography variant='subtitle1'>
+                    {shortenTextWithEllipsis(item?.description, 200)}{' '}
+                    {item?.description.length >= 200 && (
+                      <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
+                        see more
+                      </a>
+                    )}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12}>
+                <Paper className='download-buttons-container' elevation={0}>
+                  <Grid container spacing={4} justifyContent='center'>
+                    <Grid item xs={10}>
+                      <LoadingButton
+                        loading={isDownloadingFile}
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
+                        onClick={() => void handleClickDownloadFile(FileType.scheme)}>
+                        Download schemes
+                      </LoadingButton>
+                    </Grid>
+                    <Grid item xs={10}>
+                      <LoadingButton
+                        loading={isDownloadingFile}
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
+                        onClick={() => void handleClickDownloadFile(FileType.instruction)}>
+                        Download instrunctions
+                      </LoadingButton>
+                    </Grid>
+                    {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
                         Download all
                       </Button>
                     </Grid> */}
-                </Grid>
-              </Paper>
-            </Grid>
-            <Grid item container xs={12}>
-              {item && <DetailsTable item={item} />}
+                  </Grid>
+                </Paper>
+              </Grid>
+              <Grid item container xs={12}>
+                {item && <DetailsTable item={item} />}
+              </Grid>
             </Grid>
           </Grid>
+
           {/* </Grid> */}
         </Grid>
       </Container>
