@@ -119,7 +119,7 @@ export const Item = () => {
   const hasFileType = useHasFileType();
   const [isDownloadingFile, setDownloadingFile] = useState<boolean>(false);
 
-  const [imageData, setImageData] = useState<IImageData>({
+  const [mainImageData, setMainImageData] = useState<IImageData>({
     loading: false
   });
   const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
@@ -150,7 +150,7 @@ export const Item = () => {
   };
 
   const loadMainImage = async (storagePath: string, type: FileType) => {
-    setImageData({ loading: true });
+    setMainImageData({ loading: true });
     let url: string | null = getFileUrl(storagePath);
     if (type === FileType.scheme) {
       url = getPdfThumbnailUrl(url);
@@ -160,7 +160,7 @@ export const Item = () => {
       const blob = await response.blob();
       const urlCreator = window.URL || window.webkitURL;
       var imageUrl = urlCreator.createObjectURL(blob);
-      setImageData({
+      setMainImageData({
         loading: false,
         url: imageUrl,
         name: storagePath
@@ -199,7 +199,7 @@ export const Item = () => {
     const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
     const extension = storagePathParts![1];
     const imageStoragePath = `${imageName}.${extension}`;
-    if (imageData.name === imageStoragePath) {
+    if (mainImageData.name === imageStoragePath) {
       return;
     }
     await loadMainImage(imageStoragePath, thumbnail.type);
@@ -218,7 +218,7 @@ export const Item = () => {
           if (item.files.length > 0) {
             setupThumbnails(item as ItemWithChildren);
             const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-            if (!imageData.url && previewFiles.length >= 1) {
+            if (!mainImageData.url && previewFiles.length >= 1) {
               const file = previewFiles[0];
               await loadMainImage(file!.storagePath, FileType.preview);
             } else {
@@ -281,25 +281,19 @@ export const Item = () => {
         onClick={(index) => (thumbnailsData.items.length > 1 ? loadMainImageFromThumbnail(index) : '')}
       />
     ));
-
+  const title = `Papermodels - ${item?.name}`;
   return (
     <>
       {renderDescriptionDialog()}
       <Head>
-        <title>Papermodels - {item?.name}</title>
+        <title>{title}</title>
       </Head>
       <Container component='main'>
         <Grid container spacing={2} justifyContent='center'>
           <Grid item xs={12} className='justify-content-center'>
-            <Image
-              src={`${logo.src}`}
-              alt='blitzjs'
-              width='256px'
-              height='160px'
-              layout='fixed'
-              className='logo'
-              onClick={() => router.push(Routes.Home())}
-            />
+            <a href={process.env.NEXT_PUBLIC_SITE_URL}>
+              <Image src={logo.src} alt='papermodel' width='256px' height='160px' layout='fixed' className='logo' />
+            </a>
           </Grid>
           {/* <Grid container item spacing={1}> */}
           <Grid item container xs={12} md={6}>
@@ -307,8 +301,12 @@ export const Item = () => {
               <Paper variant='outlined' elevation={0} className='item-main-image'>
                 <Grid container justifyContent='center' alignContent='center' sx={{ height: '100%' }}>
                   <Grid item>
-                    {imageData.loading && <CircularProgress />}
-                    <img className={imageData.loading ? 'hidden' : ''} src={imageData.url} alt={imageData.name} />
+                    {mainImageData.loading && <CircularProgress />}
+                    <img
+                      className={mainImageData.loading ? 'hidden' : ''}
+                      src={mainImageData.url}
+                      alt={mainImageData.name}
+                    />
                   </Grid>
                 </Grid>
               </Paper>

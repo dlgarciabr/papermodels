@@ -169,7 +169,7 @@ const Home: BlitzPage = () => {
           <Grid container spacing={3}>
             <Grid item container justifyContent='center'>
               <Grid item>
-                <Image src={`${logo.src}`} alt='blitzjs' width='256px' height='160px' layout='fixed' />
+                <Image src={logo.src} alt='papermodel' width='256px' height='160px' layout='fixed' />
               </Grid>
             </Grid>
             <Grid
