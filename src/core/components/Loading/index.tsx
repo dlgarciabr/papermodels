@@ -6,16 +6,17 @@ export const Loading = ({ visible = true }: { visible?: boolean }) => {
   const [marginTop, setMarginTop] = useState<number>(0);
 
   useEffect(() => {
-    if (visible) {
-      (document as any).body.style.overflowY = 'disable';
-    } else {
-      (document as any).body.style.overflowY = 'scroll';
-    }
-    const documentHeight = document.body.clientHeight + 50;
+    const documentHeight = document.body.clientHeight + 40 + document.body.getBoundingClientRect().y * -1;
     const visiblePageHeight = window.innerHeight;
     const scrollY = window.scrollY;
+    if (visible) {
+      (document as any).body.style.overflowY = 'disable';
+      setHeight(documentHeight);
+    } else {
+      (document as any).body.style.overflowY = 'scroll';
+      setHeight(0);
+    }
     setMarginTop(visiblePageHeight / 2 + scrollY - 20);
-    setHeight(documentHeight);
   }, [visible]);
 
   return (

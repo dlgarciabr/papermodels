@@ -1,7 +1,6 @@
 import Layout from 'src/core/layouts/Layout';
 import { BlitzPage, RouterContext, Routes } from '@blitzjs/next';
 import Head from 'next/head';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   Container,
   IconButton,
@@ -37,8 +36,6 @@ import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymou
 import { invoke } from '@blitzjs/rpc';
 import { categoryImage } from './categoryImage.json';
 import Loading from 'src/core/components/Loading';
-
-const theme = createTheme();
 
 //TODO modify to use cloudnary api
 const dogDefaultImage =
@@ -205,109 +202,102 @@ const Home: BlitzPage = () => {
         <title>Papermodels</title>
       </Head>
       <Loading visible={isLoading} />
-      <ThemeProvider theme={theme}>
-        <Container component='main'>
-          <Grid container spacing={3}>
-            <Grid item container justifyContent='center'>
-              <Grid item>
-                <Image src={logo.src} alt='papermodel' width='256px' height='160px' layout='fixed' />
+      <Container component='main'>
+        <Grid container spacing={3}>
+          <Grid item container justifyContent='center'>
+            <Grid item>
+              <Image src={logo.src} alt='papermodel' width='256px' height='160px' layout='fixed' />
+            </Grid>
+          </Grid>
+          <Grid
+            item
+            container
+            justifyContent='center'
+            style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
+            <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='flex-start' spacing='3'>
+              <Grid item xs={12} className='height50px'>
+                <Collapse in={showEmptySearchMessage}>
+                  <Alert severity='info' onClose={() => setShowEmptySearchMessage(false)}>
+                    No results were found, showing some nice suggestions!
+                  </Alert>
+                </Collapse>
               </Grid>
-            </Grid>
-            <Grid
-              item
-              container
-              justifyContent='center'
-              style={{ ...marginTopProp, display: marginTopProp.marginTop ? '' : 'none' }}>
-              <Grid item container lg={8} md={8} sm={10} xs={12} alignItems='flex-start' spacing='3'>
-                <Grid item xs={12} className='height50px'>
-                  <Collapse in={showEmptySearchMessage}>
-                    <Alert severity='info' onClose={() => setShowEmptySearchMessage(false)}>
-                      No results were found, showing some nice suggestions!
-                    </Alert>
-                  </Collapse>
-                </Grid>
-                <Grid item xs={11}>
-                  <TextField
-                    margin='dense'
-                    fullWidth
-                    error={isEmptySearchAtempt}
-                    helperText={isEmptySearchAtempt ? 'Type something before search, like aircraft...' : ''}
-                    label='Search for a model'
-                    name='searchModel'
-                    className='search-input'
-                    autoFocus
-                    hidden={true}
-                    value={data.expression}
-                    onChange={(event) => setData({ ...data, expression: event.target.value })}
-                    onKeyPress={(ev) => {
-                      if (ev.key === 'Enter') {
-                        void handleSearch(data.expression, 1);
-                        ev.preventDefault();
-                      }
-                    }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <IconButton onClick={cleanSearch} title='Clean'>
-                            <MdClose />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={1}>
-                  <LoadingButton
-                    loading={isLoading}
-                    className='search-button'
-                    onClick={() => handleSearch(data.expression, 1)}
-                    variant='contained'
-                    size='large'>
-                    <MdSearch title='Search for a model' size='22' />
-                  </LoadingButton>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item container justifyContent='center' spacing={3}>
-              {renderCards}
-            </Grid>
-            <Grid
-              item
-              container
-              justifyContent='center'
-              spacing={3}
-              className={data.pages === 0 || showEmptySearchMessage ? 'hidden' : ''}>
-              <Grid item container xs={12} justifyContent='center'>
-                <Pagination
-                  count={data.pages}
-                  page={data.currentPage}
-                  onChange={(_event, page) => handleSearch(data.expression, page)}
+              <Grid item xs={11}>
+                <TextField
+                  margin='dense'
+                  fullWidth
+                  error={isEmptySearchAtempt}
+                  helperText={isEmptySearchAtempt ? 'Type something before search, like aircraft...' : ''}
+                  label='Search for a model'
+                  name='searchModel'
+                  className='search-input'
+                  autoFocus
+                  hidden={true}
+                  value={data.expression}
+                  onChange={(event) => setData({ ...data, expression: event.target.value })}
+                  onKeyPress={(ev) => {
+                    if (ev.key === 'Enter') {
+                      void handleSearch(data.expression, 1);
+                      ev.preventDefault();
+                    }
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        <IconButton onClick={cleanSearch} title='Clean'>
+                          <MdClose />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                 />
               </Grid>
-              <Grid item container xs={12} justifyContent='center'>
-                <Typography>Total pages: {data.pages}</Typography>
-              </Grid>
-            </Grid>
-            <Grid
-              item
-              container
-              xs={12}
-              justifyContent='center'
-              visibility={data.items.length > 0 ? 'hidden' : 'visible'}>
-              <Grid item xs={12} className='justify-content-center height50px'>
-                <Typography>or see our categories</Typography>
-              </Grid>
-              <Grid item xs={12} container justifyContent='center'>
-                <CategoryCarousel
-                  categories={categories}
-                  loading={categories.length === 0}
-                  onClickSlide={handleClickCategorySlide}
-                />
+              <Grid item xs={1}>
+                <LoadingButton
+                  loading={isLoading}
+                  className='search-button'
+                  onClick={() => handleSearch(data.expression, 1)}
+                  variant='contained'
+                  size='large'>
+                  <MdSearch title='Search for a model' size='22' />
+                </LoadingButton>
               </Grid>
             </Grid>
           </Grid>
-        </Container>
-      </ThemeProvider>
+          <Grid item container justifyContent='center' spacing={3}>
+            {renderCards}
+          </Grid>
+          <Grid
+            item
+            container
+            justifyContent='center'
+            spacing={3}
+            className={data.pages === 0 || showEmptySearchMessage ? 'hidden' : ''}>
+            <Grid item container xs={12} justifyContent='center'>
+              <Pagination
+                count={data.pages}
+                page={data.currentPage}
+                onChange={(_event, page) => handleSearch(data.expression, page)}
+              />
+            </Grid>
+            <Grid item container xs={12} justifyContent='center'>
+              <Typography>Total pages: {data.pages}</Typography>
+            </Grid>
+          </Grid>
+          <Grid item container xs={12} justifyContent='center' className={data.items.length > 0 ? 'hidden' : ''}>
+            <Grid item xs={12} className='justify-content-center height50px'>
+              <Typography>or see our categories</Typography>
+            </Grid>
+            <Grid item xs={12} container justifyContent='center'>
+              <CategoryCarousel
+                categories={categories}
+                loading={categories.length === 0}
+                onClickSlide={handleClickCategorySlide}
+              />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Container>
     </Layout>
   );
 };

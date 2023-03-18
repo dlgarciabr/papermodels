@@ -24,7 +24,7 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
 import { ItemWithChildren } from 'types';
-import { Checkbox } from '@mui/material';
+import { Button, Checkbox } from '@mui/material';
 import { DropzoneProps } from 'src/core/components/Dropzone/types';
 
 const Files = (props: {
@@ -57,12 +57,8 @@ const Files = (props: {
                     <Checkbox checked={file.mainPreview} onClick={() => props.onClickMain(file)} />
                   </td>
                   <td>
-                    <a href='#' onClick={() => downloadFile(file.storagePath)}>
-                      Download
-                    </a>
-                    <a href='#' onClick={() => props.onClickDelete(file)}>
-                      Remove
-                    </a>
+                    <Button onClick={() => downloadFile(file.storagePath)}>Download</Button>
+                    <Button onClick={() => props.onClickDelete(file)}>Remove</Button>
                   </td>
                 </tr>
               );
@@ -114,10 +110,10 @@ export const EditItem = () => {
     try {
       const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
-      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
+      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
     } catch (error) {
       showToast(ToastType.ERROR, error);
     } finally {

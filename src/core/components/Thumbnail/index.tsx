@@ -4,8 +4,8 @@ import { IThumbnailProps } from './types';
 
 export const Thumbnail = (props: IThumbnailProps) => {
   const hasClickEvent = !!props.onClick;
-  let classNames = props.className ? ` ${props.className}` : '';
-  classNames += hasClickEvent ? ' thumbnail-clickable' : '';
+  let classNames = props.className ? `thumbnail ${props.className}` : 'thumbnail';
+  classNames += hasClickEvent ? ' thumbnail--clickable' : '';
   const handleClick = (index: number) => {
     if (hasClickEvent) {
       props.onClick!(index);

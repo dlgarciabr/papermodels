@@ -9,6 +9,7 @@ div#__next > div {
 
 body {
   background-image: url(variables.$body-background-image);
+  // margin-top: 0px;
 }
 
 button {
@@ -62,7 +63,7 @@ table.content-info {
   }
 }
 
-.MuiPaper-root {
+.MuiPaper-root.thumbnail {
   &.download-buttons-container {
     background-color: variables.$primary-backgroud-color;
     text-align: center;
@@ -75,7 +76,7 @@ table.content-info {
     height: 240px;
     text-align: center;
 
-    &.error {
+    &--error {
       border: {
         style: double;
         width: 1px;
@@ -88,7 +89,7 @@ table.content-info {
     height: 500px;
   }
 
-  &.thumbnail-clickable {
+  &--clickable {
     cursor: pointer;
   }
 }
@@ -99,6 +100,10 @@ table.content-info {
       color: #000000;
     }
   }
+}
+
+.Toastify {
+  height: 0px !important;
 }
 
 .dropzone-container {
