@@ -102,7 +102,7 @@ const Home: BlitzPage = () => {
   const loadCaterogies = async () => {
     const {
       default: { src }
-    } = (await import('public/images/category_autos.png')) as any;
+    } = (await import('public/images/category_autos2.png')) as any;
     const images = [
       {
         categoryId: '',

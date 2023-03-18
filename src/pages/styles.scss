@@ -168,10 +168,11 @@ table.content-info {
   max-width: 32% !important;
   text-align: center;
   font-size: 18px;
-  background: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  // background: #fff;
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+  background-image: url('/images/background_cell.jpg');
 
   border: {
     width: 2px;
@@ -185,12 +186,14 @@ table.content-info {
   }
 
   img {
-    display: block;
-    // width: 100%;
-    width: 294px;
+    margin-top: 6%;
+    // display: block;
+    width: 85%;
+    // width: 294px;
     height: 98%;
     max-height: 300px;
     object-fit: cover;
+    // top: 10%;
   }
 }
 
