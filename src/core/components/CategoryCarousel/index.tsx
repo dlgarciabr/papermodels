@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation } from 'swiper';
+import { Navigation } from 'swiper';
 import { CategoryCarouselProps } from './types';
 
 // Import Swiper styles
@@ -33,14 +33,7 @@ const renderLoadingItem = () =>
 
 export const CategoryCarousel = ({ categories, loading = false }: CategoryCarouselProps) => {
   return (
-    <Swiper
-      slidesPerView={3}
-      spaceBetween={12}
-      pagination={{
-        clickable: true
-      }}
-      navigation={true}
-      modules={[Pagination, Navigation]}>
+    <Swiper slidesPerView={3} spaceBetween={12} navigation={true} modules={[Navigation]}>
       {loading ? renderLoadingItem() : categories.map((category) => renderItem(category))}
     </Swiper>
   );
