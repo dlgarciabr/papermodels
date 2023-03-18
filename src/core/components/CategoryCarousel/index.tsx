@@ -11,16 +11,21 @@ import 'swiper/css/navigation';
 import { getSimpleRandomKey } from 'src/utils/global';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 
 const renderItem = (category: any, onClickSlide: Function) => (
   <SwiperSlide key={getSimpleRandomKey()} onClick={() => onClickSlide(category.id)}>
-    <div>
-      {/* eslint-disable-next-line @next/next/no-img-element*/}
-      <img src={category.imagePath} alt={category.name} />
-      <Typography component='p' variant='h6' className='category-carousel-title'>
-        {category.name}
-      </Typography>
-    </div>
+    <Grid container alignItems='center' justifyContent='center' style={{ height: '100%' }}>
+      <Grid item xs={12}>
+        {/* eslint-disable-next-line @next/next/no-img-element*/}
+        <img src={category.imagePath} alt={category.name} />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography component='p' variant='h6' className='category-carousel-title'>
+          {category.name}
+        </Typography>
+      </Grid>
+    </Grid>
   </SwiperSlide>
 );
 

@@ -24,7 +24,6 @@ import Image from 'next/image';
 import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
-import dog from 'public/images/dog.png';
 import { useGetSugestions, useSearch, useGetItemsByCategory } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
@@ -36,11 +35,16 @@ import { getPdfThumbnailUrl } from 'src/utils/fileStorage';
 import CategoryCarousel from 'src/core/components/CategoryCarousel';
 import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymous';
 import { invoke } from '@blitzjs/rpc';
+import { categoryImage } from './categoryImage.json';
 
 const theme = createTheme();
 
+//TODO modify to use cloudnary api
+const dogDefaultImage =
+  'https://res.cloudinary.com/dcqomtjel/image/upload/v1679147275/papermodel/_public/dog_cerblp.png';
+
 const ItemCard = ({ item }: { item: ItemWithChildren }) => {
-  let mainImage = dog.src;
+  let mainImage = dogDefaultImage;
   if (item.files.length > 0) {
     const hasPreviewImage = item.files.some((file) => file.artifactType === FileType.preview);
     if (hasPreviewImage) {
@@ -101,19 +105,14 @@ const Home: BlitzPage = () => {
   };
 
   const loadCaterogies = async () => {
-    const {
-      default: { src }
-    } = (await import('public/images/category_autos2.png')) as any;
-    const images = [
-      {
-        categoryId: '',
-        imageSrc: src
-      }
-    ];
     const { categories } = await invoke(getCategoriesAnonymous, {
       orderBy: { name: 'asc' }
     });
-    setCategories(categories.map((category) => ({ ...category, imagePath: images[0]!.imageSrc })));
+    const categoriesWithImage = categories.map((category) => ({
+      ...category,
+      imagePath: categoryImage.find((image) => image.categoryName === category.name)?.imageSrc || dogDefaultImage
+    }));
+    setCategories(categoriesWithImage);
   };
 
   useEffect(() => {
