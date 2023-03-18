@@ -33,6 +33,9 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import { LoadingButton } from '@mui/lab';
 import { FileType } from '@prisma/client';
 import { getPdfThumbnailUrl } from 'src/utils/fileStorage';
+import CategoryCarousel from 'src/core/components/CategoryCarousel';
+import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymous';
+import { invoke } from '@blitzjs/rpc';
 
 const theme = createTheme();
 
@@ -75,6 +78,7 @@ const Home: BlitzPage = () => {
   const [showEmptySearchMessage, setShowEmptySearchMessage] = useState<boolean>(false);
   const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const search = useSearch();
   const getSugestions = useGetSugestions();
 
@@ -95,6 +99,22 @@ const Home: BlitzPage = () => {
     }
   };
 
+  const loadCaterogies = async () => {
+    const {
+      default: { src }
+    } = (await import('public/images/category_autos.png')) as any;
+    const images = [
+      {
+        categoryId: '',
+        imageSrc: src
+      }
+    ];
+    const { categories } = await invoke(getCategoriesAnonymous, {
+      orderBy: { name: 'asc' }
+    });
+    setCategories(categories.map((category) => ({ ...category, imagePath: images[0]!.imageSrc })));
+  };
+
   useEffect(() => {
     adjustSearchFieldMarginTop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,6 +130,7 @@ const Home: BlitzPage = () => {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    void loadCaterogies();
   }, []);
 
   const cleanSearch = () => {
@@ -246,6 +267,9 @@ const Home: BlitzPage = () => {
               <Grid item container xs={12} justifyContent='center'>
                 <Typography>Total pages: {data.pages}</Typography>
               </Grid>
+            </Grid>
+            <Grid item xs={12} container justifyContent='center'>
+              <CategoryCarousel categories={categories} loading={categories.length === 0} />
             </Grid>
           </Grid>
         </Container>

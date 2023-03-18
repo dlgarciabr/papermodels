@@ -94,6 +94,21 @@ table.content-info {
   }
 }
 
+.category-carousel {
+  &.title {
+    background-color: #ffffff;
+    bottom: 0px;
+    opacity: 80%;
+    position: absolute;
+    width: 100%;
+
+    padding: {
+      top: 10px;
+      bottom: 30px;
+    }
+  }
+}
+
 .dropzone-container {
   aside {
     display: flex;
@@ -141,6 +156,42 @@ table.content-info {
 
 .hidden {
   display: none !important;
+}
+
+.swiper {
+  width: 80%;
+  height: 300px;
+}
+
+.swiper-slide {
+  height: 98% !important;
+  max-width: 32% !important;
+  text-align: center;
+  font-size: 18px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: {
+    width: 2px;
+    radius: 2px;
+    color: #eeeeee;
+    style: double;
+  }
+
+  span {
+    margin-top: 130px;
+  }
+
+  img {
+    display: block;
+    // width: 100%;
+    width: 294px;
+    height: 98%;
+    max-height: 300px;
+    object-fit: cover;
+  }
 }
 
 .width30pc {
