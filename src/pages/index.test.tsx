@@ -9,6 +9,16 @@ import { FileType } from '@prisma/client';
 describe('Index page tests', () => {
   test('Index page is rendered', () => {
     // arrange
+    setupUseInvokeOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: 'test'
+        }
+      ],
+      hasMore: false
+    });
 
     // act
     const result = render(<Home />);
@@ -19,6 +29,16 @@ describe('Index page tests', () => {
 
   test('Index page renders the search input and submit button', () => {
     // arrange
+    setupUseInvokeOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: 'test'
+        }
+      ],
+      hasMore: false
+    });
 
     // act
     render(<Home />);
@@ -35,25 +55,43 @@ describe('Index page tests', () => {
     // arrange
     const textToSearch = 'Train';
 
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: [
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
         {
-          id: 1,
-          name: 'Train',
-          files: [
+          collectionName: 'categories',
+          categories: [
             {
-              storagePath: 'vet-clinic.jpg',
-              artifactType: FileType.scheme
-            },
-            {
-              storagePath: 'jetplane.jpg',
-              artifactType: FileType.preview
+              id: 1,
+              name: 'test'
             }
           ]
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: FileType.preview,
+                  mainPreview: true
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: FileType.scheme
+                }
+              ]
+            }
+          ],
+          hasMore: true
         }
-      ],
-      hasMore: true
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
     });
 
     vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
@@ -77,26 +115,43 @@ describe('Index page tests', () => {
     // arrange
     const textToSearch = 'Train';
 
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: [
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
         {
-          id: 1,
-          name: 'Train',
-          files: [
+          collectionName: 'categories',
+          categories: [
             {
-              storagePath: 'vet-clinic.jpg',
-              artifactType: FileType.preview,
-              mainPreview: true
-            },
-            {
-              storagePath: 'jetplane.jpg',
-              artifactType: FileType.scheme
+              id: 1,
+              name: 'test'
             }
           ]
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: FileType.preview,
+                  mainPreview: true
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: FileType.scheme
+                }
+              ]
+            }
+          ],
+          hasMore: true
         }
-      ],
-      hasMore: true
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
     });
 
     vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
@@ -122,6 +177,15 @@ describe('Index page tests', () => {
     let callIndex = 0;
     setupUseInvokeImplementation((_queryFn: any): any => {
       const returnStack = [
+        {
+          collectionName: 'categories',
+          categories: [
+            {
+              id: 1,
+              name: 'test'
+            }
+          ]
+        },
         {
           collectionName: 'items',
           items: [],
@@ -177,6 +241,17 @@ describe('Index page tests', () => {
       executeRecaptcha: vi.fn().mockResolvedValue('')
     });
 
+    setupUseInvokeOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: 'test'
+        }
+      ],
+      hasMore: false
+    });
+
     render(<Home />);
     const searchInput = screen.getByLabelText('Search for a model');
     await userEvent.type(searchInput, 'test');
@@ -193,6 +268,17 @@ describe('Index page tests', () => {
     // arrange
     vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
       executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    setupUseInvokeOnce({
+      collectionName: 'categories',
+      items: [
+        {
+          id: 1,
+          name: 'test'
+        }
+      ],
+      hasMore: false
     });
 
     render(<Home />);
@@ -236,16 +322,33 @@ describe('Index page tests', () => {
     // arrange
     const textToSearch = 'Train';
 
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: [
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
         {
-          id: 1,
-          name: 'Train',
-          files: []
+          collectionName: 'categories',
+          categories: [
+            {
+              id: 1,
+              name: 'test'
+            }
+          ]
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: []
+            }
+          ],
+          hasMore: true
         }
-      ],
-      hasMore: true
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
     });
 
     vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
