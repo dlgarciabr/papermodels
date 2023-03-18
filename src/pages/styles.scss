@@ -1,5 +1,12 @@
 @use 'variables';
 
+html,
+body,
+div#__next,
+div#__next > div {
+  height: 100%;
+}
+
 body {
   background-image: url(variables.$body-background-image);
 }
@@ -141,6 +148,22 @@ table.content-info {
 
 .hidden {
   display: none !important;
+}
+
+.loading {
+  position: absolute;
+  background-color: #000000;
+  opacity: 20%;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+
+  div {
+    span {
+      color: #ffffff;
+    }
+  }
 }
 
 .swiper {

@@ -36,6 +36,7 @@ import CategoryCarousel from 'src/core/components/CategoryCarousel';
 import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymous';
 import { invoke } from '@blitzjs/rpc';
 import { categoryImage } from './categoryImage.json';
+import Loading from 'src/core/components/Loading';
 
 const theme = createTheme();
 
@@ -203,6 +204,7 @@ const Home: BlitzPage = () => {
       <Head>
         <title>Papermodels</title>
       </Head>
+      <Loading visible={isLoading} />
       <ThemeProvider theme={theme}>
         <Container component='main'>
           <Grid container spacing={3}>
@@ -288,15 +290,20 @@ const Home: BlitzPage = () => {
             </Grid>
             <Grid
               item
-              xs={12}
               container
+              xs={12}
               justifyContent='center'
               visibility={data.items.length > 0 ? 'hidden' : 'visible'}>
-              <CategoryCarousel
-                categories={categories}
-                loading={categories.length === 0 || isLoading}
-                onClickSlide={handleClickCategorySlide}
-              />
+              <Grid item xs={12} className='justify-content-center height50px'>
+                <Typography>or see our categories</Typography>
+              </Grid>
+              <Grid item xs={12} container justifyContent='center'>
+                <CategoryCarousel
+                  categories={categories}
+                  loading={categories.length === 0}
+                  onClickSlide={handleClickCategorySlide}
+                />
+              </Grid>
             </Grid>
           </Grid>
         </Container>
