@@ -186,7 +186,7 @@ table.content-info {
 
   border: {
     width: 2px;
-    radius: 10px;
+    radius: 5px;
     color: #eeeeee;
     style: double;
   }
@@ -197,10 +197,11 @@ table.content-info {
 
   img {
     // margin-top: 2%;
-    width: 85%;
+    width: 90%;
     // height: 98%;
     max-height: 185px;
     object-fit: cover;
+    border-radius: 5px;
   }
 
   p.category-carousel-title {
