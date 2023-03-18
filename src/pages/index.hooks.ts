@@ -7,7 +7,7 @@ import countItemsAnonymous from 'src/items/queries/countItemsAnonymous';
 import getItemsAnonymous from 'src/items/queries/getItemsAnonymous';
 import { getFileUrl } from 'src/utils/fileStorage';
 
-const doSearch = (page: number, pageSize: number, gRecaptchaToken: string, where?: any) => {
+const searchByWhere = (page: number, pageSize: number, gRecaptchaToken: string, where?: any) => {
   return invoke(getItemsAnonymous, {
     gRecaptchaToken,
     where,
@@ -61,7 +61,7 @@ const useSearch = () => {
         return;
       }
       const gRecaptchaToken = await executeRecaptcha('searchItems');
-      const { items, count } = await doSearch(page, 9, gRecaptchaToken, { name: { contains: expression } });
+      const { items, count } = await searchByWhere(page, 9, gRecaptchaToken, { name: { contains: expression } });
       void router.push({ query: { expression, page } });
       await fulFillItemsFilesUrls(items);
       resolve({ items, count });
@@ -83,4 +83,21 @@ const useGetSugestions = () => {
     });
 };
 
-export { useSearch, useGetSugestions };
+const useGetItemsByCategory = () => {
+  const router = useContext(RouterContext);
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  return (categoryId: number, page: number): Promise<{ items: Item[]; count: number }> =>
+    new Promise(async (resolve, reject) => {
+      if (!executeRecaptcha) {
+        reject('Execute recaptcha not yet available');
+        return;
+      }
+      const gRecaptchaToken = await executeRecaptcha('searchItems');
+      const { items, count } = await searchByWhere(page, 9, gRecaptchaToken, { categoryId });
+      void router.push({ query: { categoryId, page } });
+      await fulFillItemsFilesUrls(items);
+      resolve({ items, count });
+    });
+};
+
+export { useSearch, useGetSugestions, useGetItemsByCategory };

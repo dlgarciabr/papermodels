@@ -25,7 +25,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
 import dog from 'public/images/dog.png';
-import { useGetSugestions, useSearch } from './index.hooks';
+import { useGetSugestions, useSearch, useGetItemsByCategory } from './index.hooks';
 import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
@@ -81,6 +81,7 @@ const Home: BlitzPage = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const search = useSearch();
   const getSugestions = useGetSugestions();
+  const getItemsByCategory = useGetItemsByCategory();
 
   const initialData = {
     expression: '',
@@ -169,6 +170,24 @@ const Home: BlitzPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClickCategorySlide = async (categoryId: number) => {
+    try {
+      setLoading(true);
+      const { items, count } = await getItemsByCategory(categoryId, 0);
+      setData({
+        items,
+        pages: Math.ceil(count / 9),
+        expression: '',
+        currentPage: 0
+      });
+    } catch (error) {
+      showToast(ToastType.ERROR, error);
+    } finally {
+      setLoading(false);
+    }
+    setLoading(false);
   };
 
   const renderCards = useMemo(
@@ -268,8 +287,17 @@ const Home: BlitzPage = () => {
                 <Typography>Total pages: {data.pages}</Typography>
               </Grid>
             </Grid>
-            <Grid item xs={12} container justifyContent='center'>
-              <CategoryCarousel categories={categories} loading={categories.length === 0} />
+            <Grid
+              item
+              xs={12}
+              container
+              justifyContent='center'
+              visibility={data.items.length > 0 ? 'hidden' : 'visible'}>
+              <CategoryCarousel
+                categories={categories}
+                loading={categories.length === 0 || isLoading}
+                onClickSlide={handleClickCategorySlide}
+              />
             </Grid>
           </Grid>
         </Container>

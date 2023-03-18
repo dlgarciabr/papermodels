@@ -9,33 +9,44 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
     AND: [
       {
         status: ItemStatus.enable
-      },
-      {
-        OR: [
-          {
+      }
+    ]
+  };
+
+  const containsExpression = !!where?.name;
+  const containsCategory = !!where?.categoryId;
+
+  if (containsExpression) {
+    (whereClause.AND! as any).push({
+      OR: [
+        {
+          name: {
+            contains: (where?.name as Prisma.StringFilter).contains,
+            mode: 'insensitive'
+          }
+        },
+        {
+          description: {
+            contains: (where?.name as Prisma.StringFilter).contains,
+            mode: 'insensitive'
+          }
+        },
+        {
+          category: {
             name: {
               contains: (where?.name as Prisma.StringFilter).contains,
               mode: 'insensitive'
             }
-          },
-          {
-            description: {
-              contains: (where?.name as Prisma.StringFilter).contains,
-              mode: 'insensitive'
-            }
-          },
-          {
-            category: {
-              name: {
-                contains: (where?.name as Prisma.StringFilter).contains,
-                mode: 'insensitive'
-              }
-            }
           }
-        ]
-      }
-    ]
-  };
+        }
+      ]
+    });
+  } else if (containsCategory) {
+    (whereClause.AND! as any).push({
+      categoryId: where?.categoryId
+    });
+  }
+
   const { items, hasMore, nextPage, count } = await paginate({
     skip,
     take,

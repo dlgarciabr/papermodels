@@ -12,12 +12,12 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 
-const renderItem = (category: any) => (
-  <SwiperSlide key={getSimpleRandomKey()}>
+const renderItem = (category: any, onClickSlide: Function) => (
+  <SwiperSlide key={getSimpleRandomKey()} onClick={() => onClickSlide(category.id)}>
     <div>
       {/* eslint-disable-next-line @next/next/no-img-element*/}
       <img src={category.imagePath} alt={category.name} />
-      <Typography component='p' variant='h6' className='category-carousel title'>
+      <Typography component='p' variant='h6' className='category-carousel-title'>
         {category.name}
       </Typography>
     </div>
@@ -31,10 +31,10 @@ const renderLoadingItem = () =>
     </SwiperSlide>
   ));
 
-export const CategoryCarousel = ({ categories, loading = false }: CategoryCarouselProps) => {
+export const CategoryCarousel = ({ categories, loading = false, onClickSlide }: CategoryCarouselProps) => {
   return (
     <Swiper slidesPerView={3} spaceBetween={12} navigation={true} modules={[Navigation]}>
-      {loading ? renderLoadingItem() : categories.map((category) => renderItem(category))}
+      {loading ? renderLoadingItem() : categories.map((category) => renderItem(category, onClickSlide))}
     </Swiper>
   );
 };

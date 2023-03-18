@@ -94,21 +94,6 @@ table.content-info {
   }
 }
 
-.category-carousel {
-  &.title {
-    background-color: #ffffff;
-    bottom: 0px;
-    opacity: 80%;
-    position: absolute;
-    width: 100%;
-
-    padding: {
-      top: 10px;
-      bottom: 30px;
-    }
-  }
-}
-
 .dropzone-container {
   aside {
     display: flex;
@@ -160,18 +145,20 @@ table.content-info {
 
 .swiper {
   width: 80%;
-  height: 300px;
+  height: 280px;
+
+  .swiper-button-prev,
+  .swiper-button-next {
+    color: #ffffff;
+  }
 }
 
 .swiper-slide {
+  cursor: pointer;
   height: 98% !important;
   max-width: 32% !important;
   text-align: center;
   font-size: 18px;
-  // background: #fff;
-  // display: flex;
-  // justify-content: center;
-  // align-items: center;
   background-image: url('/images/background_cell.jpg');
 
   border: {
@@ -187,13 +174,23 @@ table.content-info {
 
   img {
     margin-top: 6%;
-    // display: block;
     width: 85%;
-    // width: 294px;
     height: 98%;
     max-height: 300px;
     object-fit: cover;
-    // top: 10%;
+  }
+
+  p.category-carousel-title {
+    background-color: #ffffff;
+    bottom: 0px;
+    opacity: 80%;
+    position: absolute;
+    width: 100%;
+
+    padding: {
+      top: 10px;
+      bottom: 10px;
+    }
   }
 }
 
