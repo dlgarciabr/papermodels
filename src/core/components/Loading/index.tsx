@@ -9,9 +9,6 @@ export const Loading = ({ visible = true }: { visible?: boolean }) => {
     const documentHeight = document.body.clientHeight + 40 + document.body.getBoundingClientRect().y * -1;
     const visiblePageHeight = window.innerHeight;
     const scrollY = window.scrollY;
-    console.log('useEffect', visible);
-    console.log('documentHeight', documentHeight);
-    console.log('visiblePageHeight', visiblePageHeight);
     if (visible) {
       (document as any).body.style.overflowY = 'disable';
       setHeight(documentHeight);
@@ -26,7 +23,7 @@ export const Loading = ({ visible = true }: { visible?: boolean }) => {
     <Grid
       container
       className='loading'
-      height={`${height}px`}
+      style={{ height: `${height}px` }}
       justifyContent='center'
       visibility={visible ? 'visible' : 'hidden'}>
       <Grid item>{visible && <CircularProgress style={{ marginTop: `${marginTop}px` }} />}</Grid>
