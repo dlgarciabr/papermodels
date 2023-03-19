@@ -112,7 +112,6 @@ const mockDefaultWindow = () => {
   window.URL.createObjectURL = vi.fn().mockImplementation(() => '');
 };
 
-// TODO implement a code generation for the lines below if MSW will be not used
 const mockDefaultAllQueries = () => {
   vi.mock('src/items/queries/getItems', () => {
     const resolver = vi.fn() as any;

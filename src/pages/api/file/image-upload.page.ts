@@ -17,8 +17,7 @@ export const uploadImage = async (src: string, path: string) => {
   const options: UploadApiOptions = {
     folder: path,
     unique_filename: true,
-    transformation: ['papermodel_adjust_fit'] //TODO modify to have more control over transformations,
-    // eager: ['t_papermodel_thumbnail']
+    transformation: ['papermodel_adjust_fit']
   };
   console.log('[FileUploader] Uploading file to Cloudinary...');
   const result = await cloudinary.uploader.upload(src, options);

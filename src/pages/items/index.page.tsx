@@ -73,6 +73,12 @@ export const ItemsList = () => {
           .length === 0
     );
 
+    //more then one schema file
+    filteredItems = [
+      ...filteredItems,
+      ...items.filter((item) => item.files.filter((file) => file.artifactType === FileType.scheme).length > 1)
+    ];
+
     return filteredItems;
   };
 

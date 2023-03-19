@@ -1,3 +1,5 @@
+import { DropzoneOptions } from 'react-dropzone';
+
 export type DropzoneProps = DropzoneOptions & {
   reset?: () => void;
   onDropedFilesChange?: (dropedFiles: DropzoneFile[]) => void;

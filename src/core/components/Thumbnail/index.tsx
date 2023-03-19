@@ -4,9 +4,8 @@ import { IThumbnailProps } from './types';
 
 export const Thumbnail = (props: IThumbnailProps) => {
   const hasClickEvent = !!props.onClick;
-  let className = 'thumbnail';
-  className += props.className ? ` ${props.className}` : '';
-  className += hasClickEvent ? ' thumbnail-clickable' : '';
+  let classNames = props.className ? `thumbnail ${props.className}` : 'thumbnail';
+  classNames += hasClickEvent ? ' thumbnail--clickable' : '';
   const handleClick = (index: number) => {
     if (hasClickEvent) {
       props.onClick!(index);
@@ -14,7 +13,7 @@ export const Thumbnail = (props: IThumbnailProps) => {
   };
   return (
     <Link onClick={() => handleClick(props.index)}>
-      <Paper variant='outlined' elevation={0} className={className}>
+      <Paper variant='outlined' elevation={0} className={classNames}>
         <Grid container justifyContent='center'>
           <Grid item container className='height100px' alignItems='center' justifyContent='center'>
             {props.loading ? (

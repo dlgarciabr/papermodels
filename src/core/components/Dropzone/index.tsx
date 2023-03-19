@@ -1,4 +1,4 @@
-import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { Alert, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { FileType } from 'db';
 import { memo, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -32,7 +32,7 @@ export const Dropzone = (props: DropzoneProps) => {
       props.onDropedFilesChange(newFileList);
     }
     if (props.onDrop) {
-      props.onDrop(filesToAdd);
+      props.onDrop(filesToAdd as unknown as File[], [], {} as any);
     }
   };
 
@@ -41,22 +41,6 @@ export const Dropzone = (props: DropzoneProps) => {
     onDrop
   });
 
-  // TODO remove to a css file
-  const baseStyle = {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    borderWidth: 2,
-    borderRadius: 2,
-    borderColor: '#eeeeee',
-    borderStyle: 'dashed',
-    backgroundColor: '#fafafa',
-    color: '#bdbdbd',
-    outline: 'none',
-    transition: 'border .24s ease-in-out'
-  };
   // TODO remove to a css file
   const focusedStyle = {
     borderColor: '#2196f3'
@@ -69,17 +53,9 @@ export const Dropzone = (props: DropzoneProps) => {
   const rejectStyle = {
     borderColor: '#ff1744'
   };
-  // TODO remove to a css file
-  const thumbsContainer = {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 16
-  };
 
   const style = useMemo(
     () => ({
-      ...baseStyle,
       ...(isFocused ? focusedStyle : {}),
       ...(isDragAccept ? acceptStyle : {}),
       ...(isDragReject ? rejectStyle : {})
@@ -90,18 +66,14 @@ export const Dropzone = (props: DropzoneProps) => {
 
   const renderRejections = () => {
     if (fileRejections.length > 0) {
-      return fileRejections.map((rejection) => {
-        return (
-          <>
-            <p key={rejection.file.name}>{rejection.file.name}</p>
-            <ul>
-              {rejection.errors.map((error) => (
-                <li key={error.code}>{error.message}</li>
-              ))}
-            </ul>
-          </>
-        );
-      });
+      return fileRejections.map((rejection) => (
+        <Alert key={getSimpleRandomKey()} severity='warning'>
+          Problem(s) found with file <b>{rejection.file.name}</b>
+          {rejection.errors.map((error) => (
+            <li key={error.code}>{error.message}</li>
+          ))}
+        </Alert>
+      ));
     }
   };
 
@@ -129,9 +101,9 @@ export const Dropzone = (props: DropzoneProps) => {
           index={index}
           src={file.uploadPreview}
           altText={file.storagePath}
-          className={
-            props.validateFiles && !file.artifactType ? 'thumbnail-dropzone thumbnail-error' : 'thumbnail-dropzone'
-          }>
+          className={`dropzone-thumbnail ${
+            props.validateFiles && !file.artifactType ? ' dropzone-thumbnail--error' : ''
+          }`}>
           <>
             <RadioGroup
               aria-labelledby='radio-group-file-type-label'
@@ -156,13 +128,13 @@ export const Dropzone = (props: DropzoneProps) => {
   );
 
   return (
-    <section className='container'>
-      <div {...getRootProps({ className: 'dropzone', style: style as any })}>
+    <section className='dropzone-container'>
+      <div {...getRootProps({ style: style as any })}>
         <input {...getInputProps()} />
         <p>Drag and drop some files here, or click to select files</p>
         <em>(2 files are the maximum number of files you can drop here)</em>
       </div>
-      <aside style={thumbsContainer as any}>{thumbnails}</aside>
+      <aside>{thumbnails}</aside>
       {renderRejections()}
     </section>
   );

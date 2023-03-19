@@ -14,11 +14,11 @@ export default api(async (_req, res, _ctx) => {
     });
     console.log(`[SitemapGenerator] found ${enabledItems.length} items.`);
     const urls = enabledItems.map((item) => ({
-      loc: `${process.env.SITE_URL}/items/${item.id}`,
+      loc: `${process.env.NEXT_PUBLIC_SITE_URL}/items/${item.id}`,
       lastmod: now
     }));
     urls.splice(0, 0, {
-      loc: `${process.env.SITE_URL}`,
+      loc: `${process.env.NEXT_PUBLIC_SITE_URL}`,
       lastmod: now
     });
     const siteMapResponse = await getServerSideSitemap(urls);
