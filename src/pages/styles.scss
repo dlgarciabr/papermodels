@@ -63,34 +63,36 @@ table.content-info {
   }
 }
 
-.MuiPaper-root.thumbnail {
+.MuiPaper-root {
   &.download-buttons-container {
     background-color: variables.$primary-backgroud-color;
     text-align: center;
     height: 175px;
   }
 
-  &.dropzone-thumbnail {
-    padding: 10px;
-    width: 130px;
-    height: 240px;
-    text-align: center;
-
-    &--error {
-      border: {
-        style: double;
-        width: 1px;
-        color: variables.$error-border-color;
-      }
-    }
-  }
-
   &.item-main-image {
     height: 500px;
   }
 
-  &--clickable {
-    cursor: pointer;
+  &.thumbnail {
+    &.dropzone-thumbnail {
+      padding: 10px;
+      width: 130px;
+      height: 240px;
+      text-align: center;
+
+      &--error {
+        border: {
+          style: double;
+          width: 1px;
+          color: variables.$error-border-color;
+        }
+      }
+    }
+
+    &--clickable {
+      cursor: pointer;
+    }
   }
 }
 
@@ -196,10 +198,6 @@ table.content-info {
     style: double;
   }
 
-  span {
-    margin-top: 130px;
-  }
-
   img {
     // margin-top: 2%;
     width: 90%;
@@ -220,6 +218,10 @@ table.content-info {
       top: 10px;
       bottom: 10px;
     }
+  }
+
+  span {
+    margin-top: 130px;
   }
 }
 
