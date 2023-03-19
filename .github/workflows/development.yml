@@ -4,8 +4,6 @@ env:
   VERCEL_PROJECT_ID: prj_ZlPjR3kxAR1cl2uxasUAfEkvFADu
   DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
 on:
-  push:
-    branches: [develop]
   pull_request:
     branches: [develop]
 
