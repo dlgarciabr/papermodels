@@ -24,7 +24,6 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { calculateMarginTop } from './index.utils';
 import logo from 'public/images/logo.png';
 import { useGetSugestions, useSearch, useGetItemsByCategory } from './index.hooks';
-import { IData } from './items/index.types';
 import { ItemWithChildren } from 'types';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
@@ -36,6 +35,7 @@ import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymou
 import { invoke } from '@blitzjs/rpc';
 import { categoryImage } from './categoryImage.json';
 import Loading from 'src/core/components/Loading';
+import { ISearchData } from './items/index.types';
 
 //TODO modify to use cloudnary api
 const dogDefaultImage =
@@ -92,7 +92,7 @@ const Home: BlitzPage = () => {
     currentPage: Number(router.query.page) || 1
   };
 
-  const [data, setData] = useState<IData>({ ...initialData });
+  const [data, setData] = useState<ISearchData>({ ...initialData });
 
   const adjustSearchFieldMarginTop = () => {
     if (data.items.length === 0) {
@@ -136,8 +136,8 @@ const Home: BlitzPage = () => {
     void router.push({});
   };
 
-  const handleSearch = async (expression: string, page: number) => {
-    if (expression.trim() === '') {
+  const handleSearch = async (expression: string | undefined, page: number) => {
+    if (!expression || expression.trim() === '') {
       setEmptySearchAtempt(true);
       return;
     }
@@ -147,17 +147,18 @@ const Home: BlitzPage = () => {
     try {
       const { items, count } = await search(expression, page - 1);
       setData({
+        expression,
+        categoryId: undefined,
         items,
         pages: Math.ceil(count / 9),
-        expression,
         currentPage: page
       });
       if (items.length === 0) {
         const { items, count } = await getSugestions();
         setData({
+          expression,
           items,
           pages: Math.ceil(count / 9),
-          expression,
           currentPage: page
         });
         setShowEmptySearchMessage(true);
@@ -169,22 +170,30 @@ const Home: BlitzPage = () => {
     }
   };
 
-  const handleClickCategorySlide = async (categoryId: number) => {
+  const handleClickCategorySlide = async (categoryId: number, page: number) => {
     try {
       setLoading(true);
-      const { items, count } = await getItemsByCategory(categoryId, 0);
+      const { items, count } = await getItemsByCategory(categoryId, page);
       setData({
+        expression: undefined,
+        categoryId,
         items,
         pages: Math.ceil(count / 9),
-        expression: '',
-        currentPage: 0
+        currentPage: page
       });
     } catch (error) {
       showToast(ToastType.ERROR, error);
     } finally {
       setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleClickChangePage = async (page: number) => {
+    if (data.expression) {
+      void handleSearch(data.expression, page);
+    } else if (data.categoryId) {
+      void handleClickCategorySlide(data.categoryId, page);
+    }
   };
 
   const renderCards = useMemo(
@@ -277,7 +286,7 @@ const Home: BlitzPage = () => {
               <Pagination
                 count={data.pages}
                 page={data.currentPage}
-                onChange={(_event, page) => handleSearch(data.expression, page)}
+                onChange={(_event, page) => handleClickChangePage(page)}
               />
             </Grid>
             <Grid item container xs={12} justifyContent='center'>
@@ -292,7 +301,7 @@ const Home: BlitzPage = () => {
               <CategoryCarousel
                 categories={categories}
                 loading={categories.length === 0}
-                onClickSlide={handleClickCategorySlide}
+                onClickSlide={(categoryId) => handleClickCategorySlide(categoryId, 0)}
               />
             </Grid>
           </Grid>
