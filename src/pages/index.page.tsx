@@ -171,6 +171,7 @@ const Home: BlitzPage = () => {
   };
 
   const handleClickCategorySlide = async (categoryId: number, page: number) => {
+    console.log('#########################');
     try {
       setLoading(true);
       const { items, count } = await getItemsByCategory(categoryId, page - 1);
