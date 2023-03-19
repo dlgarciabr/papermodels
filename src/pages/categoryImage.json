@@ -35,6 +35,26 @@
     {
       "categoryName": "Military Vehicles",
       "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679214751/papermodel/_categories/0603a94d-30b5-4da9-b065-7c02eff680fb_crkjmh.jpg"
+    },
+    {
+      "categoryName": "Misc.",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679223639/papermodel/_categories/712648de-6d89-4411-bb30-bc8ae3dab499_m94e0w.jpg"
+    },
+    {
+      "categoryName": "Motorhomes",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679220456/papermodel/_categories/d55cae12-6f7e-4531-a94e-a90f48826191_rordcp.jpg"
+    },
+    {
+      "categoryName": "Trains",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679220407/papermodel/_categories/8201ca16-b8b2-4c84-adf2-5a676c6f18ee_x6re0r.jpg"
+    },
+    {
+      "categoryName": "Trucks",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679220359/papermodel/_categories/5fedd13c-2b1e-440a-bd16-59af35b5c0e7_e1oe9o.jpg"
+    },
+    {
+      "categoryName": "Work Machines",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679220135/papermodel/_categories/48b09b7d-02e7-498c-9064-20f977d9614b_bcnftd.jpg"
     }
   ]
 }
