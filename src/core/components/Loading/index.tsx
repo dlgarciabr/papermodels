@@ -9,6 +9,9 @@ export const Loading = ({ visible = true }: { visible?: boolean }) => {
     const documentHeight = document.body.clientHeight + 40 + document.body.getBoundingClientRect().y * -1;
     const visiblePageHeight = window.innerHeight;
     const scrollY = window.scrollY;
+    console.log('useEffect', visible);
+    console.log('documentHeight', documentHeight);
+    console.log('visiblePageHeight', visiblePageHeight);
     if (visible) {
       (document as any).body.style.overflowY = 'disable';
       setHeight(documentHeight);

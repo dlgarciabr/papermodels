@@ -173,7 +173,7 @@ const Home: BlitzPage = () => {
   const handleClickCategorySlide = async (categoryId: number, page: number) => {
     try {
       setLoading(true);
-      const { items, count } = await getItemsByCategory(categoryId, page);
+      const { items, count } = await getItemsByCategory(categoryId, page - 1);
       setData({
         expression: undefined,
         categoryId,
@@ -301,7 +301,7 @@ const Home: BlitzPage = () => {
               <CategoryCarousel
                 categories={categories}
                 loading={categories.length === 0}
-                onClickSlide={(categoryId) => handleClickCategorySlide(categoryId, 0)}
+                onClickSlide={(categoryId) => handleClickCategorySlide(categoryId, 1)}
               />
             </Grid>
           </Grid>

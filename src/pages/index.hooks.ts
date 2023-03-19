@@ -94,6 +94,7 @@ const useGetItemsByCategory = () => {
       }
       const gRecaptchaToken = await executeRecaptcha('searchItems');
       const { items, count } = await searchByWhere(page, 9, gRecaptchaToken, { categoryId });
+      console.log('count', count);
       void router.push({ query: { categoryId, page } });
       await fulFillItemsFilesUrls(items);
       resolve({ items, count });

@@ -1,6 +1,6 @@
 import { paginate } from 'blitz';
 import { resolver } from '@blitzjs/rpc';
-import db, { Prisma } from 'db';
+import db, { ItemStatus, Prisma } from 'db';
 
 interface GetCategoriesInput extends Pick<Prisma.CategoryFindManyArgs, 'where' | 'orderBy' | 'skip' | 'take'> {}
 
@@ -8,7 +8,9 @@ export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: Ge
   const whereClause: Prisma.CategoryWhereInput = {
     ...where,
     items: {
-      some: {}
+      every: {
+        status: ItemStatus.enable
+      }
     }
   };
   const {
