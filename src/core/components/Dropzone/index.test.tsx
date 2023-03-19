@@ -199,7 +199,7 @@ describe('Dropzone', () => {
     const containsError = container
       .querySelector(`img[alt='${fileName}']`)
       ?.closest('div.dropzone-thumbnail')
-      ?.classList.contains('error');
+      ?.classList.contains('dropzone-thumbnail--error');
     expect(containsError).toBeTruthy();
   });
 });

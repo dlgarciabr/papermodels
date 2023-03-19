@@ -547,7 +547,7 @@ describe('Item changing', () => {
     const downloadFile = vi.spyOn(globalUtils, 'downloadFile').mockImplementationOnce((() => {}) as any);
 
     // act
-    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.LINK, { name: 'Download' }));
+    await userEvent.click(screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Download' }));
 
     // assert
     expect(downloadFile).toHaveBeenNthCalledWith(1, item.files[0]?.storagePath);
