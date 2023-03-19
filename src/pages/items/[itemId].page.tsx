@@ -31,7 +31,7 @@ import { getSimpleRandomKey } from 'src/utils/global';
 import { ItemWithChildren } from 'types';
 import getItemAnonymous from 'src/items/queries/getItemAnonymous';
 import { useDownloadFiles, useHasFileType } from './items.hook';
-import logo from 'public/images/logo.png';
+import logo2 from 'public/images/logo2.png';
 import { shortenTextWithEllipsis } from 'src/utils/string';
 import { LoadingButton } from '@mui/lab';
 import { showToast } from 'src/core/components/Toast';
@@ -86,7 +86,7 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
           {renderContentAndUrlRow('Author', item.author, item.authorLink)}
           <tr>
             <td>
-              <Typography variant='body2'>Approx. assembly time</Typography>
+              <Typography variant='body2'>Assembly time</Typography>
             </td>
             <td>
               <Typography variant='body2'>
@@ -119,7 +119,7 @@ export const Item = () => {
   const hasFileType = useHasFileType();
   const [isDownloadingFile, setDownloadingFile] = useState<boolean>(false);
 
-  const [imageData, setImageData] = useState<IImageData>({
+  const [mainImageData, setMainImageData] = useState<IImageData>({
     loading: false
   });
   const [thumbnailsData, setThumbnailsData] = useState<IThumbnailsData>({
@@ -150,25 +150,27 @@ export const Item = () => {
   };
 
   const loadMainImage = async (storagePath: string, type: FileType) => {
-    setImageData({ loading: true });
-    let url = getFileUrl(storagePath);
+    setMainImageData({ loading: true });
+    let url: string | null = getFileUrl(storagePath);
     if (type === FileType.scheme) {
       url = getPdfThumbnailUrl(url);
     }
-    const response = await fetch(url, { method: 'GET' });
-    const blob = await response.blob();
-    const urlCreator = window.URL || window.webkitURL;
-    var imageUrl = urlCreator.createObjectURL(blob);
-    setImageData({
-      loading: false,
-      url: imageUrl,
-      name: storagePath
-    });
+    if (url && url !== '') {
+      const response = await fetch(url, { method: 'GET' });
+      const blob = await response.blob();
+      const urlCreator = window.URL || window.webkitURL;
+      var imageUrl = urlCreator.createObjectURL(blob);
+      setMainImageData({
+        loading: false,
+        url: imageUrl,
+        name: storagePath
+      });
+    }
   };
 
   const renderDescriptionDialog = () => {
     return (
-      <Dialog open={openDescriptionDialog}>
+      <Dialog open={openDescriptionDialog} onClose={() => setOpenDescriptionDialog(false)}>
         <DialogTitle>{item?.name}</DialogTitle>
         <DialogContent>
           <Box
@@ -197,7 +199,7 @@ export const Item = () => {
     const imageName = storagePathParts![0]?.replaceAll('_thumb', '');
     const extension = storagePathParts![1];
     const imageStoragePath = `${imageName}.${extension}`;
-    if (imageData.name === imageStoragePath) {
+    if (mainImageData.name === imageStoragePath) {
       return;
     }
     await loadMainImage(imageStoragePath, thumbnail.type);
@@ -213,14 +215,19 @@ export const Item = () => {
             id: itemId
           });
           setItem(item as ItemWithChildren);
-          setupThumbnails(item as ItemWithChildren);
-          const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
-          if (!imageData.url && previewFiles.length >= 1) {
-            const file = previewFiles[0];
-            await loadMainImage(file!.storagePath, FileType.preview);
-          } else {
-            const file = item.files.find((file) => file.artifactType === FileType.scheme);
-            await loadMainImage(getPdfThumbnailUrl(file!.storagePath), FileType.scheme);
+          if (item.files.length > 0) {
+            setupThumbnails(item as ItemWithChildren);
+            const previewFiles = item.files.filter((file) => file.artifactType === FileType.preview);
+            if (!mainImageData.url && previewFiles.length >= 1) {
+              const file = previewFiles[0];
+              await loadMainImage(file!.storagePath, FileType.preview);
+            } else {
+              const file = item.files.find((file) => file.artifactType === FileType.scheme);
+              const url = getPdfThumbnailUrl(file!.storagePath);
+              if (url) {
+                await loadMainImage(url, FileType.scheme);
+              }
+            }
           }
         } catch (error) {
           console.error(error);
@@ -242,10 +249,10 @@ export const Item = () => {
   const loadThumbnailUrls = async () => {
     thumbnailsData.items.forEach((thumbnail) => {
       let url = getThumbnailUrl(thumbnail.storagePath);
-      if (thumbnail.type === FileType.scheme) {
+      if (thumbnail.type === FileType.scheme && !!url) {
         url = getPdfThumbnailUrl(url);
       }
-      thumbnail.finalUrl = url;
+      thumbnail.finalUrl = url || undefined;
       setThumbnailsData({
         ...thumbnailsData,
         items: thumbnailsData.items
@@ -274,25 +281,19 @@ export const Item = () => {
         onClick={(index) => (thumbnailsData.items.length > 1 ? loadMainImageFromThumbnail(index) : '')}
       />
     ));
-
+  const title = `Papermodels - ${item?.name}`;
   return (
     <>
       {renderDescriptionDialog()}
       <Head>
-        <title>Papermodels - {item?.name}</title>
+        <title>{title}</title>
       </Head>
       <Container component='main'>
         <Grid container spacing={2} justifyContent='center'>
           <Grid item xs={12} className='justify-content-center'>
-            <Image
-              src={`${logo.src}`}
-              alt='blitzjs'
-              width='256px'
-              height='160px'
-              layout='fixed'
-              className='logo'
-              onClick={() => router.push(Routes.Home())}
-            />
+            <a href={process.env.NEXT_PUBLIC_SITE_URL}>
+              <Image src={logo2.src} alt='papermodel' width='430px' height='100px' layout='fixed' className='logo' />
+            </a>
           </Grid>
           {/* <Grid container item spacing={1}> */}
           <Grid item container xs={12} md={6}>
@@ -300,8 +301,12 @@ export const Item = () => {
               <Paper variant='outlined' elevation={0} className='item-main-image'>
                 <Grid container justifyContent='center' alignContent='center' sx={{ height: '100%' }}>
                   <Grid item>
-                    {imageData.loading && <CircularProgress />}
-                    <img className={imageData.loading ? 'hidden' : ''} src={imageData.url} alt={imageData.name} />
+                    {mainImageData.loading && <CircularProgress />}
+                    <img
+                      className={mainImageData.loading ? 'hidden' : ''}
+                      src={mainImageData.url}
+                      alt={mainImageData.name}
+                    />
                   </Grid>
                 </Grid>
               </Paper>
@@ -310,59 +315,62 @@ export const Item = () => {
               {thumbnails()}
             </Grid>
           </Grid>
-          <Grid item container xs={12} md={6} spacing={0} alignItems='flex-start' direction='row'>
-            <Grid item xs={12}>
-              <Typography variant='h6' component='div'>
-                {item?.name}
-              </Typography>
-              {item?.description && (
-                <Typography variant='subtitle1'>
-                  {shortenTextWithEllipsis(item?.description, 200)}{' '}
-                  {item?.description.length >= 200 && (
-                    <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
-                      see more
-                    </a>
-                  )}
+          <Grid item container xs={12} md={6} alignItems='flex-start' direction='row'>
+            <Grid item container xs={12} md={12} rowSpacing={5} alignItems='flex-start' direction='row'>
+              <Grid item xs={12}>
+                <Typography variant='h6' component='div'>
+                  {item?.name}
                 </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12}>
-              <Paper className='item-download' elevation={0}>
-                <Grid container spacing={2} justifyContent='center'>
-                  <Grid item xs={10}>
-                    <LoadingButton
-                      loading={isDownloadingFile}
-                      variant='contained'
-                      fullWidth
-                      startIcon={<MdDownload />}
-                      disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
-                      onClick={() => void handleClickDownloadFile(FileType.scheme)}>
-                      Download schemes
-                    </LoadingButton>
-                  </Grid>
-                  <Grid item xs={10}>
-                    <LoadingButton
-                      loading={isDownloadingFile}
-                      variant='contained'
-                      fullWidth
-                      startIcon={<MdDownload />}
-                      disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
-                      onClick={() => void handleClickDownloadFile(FileType.instruction)}>
-                      Download instrunctions
-                    </LoadingButton>
-                  </Grid>
-                  {/* <Grid item xs={10}>
+                {item?.description && (
+                  <Typography variant='subtitle1'>
+                    {shortenTextWithEllipsis(item?.description, 200)}{' '}
+                    {item?.description.length >= 200 && (
+                      <a href='#' onClick={() => setOpenDescriptionDialog(true)}>
+                        see more
+                      </a>
+                    )}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12}>
+                <Paper className='download-buttons-container' elevation={0}>
+                  <Grid container spacing={4} justifyContent='center'>
+                    <Grid item xs={10}>
+                      <LoadingButton
+                        loading={isDownloadingFile}
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        disabled={!item || !hasFileType(FileType.scheme, item?.files!)}
+                        onClick={() => void handleClickDownloadFile(FileType.scheme)}>
+                        Download schemes
+                      </LoadingButton>
+                    </Grid>
+                    <Grid item xs={10}>
+                      <LoadingButton
+                        loading={isDownloadingFile}
+                        variant='contained'
+                        fullWidth
+                        startIcon={<MdDownload />}
+                        disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
+                        onClick={() => void handleClickDownloadFile(FileType.instruction)}>
+                        Download instrunctions
+                      </LoadingButton>
+                    </Grid>
+                    {/* <Grid item xs={10}>
                       <Button variant='contained' fullWidth startIcon={<MdDownload />} color='secondary'>
                         Download all
                       </Button>
                     </Grid> */}
-                </Grid>
-              </Paper>
-            </Grid>
-            <Grid item container xs={12}>
-              {item && <DetailsTable item={item} />}
+                  </Grid>
+                </Paper>
+              </Grid>
+              <Grid item container xs={12}>
+                {item && <DetailsTable item={item} />}
+              </Grid>
             </Grid>
           </Grid>
+
           {/* </Grid> */}
         </Grid>
       </Container>

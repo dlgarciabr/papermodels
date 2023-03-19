@@ -24,7 +24,8 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
 import { ItemWithChildren } from 'types';
-import { Checkbox } from '@mui/material';
+import { Button, Checkbox } from '@mui/material';
+import { DropzoneProps } from 'src/core/components/Dropzone/types';
 
 const Files = (props: {
   files: ItemFile[];
@@ -56,12 +57,8 @@ const Files = (props: {
                     <Checkbox checked={file.mainPreview} onClick={() => props.onClickMain(file)} />
                   </td>
                   <td>
-                    <a href='#' onClick={() => downloadFile(file.storagePath)}>
-                      Download
-                    </a>
-                    <a href='#' onClick={() => props.onClickDelete(file)}>
-                      Remove
-                    </a>
+                    <Button onClick={() => downloadFile(file.storagePath)}>Download</Button>
+                    <Button onClick={() => props.onClickDelete(file)}>Remove</Button>
                   </td>
                 </tr>
               );
@@ -80,6 +77,7 @@ export const EditItem = () => {
   const [isSaving, setSaving] = useState(false);
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
+  const [isLoading, setLoading] = useState<boolean>(false);
   const [item, queryResult] = useQuery(
     getItem,
     { id: itemId },
@@ -105,28 +103,36 @@ export const EditItem = () => {
     setSaving(true);
     const hasFileWithError = filesToUpload.some((file) => !file.artifactType);
     if (hasFileWithError) {
-      showToast(ToastType.WARNING, 'Choose a type for each file(s)!');
+      showToast(ToastType.WARNING, 'Choose a type for each file before save!');
       return;
     }
+    setLoading(true);
     try {
       const uploadedFiles = await uploadFiles(filesToUpload.map((file) => ({ ...file, item })));
       await saveItemFiles(uploadedFiles, createItemFileMutation);
-      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
       await queryResult.refetch();
       setDropzoneKey(getSimpleRandomKey());
       setFilesToUpload([]);
-      setSaving(false);
+      showToast(ToastType.SUCCESS, 'Files successfully added to item!');
     } catch (error) {
       showToast(ToastType.ERROR, error);
+    } finally {
       setSaving(false);
+      setLoading(false);
     }
+  };
+
+  const goToPreviewPage = (id: number) => {
+    window.open(`${location.origin}/items/${id}`, '_blank');
   };
 
   const handleDeleteFile = async (file: ItemFile & { url: string; item: Item }) => {
     if (confirm(`Are you sure to remove the file ${file.storagePath}`)) {
+      setLoading(true);
       await deleteFile(file.storagePath);
       await deleteItemFileMutation({ id: file.id });
       await queryResult.refetch();
+      setLoading(false);
       showToast(ToastType.SUCCESS, 'file removed');
     }
   };
@@ -148,8 +154,9 @@ export const EditItem = () => {
     setFilesKey(getSimpleRandomKey());
   };
 
-  const dropzoneOptions = {
+  const dropzoneOptions: DropzoneProps = {
     maxFiles: 5,
+    maxSize: 3145728,
     accept: {
       'image/png': ['.png'],
       'image/jpeg': ['.jpeg', '.jpg'],
@@ -166,10 +173,9 @@ export const EditItem = () => {
       <Head>
         <title>Edit Item {item.id}</title>
       </Head>
-
+      <Loading visible={isLoading} />
       <div>
         <h1>Edit Item {item.name}</h1>
-
         <ItemForm
           submitText='Update Item'
           schema={UpdateItemValidation}
@@ -186,6 +192,7 @@ export const EditItem = () => {
           categories={categoryResult.categories}
           onSubmit={async (values) => {
             try {
+              setLoading(true);
               const updated = await updateItemMutation({
                 ...values,
                 files: item.files
@@ -199,6 +206,8 @@ export const EditItem = () => {
               return {
                 [FORM_ERROR]: error.toString()
               };
+            } finally {
+              setLoading(false);
             }
           }}
         />
@@ -217,6 +226,9 @@ export const EditItem = () => {
         ) : (
           ''
         )}
+        <button type='button' onClick={() => goToPreviewPage(item.id)} style={{ marginLeft: '0.5rem' }}>
+          preview
+        </button>
         <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
           Save files
         </button>

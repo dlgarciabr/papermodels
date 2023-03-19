@@ -31,7 +31,6 @@ export const EditCategory = () => {
       <Head>
         <title>Edit Category {category.id}</title>
       </Head>
-
       <div>
         <h1>Edit Category {category.id}</h1>
 

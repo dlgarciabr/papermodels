@@ -1,0 +1,24 @@
+{
+  "categoryImage": [
+    {
+      "categoryName": "Aircrafts",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147575/papermodel/_categories/9d132e8b-c43e-446f-b8a6-46958a12e41d_gcvzjm_xhhrmd_c6zhxg.jpg"
+    },
+    {
+      "categoryName": "Architecture",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147575/papermodel/_categories/alcazar_of_segovia_preview_1_yrygas_ybjrv8.jpg"
+    },
+    {
+      "categoryName": "Automobiles",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147576/papermodel/_categories/category_autos2_cwz5gg_sion4j.png"
+    },
+    {
+      "categoryName": "Boats & Ships",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147576/papermodel/_categories/Untitled_lrzvwa_szeboh.png"
+    },
+    {
+      "categoryName": "Buses",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147576/papermodel/_categories/Untitled_cc95an_mwpeby.png"
+    }
+  ]
+}
