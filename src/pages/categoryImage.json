@@ -17,12 +17,16 @@
       "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147576/papermodel/_categories/Untitled_lrzvwa_szeboh.png"
     },
     {
+      "categoryName": "Buildings",
+      "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679215347/papermodel/_categories/870ec611-5271-4613-94f7-55a597895ed3_qksogb.jpg"
+    },
+    {
       "categoryName": "Buses",
       "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679147576/papermodel/_categories/Untitled_cc95an_mwpeby.png"
     },
     {
       "categoryName": "Military Vehicles",
       "imageSrc": "https://res.cloudinary.com/dcqomtjel/image/upload/v1679214751/papermodel/_categories/0603a94d-30b5-4da9-b065-7c02eff680fb_crkjmh.jpg"
-    }    
+    }
   ]
 }
