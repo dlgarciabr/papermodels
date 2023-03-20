@@ -23,9 +23,10 @@ export const Loading = ({ visible = true }: { visible?: boolean }) => {
     <Grid
       container
       className='loading'
-      style={{ height: `${height}px` }}
+      style={{ height: `${height}px`, display: visible ? 'flex' : 'none' }}
       justifyContent='center'
-      visibility={visible ? 'visible' : 'hidden'}>
+      // visibility={visible ? 'visible' : 'hidden'}
+    >
       <Grid item>{visible && <CircularProgress style={{ marginTop: `${marginTop}px` }} />}</Grid>
     </Grid>
   );
