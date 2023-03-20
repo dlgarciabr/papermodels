@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import { ARIA_ROLE } from 'src/utils/ariaRoles';
-import { render, screen, setupUseInvokeImplementation, setupUseInvokeOnce } from 'test/utils';
+import { fireEvent, render, screen, setupUseInvokeImplementation, setupUseInvokeOnce, waitFor } from 'test/utils';
 import { vi } from 'vitest';
 import * as googleRecaptcha from 'react-google-recaptcha-v3';
 import Home from './index.page';
@@ -292,31 +292,711 @@ describe('Index page tests', () => {
     expect(await screen.findByText('Type something before search, like aircraft...')).toBeInTheDocument();
   });
 
-  test.todo('renders a SearchCard component for each item in the data.items array', () => {
-    // arrange
-    // const items = [
-    //   { name: 'Item 1', description: 'Description 1' },
-    //   { name: 'Item 2', description: 'Description 2' }
-    // ];
-    // // vi.spyOn()
-    // vi.mock('src/pages/index.hooks', () => ({
-    //   useSearch: () => ({ items, count: 2 })
-    // }));
-    // // vi.mock(useSearch).mockReturnValue({ items, count: 2 });
-    // render(<Home />);
-    // const searchCards = screen.getAllByTestId('search-card');
-    // expect(searchCards.length).toBe(2);
-    // expect(screen.getByText('Item 1')).toBeInTheDocument();
-    // expect(screen.getByText('Description 1')).toBeInTheDocument();
-    // expect(screen.getByText('Item 2')).toBeInTheDocument();
-    // expect(screen.getByText('Description 2')).toBeInTheDocument();
-  });
-
   test.todo('User search for a model and see no results');
 
   test.todo('User search for a specific model and navigate to see the chosen model');
 
-  test.todo('User search for a specific model and navigate through pages');
+  test('User search for a specific model and navigate through pages', async () => {
+    // arrange
+    const textToSearch = 'Train';
+
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
+        {
+          collectionName: 'categories',
+          categories: [
+            {
+              id: 1,
+              name: 'test'
+            }
+          ]
+        },
+        {
+          collectionName: 'items',
+          items: [],
+          hasMore: false
+        },
+        5,
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train2',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train3',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train4',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train5',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train6',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train7',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train8',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train9',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: true
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train10',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: false
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train2',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train3',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train4',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train5',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train6',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train7',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train8',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train9',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: true
+        }
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
+    });
+
+    render(<Home />);
+
+    // act
+    const searchInput = screen.getByLabelText('Search for a model');
+    const searchButton = screen.getByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Search for a model' });
+
+    await userEvent.type(searchInput, textToSearch);
+    await userEvent.click(searchButton);
+
+    // assert
+    expect(await screen.findByText('Train')).toBeInTheDocument();
+
+    // act to next
+    const nextButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to next page' });
+    await userEvent.click(nextButton);
+
+    // assert next
+    expect(await screen.findByText('Train10')).toBeInTheDocument();
+
+    // act to prev
+    const prevButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to previous page' });
+    await userEvent.click(prevButton);
+
+    // assert prev
+    expect(await screen.findByText('Train')).toBeInTheDocument();
+  });
+
+  test('User clicks on a specific category see models and navigate through pages', async () => {
+    // arrange
+    vi.spyOn(googleRecaptcha, 'useGoogleReCaptcha').mockReturnValue({
+      executeRecaptcha: vi.fn().mockResolvedValue('')
+    });
+
+    let callIndex = 0;
+    setupUseInvokeImplementation((_queryFn: any): any => {
+      const returnStack = [
+        {
+          collectionName: 'categories',
+          categories: [
+            {
+              id: 1,
+              name: 'automobiles'
+            },
+            {
+              id: 2,
+              name: 'aircrafts'
+            },
+            {
+              id: 3,
+              name: 'buses'
+            }
+          ]
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train2',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train3',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train4',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train5',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train6',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train7',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train8',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train9',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: true
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train10',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: false
+        },
+        {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: 'Train',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train2',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train3',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train4',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train5',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train6',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train7',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train8',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            },
+            {
+              id: 1,
+              name: 'Train9',
+              files: [
+                {
+                  storagePath: 'vet-clinic.jpg',
+                  artifactType: 'scheme'
+                },
+                {
+                  storagePath: 'jetplane.jpg',
+                  artifactType: 'scheme'
+                }
+              ]
+            }
+          ],
+          hasMore: true
+        }
+      ];
+      const data = returnStack[callIndex];
+      callIndex++;
+      return data;
+    });
+
+    const { container } = render(<Home />);
+
+    // act
+    const slides = container.querySelectorAll('.swiper-slide');
+
+    expect(slides).toHaveLength(3);
+
+    await waitFor(() => {
+      expect(slides[0]?.querySelector('circle')).not.toBeInTheDocument();
+    });
+
+    const categorySlide = screen.getByRole(ARIA_ROLE.STRUCTURE.IMG, { name: 'automobiles' });
+
+    fireEvent.click(categorySlide);
+
+    // assert view category slide
+    const loading = container.querySelector('.loading');
+
+    await waitFor(() => {
+      expect((loading as any).style.display).toBe('flex');
+    });
+
+    await waitFor(() => {
+      expect((loading as any).style.display).toBe('none');
+    });
+
+    expect(await screen.findByText('Train')).toBeInTheDocument();
+
+    // act to next
+    const nextButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to next page' });
+    await userEvent.click(nextButton);
+
+    // assert next
+    expect(await screen.findByText('Train10')).toBeInTheDocument();
+
+    // act to prev
+    const prevButton = await screen.findByRole(ARIA_ROLE.WIDGET.BUTTON, { name: 'Go to previous page' });
+    await userEvent.click(prevButton);
+
+    // assert prev
+    expect(await screen.findByText('Train')).toBeInTheDocument();
+  });
 
   test('Show error toast if Google recaptcha is not available', async () => {
     // arrange

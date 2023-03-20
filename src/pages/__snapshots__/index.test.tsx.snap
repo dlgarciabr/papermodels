@@ -9,7 +9,8 @@ exports[`Index page tests > Index page is rendered 1`] = `
       class="Toastify"
     />
     <div
-      class="MuiGrid-root MuiGrid-container loading css-l57l2r-MuiGrid-root"
+      class="MuiGrid-root MuiGrid-container loading css-1lym95h-MuiGrid-root"
+      style="height: 0px; display: none;"
     >
       <div
         class="MuiGrid-root MuiGrid-item css-13i4rnv-MuiGrid-root"
