@@ -364,19 +364,6 @@ const processItemIntegration = async () => {
 
     console.log(`[ItemIntegrationJOB] ${new Date().toISOString()} Item first stage integration process finished.`);
 
-    // const doneIntegrations = itemIntegrations.filter(
-    //   (i) => i.status === ItemIntegrationStatus.done || i.status === ItemIntegrationStatus.simulated
-    // );
-
-    // await db.integrationLog.updateMany({
-    //   where: {
-    //     key: ItemSimulationReference.percentage
-    //   },
-    //   data: {
-    //     value: String(Math.round(doneIntegrations.length * 100 / itemIntegrations.length))
-    //   }
-    // })
-
     if (errors.length > 0) {
       await db.integrationLog.createMany({
         data: errors.map((e) => ({

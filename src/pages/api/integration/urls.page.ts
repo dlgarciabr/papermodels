@@ -236,7 +236,7 @@ const processIntegration = async () => {
         divisor = 1;
         break;
     }
-    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.floor(urlIntegrationsToProcess.length / divisor));
+    urlIntegrationsToProcess = urlIntegrationsToProcess.slice(0, Math.ceil(urlIntegrationsToProcess.length / divisor));
   } else {
     urlIntegrationsToProcess = await db.urlIntegration.findMany({
       where: {
@@ -300,7 +300,12 @@ const processIntegration = async () => {
         );
       } else {
         for await (const itemSelector of itemUrlSelectors) {
-          items = (await readPageUrls(urlIntegration.url, itemSelector.value)).map((url) => ({ url: url as string }));
+          items = (await readPageUrls(urlIntegration.url, itemSelector.value)).map((url) => {
+            if (url && url.indexOf(setup.key) < 0) {
+              return { url: `${setup.domain}${url}` as string };
+            }
+            return { url: url as string };
+          });
         }
       }
 

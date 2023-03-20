@@ -73,18 +73,21 @@ export default api(async (req, res, _ctx) => {
         value: String(type)
       }
     });
-    await db.systemParameter.upsert({
-      where: {
-        key: SystemParameterType.INTEGRATION_ITEM_NAME
-      },
-      update: {
-        value: itemName
-      },
-      create: {
-        key: SystemParameterType.INTEGRATION_ITEM_NAME,
-        value: itemName
-      }
-    });
+
+    if (itemName) {
+      await db.systemParameter.upsert({
+        where: {
+          key: SystemParameterType.INTEGRATION_ITEM_NAME
+        },
+        update: {
+          value: itemName
+        },
+        create: {
+          key: SystemParameterType.INTEGRATION_ITEM_NAME,
+          value: itemName
+        }
+      });
+    }
 
     console.log(`[IntegrationInitializer] Extracting all site URLs...`);
     const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
@@ -97,10 +100,10 @@ export default api(async (req, res, _ctx) => {
     let status;
     switch (type) {
       case IntegrationProcessingType.READ_URLS:
-        status = UrlIntegrationStatus.readingPending; //TODO rename enum property
+        status = UrlIntegrationStatus.readingPending;
         break;
       case IntegrationProcessingType.SIMULATION:
-        status = UrlIntegrationStatus.simulationPending; //TODO rename enum property
+        status = UrlIntegrationStatus.simulationPending;
         break;
       case IntegrationProcessingType.INTEGRATION:
         status = UrlIntegrationStatus.pending;
@@ -117,13 +120,15 @@ export default api(async (req, res, _ctx) => {
       }))
     });
 
-    await db.integrationLog.create({
-      data: {
-        key: ItemSimulationReference.percentage,
-        reference: 'Global',
-        value: '0'
-      }
-    });
+    if (type !== IntegrationProcessingType.READ_URLS) {
+      await db.integrationLog.create({
+        data: {
+          key: ItemSimulationReference.percentage,
+          reference: 'Global',
+          value: '0%'
+        }
+      });
+    }
 
     console.log(`[IntegrationInitializer] Integration initialized!`);
 
