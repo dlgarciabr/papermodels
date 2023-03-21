@@ -8,11 +8,18 @@ import db, {
   FileIntegrationStatus,
   IntegrationLog,
   Item,
-  ItemIntegrationLog
+  ItemIntegrationLog,
+  Category
 } from 'db';
 import { api } from 'src/blitz-server';
 import { UploadItemFile } from 'src/items/types';
-import { IntegrationProcessingType, IntegrationSelector, ItemSimulationReference, SystemParameterType } from 'types';
+import {
+  IntegrationCategoryBinding,
+  IntegrationProcessingType,
+  IntegrationSelector,
+  ItemSimulationReference,
+  SystemParameterType
+} from 'types';
 import { uploadImage } from '../file/image-upload.page';
 import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsString } from './util';
 
@@ -20,6 +27,10 @@ import { executeSelectorAllOnHtmlText, fetchPageAsString, getTextFromNodeAsStrin
 // };
 
 let itemErrors: ItemIntegrationLog[] = [];
+
+let categorySelectorsCache: IntegrationSelector[] = [];
+let categoryBindingsCache: IntegrationCategoryBinding[] = [];
+let categoriesCache: Category[] = [];
 
 const removeExpressions = (text: string, setupIgnoreExpressions: string | null) => {
   if (setupIgnoreExpressions) {
@@ -34,7 +45,11 @@ const processItemIntegration = async () => {
   const systemParameters = await db.systemParameter.findMany({
     where: {
       key: {
-        in: [SystemParameterType.INTEGRATION_TYPE, SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID]
+        in: [
+          SystemParameterType.INTEGRATION_TYPE,
+          SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID,
+          SystemParameterType.INTEGRATION_QUANTITY
+        ]
       }
     }
   });
@@ -111,6 +126,7 @@ const processItemIntegration = async () => {
       const singleIntegrationLogs: Partial<IntegrationLog>[] = [];
       let hasPreviewImages = true;
       let hasDescription = true;
+      let hasCategory = true;
 
       try {
         console.log(`-----------------------------------------------------------------------------------------------`);
@@ -137,6 +153,48 @@ const processItemIntegration = async () => {
         }
 
         hasDescription = !!description;
+
+        let categoryId: number | undefined;
+
+        if (!itemIntegration.categoryId) {
+          categoryId = itemIntegration.categoryId;
+        } else {
+          try {
+            if (categorySelectorsCache.length === 0) {
+              categorySelectorsCache = JSON.parse(itemIntegration.setup.categorySelector) as IntegrationSelector[];
+            }
+            if (categoryBindingsCache.length === 0) {
+              categoryBindingsCache = JSON.parse(itemIntegration.setup.categoryBinding) as IntegrationCategoryBinding[];
+            }
+            if (categoriesCache.length === 0) {
+              categoriesCache = await db.category.findMany();
+            }
+
+            categorySelectorsCache.forEach((selector) => {
+              if (categoryId) {
+                return;
+              }
+              const pageCategoryName = getTextFromNodeAsString(pageContent, selector.value);
+
+              categoryId = categoriesCache.find(
+                (cat) => cat.name.toLowerCase().trim() === pageCategoryName?.toLowerCase().trim()
+              )?.id;
+
+              if (!categoryId) {
+                const systemCategoryName = categoryBindingsCache.find(
+                  (cat) => cat.pageCategoryName.toLowerCase().trim() === pageCategoryName?.toLowerCase().trim()
+                )?.systemCategoryName;
+                categoryId = categoriesCache.find(
+                  (cat) => cat.name.toLowerCase().trim() === systemCategoryName?.toLowerCase().trim()
+                )?.id;
+              }
+            });
+          } catch (error) {
+            // do nothing
+          }
+        }
+
+        hasCategory = !!categoryId;
 
         let dificulty;
         let assemblyTime;
@@ -167,7 +225,7 @@ const processItemIntegration = async () => {
                 dificulty,
                 assemblyTime,
                 setupId: itemIntegration.setup.id,
-                categoryId: itemIntegration.categoryId,
+                categoryId: categoryId || 1,
                 status: ItemStatus.integrating,
                 author: itemIntegration.setup.author,
                 authorLink: itemIntegration.setup.authorLink,
@@ -262,6 +320,16 @@ const processItemIntegration = async () => {
             data: singleIntegrationLogs as IntegrationLog[]
           });
 
+          await db.integrationLog.updateMany({
+            where: {
+              key: ItemSimulationReference.hasCategory,
+              integrationId: itemIntegration.id
+            },
+            data: {
+              value: String(hasCategory)
+            }
+          });
+
           console.log(`[ItemIntegrationJOB] Updating ItemIntegration status...`);
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
@@ -345,6 +413,10 @@ const processItemIntegration = async () => {
           (log) => log.key === ItemSimulationReference.hasDescription && log.value === 'true'
         );
 
+        const containsCategory = logs.filter(
+          (log) => log.key === ItemSimulationReference.hasCategory && log.value === 'true'
+        );
+
         await db.integrationLog.createMany({
           data: [
             {
@@ -358,6 +430,15 @@ const processItemIntegration = async () => {
               value: `${String(Math.round((containsDescription.length * 100) / itemIntegrationsDone.length))}%`
             }
           ]
+        });
+
+        await db.integrationLog.updateMany({
+          where: {
+            key: ItemSimulationReference.categoryPercentage
+          },
+          data: {
+            value: `${String(Math.round((containsCategory.length * 100) / itemIntegrationsDone.length))}%`
+          }
         });
       }
     }

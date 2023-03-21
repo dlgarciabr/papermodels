@@ -44,7 +44,15 @@ table.content-info {
   }
 }
 
+.MuiButton-root {
+  background-color: variables.$field-background-color;
+}
+
 .MuiInputBase-root {
+  background-color: variables.$field-background-color;
+}
+
+.MuiDataGrid-root {
   background-color: variables.$field-background-color;
 }
 

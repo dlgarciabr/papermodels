@@ -58,7 +58,7 @@ const searchPageItemCategory = (
   return categoryName;
 };
 
-const extractPageItem = async (
+const extractPageItems = async (
   pageUrl: string,
   itemSelectors: IntegrationSelector[],
   categorySelectors: IntegrationSelector[],
@@ -104,13 +104,6 @@ const _saveItemIntegrations = async (
       status,
       setupId: setup.id,
       categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1
-      // logs: {
-      //   create: {
-      //     key: ItemSimulationReference.hasCategory,
-      //     reference: pageItem.name!,
-      //     value: String(!!pageItem.categoryName)
-      //   }
-      // }
     }))
   });
 
@@ -292,12 +285,18 @@ const processIntegration = async () => {
         if (categoryBindingsCache.length === 0) {
           categoryBindingsCache = JSON.parse(urlIntegration.setup.categoryBinding) as IntegrationCategoryBinding[];
         }
-        items = await extractPageItem(
+        items = await extractPageItems(
           urlIntegration.url,
           itemUrlSelectors,
           categorySelectorsCache,
           categoryBindingsCache
         );
+
+        items.forEach((item) => {
+          if (item.url && item.url.indexOf(setup.key) < 0) {
+            item.url = `${setup.domain}${item.url}`;
+          }
+        });
       } else {
         for await (const itemSelector of itemUrlSelectors) {
           items = (await readPageUrls(urlIntegration.url, itemSelector.value)).map((url) => {
@@ -392,18 +391,6 @@ const processIntegration = async () => {
           for await (const pageItem of pageItems) {
             await createItemIntegration(pageItem, setup, type);
           }
-          // try {
-          //   await saveItemIntegrations(pageItems, setup, type);
-          // } catch (error) {
-          //   await db.integrationLog.create({
-          //     data: {
-          //       key: ItemSimulationReference.error,
-          //       reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
-          //       value: (error as Error).message,
-          //       error: (error as Error).stack
-          //     }
-          //   });
-          // }
         } else {
           await db.integrationLog.create({
             data: {
@@ -414,25 +401,15 @@ const processIntegration = async () => {
           });
         }
       } else {
-        for await (const pageItem of uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0)) {
-          await createItemIntegration(pageItem, setup, type);
+        const pageItemsToCreate = uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0);
+
+        if (processingQtyType === IntegrationProcessingQtyType.ONE) {
+          await createItemIntegration(pageItemsToCreate[0]!, setup, type);
+        } else {
+          for await (const pageItem of pageItemsToCreate) {
+            await createItemIntegration(pageItem, setup, type);
+          }
         }
-        // try {
-        //   await saveItemIntegrations(
-        //     uniquePageItems.filter((pageItem) => uniqueSiteUrls.indexOf(pageItem.url) > 0),
-        //     setup,
-        //     type
-        //   );
-        // } catch (error) {
-        //   await db.integrationLog.create({
-        //     data: {
-        //       key: ItemSimulationReference.error,
-        //       reference: `Items \n${pageItems.map((p) => p.name).join(',')}`,
-        //       value: (error as Error).message,
-        //       error: (error as Error).stack
-        //     }
-        //   });
-        // }
       }
     }
   }

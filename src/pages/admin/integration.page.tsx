@@ -114,7 +114,7 @@ const Integration = () => {
   const [itemName, setItemName] = useState<string>('');
   const [reintegrateItemId, setReintegrateItemId] = useState<number | null>();
   const [processingQtyType, setProcessingQtyType] = useState<IntegrationProcessingQtyType>(
-    IntegrationProcessingQtyType.FEW
+    IntegrationProcessingQtyType.ONE
   );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
   const [createIntegrationSetupMutation] = useMutation(createIntegrationSetup);
@@ -690,19 +690,16 @@ const Integration = () => {
             </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button
-              onClick={() => processIntegrationSetup(IntegrationProcessingType.READ_URLS)}
-              variant='outlined'
-              disabled={!!simulationIntegrationJob}>
-              Read URLs
-            </Button>
-            <Button
-              onClick={() => processIntegrationSetup(IntegrationProcessingType.SIMULATION)}
-              variant='outlined'
-              disabled={!!simulationIntegrationJob}>
-              Simulate
-            </Button>
             <RadioGroup row>
+              <Radio
+                value={IntegrationProcessingQtyType.ONE}
+                checked={processingQtyType === IntegrationProcessingQtyType.ONE}
+                onClick={() => {
+                  setItemName('');
+                  setProcessingQtyType(IntegrationProcessingQtyType.ONE);
+                }}
+              />
+              <Typography>One</Typography>
               <Radio
                 value={IntegrationProcessingQtyType.FEW}
                 checked={processingQtyType === IntegrationProcessingQtyType.FEW}
@@ -729,10 +726,22 @@ const Integration = () => {
               <Typography>Full</Typography>
             </RadioGroup>
             <Button
+              onClick={() => processIntegrationSetup(IntegrationProcessingType.READ_URLS)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
+              Read URLs
+            </Button>
+            <Button
+              onClick={() => processIntegrationSetup(IntegrationProcessingType.SIMULATION)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
+              Simulate
+            </Button>
+            <Button
               onClick={() => processIntegrationSetup(IntegrationProcessingType.INTEGRATION)}
               disabled={loading || !!simulationIntegrationJob}
               variant='outlined'>
-              Enqueue
+              Integrate
             </Button>
             <Button
               onClick={() => {

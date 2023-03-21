@@ -65,8 +65,9 @@ export enum FileSimulationReference {
 
 export enum IntegrationProcessingQtyType {
   FEW = 'FEW',
+  FULL = 'FULL',
   INTERMEDIATE = 'INTERMEDIATE',
-  FULL = 'FULL'
+  ONE = 'ONE'
 }
 
 export enum SystemParameterType {

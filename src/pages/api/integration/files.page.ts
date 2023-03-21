@@ -527,17 +527,6 @@ const processIntegration = async () => {
       }
     });
 
-    // const fileIntegrations = await db.fileIntegration.findMany({
-    //   where: {
-    //     OR: [
-    //       { status: FileIntegrationStatus.pendingSimulation },
-    //       { status: FileIntegrationStatus.pending },
-    //       { status: FileIntegrationStatus.simulated },
-    //       { status: FileIntegrationStatus.done }
-    //     ]
-    //   }
-    // });
-
     const fileIntegrations = await db.fileIntegration.findMany();
 
     const pendingFileIntegrations = fileIntegrations.filter(
