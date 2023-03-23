@@ -3,7 +3,7 @@
 html,
 body,
 div#__next,
-div#__next > div {
+div#__next>div {
   height: 100%;
 }
 
@@ -45,7 +45,7 @@ table.content-info {
 }
 
 .MuiButton-root {
-  background-color: variables.$field-background-color;
+  // background-color: variables.$field-background-color;
 }
 
 .MuiInputBase-root {

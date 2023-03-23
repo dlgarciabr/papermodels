@@ -184,6 +184,7 @@ const processItemIntegration = async () => {
                 const systemCategoryName = categoryBindingsCache.find(
                   (cat) => cat.pageCategoryName.toLowerCase().trim() === pageCategoryName?.toLowerCase().trim()
                 )?.systemCategoryName;
+
                 categoryId = categoriesCache.find(
                   (cat) => cat.name.toLowerCase().trim() === systemCategoryName?.toLowerCase().trim()
                 )?.id;
@@ -465,7 +466,9 @@ const processItemIntegration = async () => {
 
 export default api(async (req, res, _ctx) => {
   // if (req.method === 'POST') {
-
+  categorySelectorsCache = [];
+  categoryBindingsCache = [];
+  categoriesCache = [];
   const processReturn = await processItemIntegration();
   res.status(200).send(processReturn);
   // } else {

@@ -195,6 +195,11 @@ const Integration = () => {
       errors.push('categorySelector');
     }
 
+    const hasCategoryBinding = !!selectedSetup.categoryBinding && validateJson(selectedSetup.categoryBinding);
+    if (!hasCategoryBinding) {
+      errors.push('categoryBinding');
+    }
+
     const hasSchemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
     if (hasSchemesSelector) {
       const schemeSelectors = JSON.parse(selectedSetup.schemesSelector) as IntegrationSelector[];

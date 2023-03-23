@@ -313,7 +313,7 @@ const processIntegration = async () => {
       const isSelectedItemFound =
         selectedItemName &&
         items.filter((pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName?.toLowerCase()) >= 0).length >
-          0;
+        0;
       if (isSelectedItemFound) {
         break;
       }
