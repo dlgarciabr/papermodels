@@ -134,7 +134,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           const selectorFilesUrls = nodes.map((node) =>
             String(executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'))
           );
-          const urlsNotPresentOnPreview = selectorFilesUrls.filter((sfu) => existingPreviewUrls.indexOf(sfu) === -1);
+          const urlsNotPresentOnPreview = selectorFilesUrls.filter((urls) => existingPreviewUrls.indexOf(urls) === -1);
 
           if (urlsNotPresentOnPreview.length > 0) {
             console.log('[FileIntegrationJOB] file found from link selector!');
@@ -151,10 +151,11 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
             } else {
               console.log('[FileIntegrationJOB] Uploading file to storage...');
               try {
-                const response = await uploadImage(
-                  urlsNotPresentOnPreview[0]!,
-                  `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-                );
+                let url = urlsNotPresentOnPreview[0]!;
+                if (url && url.indexOf(fileIntegration.itemIntegration.setup.key) < 0) {
+                  url = `${fileIntegration.itemIntegration.setup.domain}${url}`;
+                }
+                const response = await uploadImage(url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
                 file.storagePath = `${response.public_id}.${response.format}`;
               } catch (error) {
                 filesErrors.push({
