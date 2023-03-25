@@ -41,9 +41,29 @@ const runDbKeepAlive = async () => {
   }
 };
 
+const runIntegration = async () => {
+  if (typeof location !== 'undefined') {
+    try {
+      await fetch(`${location.origin}/api/integration`);
+    } finally {
+      if (!timeout) {
+        timeout = setTimeout(() => {
+          void runIntegration();
+          clearTimeout(timeout);
+          timeout = undefined;
+        }, 50000);
+      }
+    }
+  }
+};
+
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const getLayout = Component.getLayout || ((page) => page);
-  void runDbKeepAlive();
+  if (process.env.NODE_ENV === 'development') {
+    void runIntegration();
+  } else {
+    void runDbKeepAlive();
+  }
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}

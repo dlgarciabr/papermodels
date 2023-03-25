@@ -303,39 +303,48 @@ const processItemIntegration = async () => {
 
           console.log(`[ItemIntegrationJOB] Persisting Logs...`);
 
-          singleIntegrationLogs.push({
-            integrationId: itemIntegration.id,
-            key: ItemSimulationReference.hasPreviewImages,
-            reference: itemIntegration.name,
-            value: String(hasPreviewImages)
-          });
+          if (!hasPreviewImages) {
+            singleIntegrationLogs.push({
+              integrationId: itemIntegration.id,
+              key: ItemSimulationReference.hasPreviewImages,
+              reference: itemIntegration.name,
+              value: String(hasPreviewImages)
+            });
+          }
 
-          singleIntegrationLogs.push({
-            integrationId: itemIntegration.id,
-            key: ItemSimulationReference.hasDescription,
-            reference: itemIntegration.name,
-            value: String(hasDescription)
-          });
+          if (!hasDescription) {
+            singleIntegrationLogs.push({
+              integrationId: itemIntegration.id,
+              key: ItemSimulationReference.hasDescription,
+              reference: itemIntegration.name,
+              value: String(hasDescription)
+            });
+          }
 
           await db.integrationLog.createMany({
             data: singleIntegrationLogs as IntegrationLog[]
           });
 
-          await db.integrationLog.updateMany({
-            where: {
-              key: ItemSimulationReference.hasCategory,
-              integrationId: itemIntegration.id
-            },
-            data: {
-              value: String(hasCategory)
-            }
-          });
+          if (!hasCategory) {
+            await db.integrationLog.updateMany({
+              where: {
+                key: ItemSimulationReference.hasCategory,
+                integrationId: itemIntegration.id
+              },
+              data: {
+                value: String(hasCategory)
+              }
+            });
+          }
 
           console.log(`[ItemIntegrationJOB] Updating ItemIntegration status...`);
           await db.itemIntegration.update({
             where: { id: itemIntegration.id },
             data: {
-              status: ItemIntegrationStatus.simulated
+              status: ItemIntegrationStatus.simulated,
+              hasCategory,
+              hasDescription,
+              hasPreview: hasPreviewImages
             }
           });
         } else {
@@ -382,8 +391,6 @@ const processItemIntegration = async () => {
     }
 
     if (isSimulation) {
-      //TODO run only if simulation ended
-
       const itemIntegrations = await db.itemIntegration.findMany({
         where: {
           status: {
@@ -402,21 +409,11 @@ const processItemIntegration = async () => {
       if (!hasItemIntegrationsPending) {
         const itemIntegrationsDone = itemIntegrations.filter((it) => it.status === ItemIntegrationStatus.simulated);
 
-        let logs: IntegrationLog[] = [];
+        const containsPreviewImages = itemIntegrations.filter((itemIntegration) => itemIntegration.hasPreview);
 
-        itemIntegrations.forEach((it) => (logs = [...logs, ...it.logs]));
+        const containsDescription = itemIntegrations.filter((itemIntegration) => itemIntegration.hasDescription);
 
-        const containsPreviewImages = logs.filter(
-          (log) => log.key === ItemSimulationReference.hasPreviewImages && log.value === 'true'
-        );
-
-        const containsDescription = logs.filter(
-          (log) => log.key === ItemSimulationReference.hasDescription && log.value === 'true'
-        );
-
-        const containsCategory = logs.filter(
-          (log) => log.key === ItemSimulationReference.hasCategory && log.value === 'true'
-        );
+        const containsCategory = itemIntegrations.filter((itemIntegration) => itemIntegration.hasCategory);
 
         await db.integrationLog.createMany({
           data: [

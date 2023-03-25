@@ -1,6 +1,5 @@
 /* istanbul ignore file -- @preserve */
 import { api } from 'src/blitz-server';
-// import chromium from 'chrome-aws-lambda';
 import { chromium } from 'playwright-core';
 import path from 'path';
 import fs from 'fs';
@@ -97,7 +96,7 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
     console.log(
       `[FileIntegrationJOB] File ${fileIntegration.itemIntegration.name} integration${simulationLabel}initializing.`
     );
-    let hasShemeFiles = true;
+    let hasSchemeFiles = true;
     const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
 
     const previewSelectors = JSON.parse(
@@ -135,9 +134,8 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           const selectorFilesUrls = nodes.map((node) =>
             String(executeSelectorOnHtmlText(node, 'a')?.getAttribute('href'))
           );
-          const urlsNotPresentOnPreview = selectorFilesUrls.filter((sfu) => existingPreviewUrls.indexOf(sfu) === -1);
+          const urlsNotPresentOnPreview = selectorFilesUrls.filter((urls) => existingPreviewUrls.indexOf(urls) === -1);
 
-          //  const selectorFilesUrls = (await readPageUrls(fileIntegration.url, linkSelector.value)) as string[];
           if (urlsNotPresentOnPreview.length > 0) {
             console.log('[FileIntegrationJOB] file found from link selector!');
 
@@ -153,10 +151,11 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
             } else {
               console.log('[FileIntegrationJOB] Uploading file to storage...');
               try {
-                const response = await uploadImage(
-                  urlsNotPresentOnPreview[0]!,
-                  `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`
-                );
+                let url = urlsNotPresentOnPreview[0]!;
+                if (url && url.indexOf(fileIntegration.itemIntegration.setup.key) < 0) {
+                  url = `${fileIntegration.itemIntegration.setup.domain}${url}`;
+                }
+                const response = await uploadImage(url, `${ARTIFACTS_PATH}/${fileIntegration.itemIntegration.itemId}`);
                 file.storagePath = `${response.public_id}.${response.format}`;
               } catch (error) {
                 filesErrors.push({
@@ -231,28 +230,30 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
       }
 
       if (files.length === 0 && !hasBufferFiles) {
-        hasShemeFiles = false;
+        hasSchemeFiles = false;
         throw new Error('scheme files not found');
       }
     } catch (error) {
       errors.push(error.message);
-      // filesErrors.push({
-      //   message: error.message,
-      //   itemId: fileIntegration.itemIntegration.itemId!,
-      //   key: FileSimulationReference.error,
-      //   itemName: fileIntegration.itemIntegration.name!,
-      //   errorStack: error.stack
-      // } as ItemIntegrationLog)
     }
 
     if (isSimulation) {
       console.log('[FileIntegrationJOB] Saving logs...');
-      fileIntegrationLogs.push({
-        integrationId: fileIntegration.itemIntegrationId,
-        key: FileSimulationReference.hasSchemeFiles,
-        reference: fileIntegration.itemIntegration.name,
-        value: String(hasShemeFiles)
-      });
+      if (hasSchemeFiles) {
+        await db.itemIntegration.update({
+          where: { id: fileIntegration.itemIntegrationId },
+          data: {
+            hasScheme: hasSchemeFiles
+          }
+        });
+      } else {
+        fileIntegrationLogs.push({
+          integrationId: fileIntegration.itemIntegrationId,
+          key: FileSimulationReference.hasSchemeFiles,
+          reference: fileIntegration.itemIntegration.name,
+          value: String(hasSchemeFiles)
+        });
+      }
       logs = [...logs, ...fileIntegrationLogs];
       await db.integrationLog.createMany({
         data: fileIntegrationLogs as IntegrationLog[]
@@ -298,10 +299,18 @@ const processSchemeType = async (fileIntegration: IFileIntegration, isSimulation
           }
         });
 
+        const itemToUpdate = await db.item.findUnique({ where: { id: fileIntegration.itemIntegration.itemId! } });
+
+        let status: ItemStatus = ItemStatus.validate;
+
+        if (hasSchemeFiles && itemToUpdate?.categoryId != 1) {
+          status = ItemStatus.enable;
+        }
+
         await db.item.update({
           where: { id: fileIntegration.itemIntegration.itemId! },
           data: {
-            status: hasShemeFiles ? ItemStatus.enable : ItemStatus.validate
+            status
           }
         });
 
@@ -532,9 +541,7 @@ const processIntegration = async () => {
     const pendingFileIntegrations = fileIntegrations.filter(
       (sim) => sim.status === FileIntegrationStatus.pendingSimulation || sim.status === FileIntegrationStatus.pending
     );
-    const finishedFileIntegrations = fileIntegrations.filter(
-      (sim) => sim.status === FileIntegrationStatus.simulated || sim.status === FileIntegrationStatus.done
-    );
+
     const doneIntegrations = fileIntegrations.filter(
       (i) => i.status === FileIntegrationStatus.done || i.status === FileIntegrationStatus.simulated
     );
@@ -560,15 +567,9 @@ const processIntegration = async () => {
       if (pendingItemIntegrations === 0) {
         console.log(`[FileIntegrationJOB] Saving final Logs...`);
 
-        const containsSchemeFiles = logs.filter(
-          (log) => log.key === FileSimulationReference.hasSchemeFiles && log.value === 'true'
-        );
+        const itemIntegrations = await db.itemIntegration.findMany();
 
-        await db.integrationLog.deleteMany({
-          where: {
-            value: `${true}`
-          }
-        });
+        const containsSchemeFiles = itemIntegrations.filter((itemIntegration) => itemIntegration.hasScheme);
 
         const paramStartTime = params.find((param) => param.key === SystemParameterType.INTEGRATION_START_TIME);
         const startTime = new Date(Number(paramStartTime!.value));
@@ -594,7 +595,7 @@ const processIntegration = async () => {
             {
               key: FileSimulationReference.schemePercentage,
               reference: 'Global',
-              value: `${String(Math.round((containsSchemeFiles.length * 100) / finishedFileIntegrations.length))}%`
+              value: `${String(Math.round((containsSchemeFiles.length * 100) / itemIntegrations.length))}%`
             },
             {
               key: ItemSimulationReference.totalTime,

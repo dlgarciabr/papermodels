@@ -190,6 +190,10 @@ model ItemIntegration {
   itemId           Int?
   item             Item?                 @relation(fields: [itemId], references: [id])
   error            String?
+  hasCategory      Boolean               @default(false)
+  hasDescription   Boolean               @default(false)
+  hasScheme        Boolean               @default(false)
+  hasPreview       Boolean               @default(false)
 }
 
 enum FileIntegrationStatus {
