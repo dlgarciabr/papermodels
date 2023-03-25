@@ -131,13 +131,7 @@ const createItemIntegration = async (pageItem: IPageItem, setup: IntegrationSetu
         status,
         setupId: setup.id,
         categoryId: categoriesCache.find((category) => category.name === pageItem.categoryName)?.id || 1,
-        logs: {
-          create: {
-            key: ItemSimulationReference.hasCategory,
-            reference: pageItem.name!,
-            value: String(!!pageItem.categoryName)
-          }
-        }
+        hasCategory: !!pageItem.categoryName
       }
     });
   } catch (error) {
@@ -313,7 +307,7 @@ const processIntegration = async () => {
       const isSelectedItemFound =
         selectedItemName &&
         items.filter((pageItem) => pageItem.name!.toLowerCase().indexOf(selectedItemName?.toLowerCase()) >= 0).length >
-        0;
+          0;
       if (isSelectedItemFound) {
         break;
       }
