@@ -134,7 +134,7 @@ const Integration = () => {
   const loadSimulationLogs = async (filter?: IIntegrationLogFilter) => {
     if (filter) {
       if (!filter.field || !filter.value) {
-        alert('fill filters');
+        showToast(ToastType.WARNING, 'fill filters');
         return;
       }
       let where = {};
@@ -688,6 +688,46 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.includes('categoryBinding')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Author'
+                      value={selectedSetup.author}
+                      name='author'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('author')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Author link'
+                      value={selectedSetup.authorLink}
+                      name='authorLink'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('authorLink')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='License type'
+                      value={selectedSetup.licenseType}
+                      name='licenseType'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('licenseType')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='License type link'
+                      value={selectedSetup.licenseTypeLink}
+                      name='licenseTypeLink'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('licenseTypeLink')}
                     />
                   </Grid>
                 </Grid>
