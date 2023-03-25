@@ -23,7 +23,7 @@ export default api(async (req, res, _ctx) => {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      const ARTIFACTS_PATH = 'papermodel_test';
+      const ARTIFACTS_PATH = 'papermodel_test'; //assure that this logic runs only in test CDN
 
       try {
         console.log('[IntegrationInitializer] Cleaning Cloudinary old test files...');
@@ -87,6 +87,28 @@ export default api(async (req, res, _ctx) => {
           value: itemName
         }
       });
+
+      const systemParameters = await db.systemParameter.findMany({
+        where: {
+          key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+        }
+      });
+
+      const itemReintegrationParam = systemParameters.find(
+        (param) => param.key === SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+      );
+      const isItemReintegration = !!(itemReintegrationParam && Number(itemReintegrationParam.value));
+
+      if (isItemReintegration) {
+        try {
+          const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+          console.log('[IntegrationInitializer] Cleaning Cloudinary old assets...');
+          await cloudinary.api.delete_resources_by_prefix(`${ARTIFACTS_PATH}/${itemReintegrationParam.value}`);
+          await cloudinary.api.delete_folder(`${ARTIFACTS_PATH}/${itemReintegrationParam.value}`);
+        } catch (error) {
+          //do nothing
+        }
+      }
     }
 
     console.log(`[IntegrationInitializer] Extracting all site URLs...`);
