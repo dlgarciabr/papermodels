@@ -7,11 +7,22 @@ interface GetCategoriesInput extends Pick<Prisma.CategoryFindManyArgs, 'where' |
 export default resolver.pipe(async ({ where, orderBy, skip = 0, take = 100 }: GetCategoriesInput) => {
   const whereClause: Prisma.CategoryWhereInput = {
     ...where,
-    items: {
-      every: {
-        status: ItemStatus.enable
+    AND: [
+      {
+        items: {
+          every: {
+            status: ItemStatus.enable
+          }
+        }
+      },
+      {
+        items: {
+          some: {
+            id: {}
+          }
+        }
       }
-    }
+    ]
   };
   const {
     items: categories,
