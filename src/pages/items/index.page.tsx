@@ -9,7 +9,7 @@ import { invoke, useMutation } from '@blitzjs/rpc';
 import Layout from 'src/core/layouts/Layout';
 import getItems from 'src/items/queries/getItems';
 import deleteItem from 'src/items/mutations/deleteItem';
-import { FileType, ItemIntegrationLog, ItemStatus } from '@prisma/client';
+import { Category, FileType, ItemIntegrationLog, ItemStatus } from '@prisma/client';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -33,12 +33,14 @@ import {
 } from '@mui/material';
 import deleteSystemParameters from 'src/system-parameter/mutations/deleteSystemParameters';
 import { getSimpleRandomKey } from 'src/utils/global';
+import getCategories from 'src/categories/queries/getCategories';
 
 const ITEMS_PER_PAGE = 10;
 
 const filtersInitialValue = {
   name: '',
   status: '',
+  categoryId: '',
   suspect: false
 };
 
@@ -47,7 +49,7 @@ export const ItemsList = () => {
   const [count, setCount] = useState(0);
   const router = useContext(RouterContext);
   const page = Number(router.query.page) || 0;
-  const [filters, setFilters] = useState<{ name: string | ''; status: ItemStatus | string; suspect: boolean }>({
+  const [filters, setFilters] = useState<{ name: string | ''; status: ItemStatus | string; suspect: boolean, categoryId: number | string }>({
     ...filtersInitialValue
   });
   const [deleteItemMutation] = useMutation(deleteItem);
@@ -55,6 +57,14 @@ export const ItemsList = () => {
   const [deleteSystemParametersMutation] = useMutation(deleteSystemParameters);
   const [openLogDialog, setOpenLogDialog] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>();
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const loadCategories = async () => {
+    const { categories } = await invoke(getCategories, {
+      orderBy: { name: 'asc' }
+    });
+    setCategories(categories);
+  };
 
   const goToPage = (page: number) => {
     void router.push({ query: { page: page } });
@@ -86,6 +96,9 @@ export const ItemsList = () => {
     const where = {} as any;
     if (filters.status) {
       where.status = filters.status;
+    }
+    if (filters.categoryId) {
+      where.categoryId = filters.categoryId;
     }
     if (filters.name) {
       where.name = {
@@ -161,6 +174,8 @@ export const ItemsList = () => {
     void loadItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  useEffect(() => void loadCategories(), []);
 
   const columns: GridColDef[] = [
     { field: 'id', width: 10, headerAlign: 'center' },
@@ -274,7 +289,7 @@ export const ItemsList = () => {
   return (
     <Grid container>
       {renderLogDialog()}
-      <Grid item xs={5}>
+      <Grid item xs={4}>
         <TextField
           label='Name'
           fullWidth
@@ -288,7 +303,7 @@ export const ItemsList = () => {
           }}
         />
       </Grid>
-      <Grid item xs={3}>
+      <Grid item xs={2}>
         <FormControl fullWidth>
           <InputLabel id='statusLabel'>Status</InputLabel>
           <Select
@@ -304,6 +319,26 @@ export const ItemsList = () => {
             <MenuItem value={ItemStatus.disable}>{ItemStatus.disable}</MenuItem>
             <MenuItem value={ItemStatus.enable}>{ItemStatus.enable}</MenuItem>
             <MenuItem value={ItemStatus.validate}>{ItemStatus.validate}</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid item xs={2}>
+        <FormControl fullWidth>
+          <InputLabel id='categoryLabel'>Category</InputLabel>
+          <Select
+            id='category'
+            label='Category'
+            labelId='categoryLabel'
+            name='category'
+            placeholder='Category'
+            fullWidth
+            value={filters.categoryId}
+            onChange={(e) => setFilters({ ...filters, categoryId: e.target.value })}>
+            {
+              categories.map(category => (
+                <MenuItem key={getSimpleRandomKey()} value={category.id}>{category.name}</MenuItem>)
+              )
+            }
           </Select>
         </FormControl>
       </Grid>
