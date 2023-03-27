@@ -7,6 +7,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Checkbox,
   Container,
   FormControl,
   Grid,
@@ -120,6 +121,7 @@ const Integration = () => {
   const [createIntegrationSetupMutation] = useMutation(createIntegrationSetup);
   const [expandedAccordion, setExpandedAccordion] = useState(false);
   const [creatingSetup, setCreatingSetup] = useState<boolean>(false);
+  const [replaceItems, setReplaceItems] = useState<boolean>(false);
 
   const updateSelector = async () => {
     if (validateAllSelectors().length > 0) {
@@ -255,7 +257,8 @@ const Integration = () => {
           type,
           processingQtyType,
           itemName,
-          reintegrateItemId
+          reintegrateItemId,
+          replaceItems
         })
       });
       if (response.status === 204) {
@@ -770,6 +773,8 @@ const Integration = () => {
               />
               <Typography>Full</Typography>
             </RadioGroup>
+            <Checkbox value={replaceItems} onClick={() => setReplaceItems(!replaceItems)} />
+            Replace items
             <Button
               onClick={() => processIntegrationSetup(IntegrationProcessingType.READ_URLS)}
               variant='outlined'

@@ -11,6 +11,7 @@ export default api(async (req, res, _ctx) => {
     const type = req.body.type as IntegrationProcessingType;
     const processingQtyType = req.body.processingQtyType;
     const itemName = req.body.itemName;
+    const replaceItems = req.body.replaceItems;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -73,6 +74,36 @@ export default api(async (req, res, _ctx) => {
         value: String(type)
       }
     });
+    if (replaceItems) {
+      const items = await db.item.findMany({
+        where: {
+          integrationUrl: {
+            startsWith: setup.domain
+          }
+        }
+      });
+
+      process.stdout.write('\n[IntegrationInitializer] Cleaning Cloudinary old assets...');
+      for await (const item of items) {
+        try {
+          const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+          await cloudinary.api.delete_resources_by_prefix(`${ARTIFACTS_PATH}/${item.id}`);
+          await cloudinary.api.delete_folder(`${ARTIFACTS_PATH}/${item.id}`);
+        } catch (error) {
+          //do nothing
+        }
+        process.stdout.write('.');
+      }
+      process.stdout.write('done\n');
+
+      await db.item.deleteMany({
+        where: {
+          integrationUrl: {
+            startsWith: setup.domain
+          }
+        }
+      });
+    }
 
     if (itemName) {
       await db.systemParameter.upsert({
