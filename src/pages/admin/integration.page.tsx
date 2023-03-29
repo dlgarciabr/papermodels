@@ -7,8 +7,11 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Checkbox,
   Container,
+  FormControl,
   Grid,
+  InputLabel,
   MenuItem,
   Radio,
   RadioGroup,
@@ -45,35 +48,63 @@ import updateIntegrationSetup from 'src/integration-setups/mutations/updateInteg
 import { Routes } from '@blitzjs/next';
 import Link from 'next/link';
 import getItem from 'src/items/queries/getItem';
-// import createIntegrationLog from 'src/integration-logs/mutations/createIntegrationLog';
+import createIntegrationSetup from 'src/integration-setups/mutations/createIntegrationSetup';
 
 interface IIntegrationLogFilter {
   field: string;
   value: string;
 }
 
+const initialSetupValue = Object.freeze({
+  id: 0,
+  name: '',
+  key: '',
+  domain: '',
+  itemUrlSelector: '',
+  previewImagesSelector: '',
+  categorySelector: '',
+  ignoreExpressions: '',
+  author: '',
+  authorLink: '',
+  licenseType: '',
+  licenseTypeLink: '',
+  categoryBinding: '',
+  descriptionSelector: '',
+  schemesSelector: '',
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
+
+// interface IKeyParProps {
+//   keyA: string;
+//   keyB: string;
+//   valueA: string;
+//   valueB: string;
+// }
+
+// const renderKeyPairFromSelectorJSON = (json: string) => {
+//   if (!json) {
+//     return '';
+//   }
+//   const jsonList = JSON.parse(json) as any[];
+//   return jsonList.map(json => (
+//     <KeyPair key={getSimpleRandomKey()} keyA='type' keyB='value' valueA={json.type} valueB={json.value} />
+//   ))
+// }
+
+// const KeyPair = (props: IKeyParProps) => {
+//   return (
+//     <>
+//       {props.keyA} <input type='text' value={props.valueA} size={10} />
+//       {props.keyB} <input type='text' value={props.valueB} size={30} />
+//     </>
+//   )
+// }
+
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({
-    id: 0,
-    name: '',
-    key: '',
-    domain: '',
-    itemUrlSelector: '',
-    previewImagesSelector: '',
-    categorySelector: '',
-    ignoreExpressions: '',
-    author: '',
-    authorLink: '',
-    licenseType: '',
-    licenseTypeLink: '',
-    categoryBinding: '',
-    descriptionSelector: '',
-    schemesSelector: '',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  });
+  const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({ ...initialSetupValue });
   const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [errors, setErrors] = useState<IError[]>([]);
@@ -84,10 +115,13 @@ const Integration = () => {
   const [itemName, setItemName] = useState<string>('');
   const [reintegrateItemId, setReintegrateItemId] = useState<number | null>();
   const [processingQtyType, setProcessingQtyType] = useState<IntegrationProcessingQtyType>(
-    IntegrationProcessingQtyType.FEW
+    IntegrationProcessingQtyType.ONE
   );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
+  const [createIntegrationSetupMutation] = useMutation(createIntegrationSetup);
   const [expandedAccordion, setExpandedAccordion] = useState(false);
+  const [creatingSetup, setCreatingSetup] = useState<boolean>(false);
+  const [replaceItems, setReplaceItems] = useState<boolean>(false);
 
   const updateSelector = async () => {
     if (validateAllSelectors().length > 0) {
@@ -102,7 +136,7 @@ const Integration = () => {
   const loadSimulationLogs = async (filter?: IIntegrationLogFilter) => {
     if (filter) {
       if (!filter.field || !filter.value) {
-        alert('fill filters');
+        showToast(ToastType.WARNING, 'fill filters');
         return;
       }
       let where = {};
@@ -163,6 +197,11 @@ const Integration = () => {
       errors.push('categorySelector');
     }
 
+    const hasCategoryBinding = !!selectedSetup.categoryBinding && validateJson(selectedSetup.categoryBinding);
+    if (!hasCategoryBinding) {
+      errors.push('categoryBinding');
+    }
+
     const hasSchemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
     if (hasSchemesSelector) {
       const schemeSelectors = JSON.parse(selectedSetup.schemesSelector) as IntegrationSelector[];
@@ -187,12 +226,12 @@ const Integration = () => {
     }
   };
 
-  const processSetup = async (type: IntegrationProcessingType) => {
+  const processIntegrationSetup = async (type: IntegrationProcessingType) => {
     setLogs([]);
     setErrors([]);
 
     if (selectedSetup.id === 0) {
-      alert('Select a setup first');
+      showToast(ToastType.ERROR, 'Select a setup first');
       return;
     }
 
@@ -218,7 +257,8 @@ const Integration = () => {
           type,
           processingQtyType,
           itemName,
-          reintegrateItemId
+          reintegrateItemId,
+          replaceItems
         })
       });
       if (response.status === 204) {
@@ -405,7 +445,15 @@ const Integration = () => {
 
   const sendToClipboard = async (value: string) => {
     await navigator.clipboard.writeText(value);
-    showToast(ToastType.INFO, 'text sent to clipboard.');
+    showToast(ToastType.INFO, 'Text sent to clipboard.');
+  };
+
+  const handleClickSaveSetup = async () => {
+    await createIntegrationSetupMutation(selectedSetup);
+    showToast(ToastType.SUCCESS, 'Setup created!');
+    setSelectedSetup({ ...initialSetupValue });
+    setCreatingSetup(false);
+    void loadSetups();
   };
 
   const columns: GridColDef[] = [
@@ -480,34 +528,59 @@ const Integration = () => {
       </Link>
       <Container component='main'>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
-            {/* <InputLabel id='selected-setup-label'>Setup</InputLabel> */}
-            <Select
-              // labelId='selected-setup-label'
-              id='selectedSetup'
-              value={selectedSetup.id !== 0 ? selectedSetup.id : ''}
-              label='Setup'
-              name='selectedSetup'
-              placeholder='Setup'
-              fullWidth
-              onChange={(e) => handleSelectSetup(Number(e.target.value))}>
-              {integrationSetups.map((item) => (
-                <MenuItem key={Math.random().toString(36).substring(2, 15)} value={item.id}>
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
+          <Grid item xs={5}>
+            {creatingSetup ? (
+              <TextField
+                label='Setup name'
+                value={selectedSetup.name}
+                name='name'
+                fullWidth
+                onChange={(e) => setParam(e as any)}
+                error={fieldErrors.includes('name')}
+              />
+            ) : (
+              <FormControl fullWidth>
+                <InputLabel id='selectedSetup'>Setup</InputLabel>
+                <Select
+                  id='selectedSetup'
+                  value={selectedSetup.id !== 0 ? selectedSetup.id : ''}
+                  name='selectedSetup'
+                  placeholder='Setup'
+                  fullWidth
+                  onChange={(e) => handleSelectSetup(Number(e.target.value))}>
+                  {integrationSetups.map((item) => (
+                    <MenuItem key={Math.random().toString(36).substring(2, 15)} value={item.id}>
+                      {item.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={5}>
             <TextField
               label='Setup key'
               value={selectedSetup.key}
               name='key'
               fullWidth
-              disabled={true}
+              disabled={!creatingSetup}
               onChange={(e) => setParam(e as any)}
               error={fieldErrors.includes('key')}
             />
+          </Grid>
+          <Grid item xs={2}>
+            <Button
+              onClick={() => {
+                setSelectedSetup({ ...initialSetupValue });
+                setCreatingSetup(true);
+              }}
+              variant='outlined'
+              disabled={creatingSetup}>
+              New
+            </Button>
+            <Button onClick={() => handleClickSaveSetup()} variant='outlined' disabled={!creatingSetup}>
+              Save
+            </Button>
           </Grid>
           <Grid item xs={6}>
             <TextField
@@ -548,6 +621,7 @@ const Integration = () => {
               <AccordionDetails>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
+                    {/* {renderKeyPairFromSelectorJSON(selectedSetup.itemUrlSelector)} */}
                     <TextField
                       label='Item url selector'
                       value={selectedSetup.itemUrlSelector}
@@ -619,24 +693,61 @@ const Integration = () => {
                       error={fieldErrors.includes('categoryBinding')}
                     />
                   </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Author'
+                      value={selectedSetup.author}
+                      name='author'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('author')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='Author link'
+                      value={selectedSetup.authorLink}
+                      name='authorLink'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('authorLink')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='License type'
+                      value={selectedSetup.licenseType}
+                      name='licenseType'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('licenseType')}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label='License type link'
+                      value={selectedSetup.licenseTypeLink}
+                      name='licenseTypeLink'
+                      fullWidth
+                      onChange={(e) => setParam(e as any)}
+                      error={fieldErrors.includes('licenseTypeLink')}
+                    />
+                  </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>
           </Grid>
           <Grid item xs={12}>
-            <Button
-              onClick={() => processSetup(IntegrationProcessingType.READ_URLS)}
-              variant='outlined'
-              disabled={!!simulationIntegrationJob}>
-              Read URLs
-            </Button>
-            <Button
-              onClick={() => processSetup(IntegrationProcessingType.SIMULATION)}
-              variant='outlined'
-              disabled={!!simulationIntegrationJob}>
-              Simulate
-            </Button>
             <RadioGroup row>
+              <Radio
+                value={IntegrationProcessingQtyType.ONE}
+                checked={processingQtyType === IntegrationProcessingQtyType.ONE}
+                onClick={() => {
+                  setItemName('');
+                  setProcessingQtyType(IntegrationProcessingQtyType.ONE);
+                }}
+              />
+              <Typography>One</Typography>
               <Radio
                 value={IntegrationProcessingQtyType.FEW}
                 checked={processingQtyType === IntegrationProcessingQtyType.FEW}
@@ -662,11 +773,25 @@ const Integration = () => {
               />
               <Typography>Full</Typography>
             </RadioGroup>
+            <Checkbox value={replaceItems} onClick={() => setReplaceItems(!replaceItems)} />
+            Replace items
             <Button
-              onClick={() => processSetup(IntegrationProcessingType.INTEGRATION)}
+              onClick={() => processIntegrationSetup(IntegrationProcessingType.READ_URLS)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
+              Read URLs
+            </Button>
+            <Button
+              onClick={() => processIntegrationSetup(IntegrationProcessingType.SIMULATION)}
+              variant='outlined'
+              disabled={!!simulationIntegrationJob}>
+              Simulate
+            </Button>
+            <Button
+              onClick={() => processIntegrationSetup(IntegrationProcessingType.INTEGRATION)}
               disabled={loading || !!simulationIntegrationJob}
               variant='outlined'>
-              Enqueue
+              Integrate
             </Button>
             <Button
               onClick={() => {

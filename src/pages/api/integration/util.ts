@@ -61,6 +61,12 @@ export const getAllSiteUrls = async (url: string, key: string): Promise<string[]
   const allUrls = (await readPageUrls(url, 'a')) as string[];
   const removedNonDomainName = allUrls.filter((link) => !!link && link.toLowerCase().indexOf(key.toLowerCase()) > 0);
   const renamedHttpToHttps = removedNonDomainName.map((url) => url.replace('http://', 'https://'));
-  const uniqueUrls = Array.from(new Set(renamedHttpToHttps));
+  const removeFinalSlash = renamedHttpToHttps.map((url) => {
+    if (url.charAt(url.length - 1) === '/') {
+      return url.substring(0, url.length - 1);
+    }
+    return url;
+  });
+  const uniqueUrls = Array.from(new Set(removeFinalSlash));
   return uniqueUrls;
 };

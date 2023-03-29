@@ -9,7 +9,7 @@ import { api } from 'src/blitz-server';
 export default api(async (_req, res, _ctx) => {
   console.log(`
 ===================================================================================
-|                        Starting Item integration job...                         |
+|                           Running db keep alive...                              |
 ===================================================================================
 `);
 

@@ -11,6 +11,7 @@ export default api(async (req, res, _ctx) => {
     const type = req.body.type as IntegrationProcessingType;
     const processingQtyType = req.body.processingQtyType;
     const itemName = req.body.itemName;
+    const replaceItems = req.body.replaceItems;
 
     if (!setup) {
       res.status(500).send({ message: 'IntegrationSetup not defined' });
@@ -23,7 +24,7 @@ export default api(async (req, res, _ctx) => {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      const ARTIFACTS_PATH = 'papermodel_test';
+      const ARTIFACTS_PATH = 'papermodel_test'; //assure that this logic runs only in test CDN
 
       try {
         console.log('[IntegrationInitializer] Cleaning Cloudinary old test files...');
@@ -73,18 +74,73 @@ export default api(async (req, res, _ctx) => {
         value: String(type)
       }
     });
-    await db.systemParameter.upsert({
-      where: {
-        key: SystemParameterType.INTEGRATION_ITEM_NAME
-      },
-      update: {
-        value: itemName
-      },
-      create: {
-        key: SystemParameterType.INTEGRATION_ITEM_NAME,
-        value: itemName
+    if (replaceItems) {
+      const items = await db.item.findMany({
+        where: {
+          integrationUrl: {
+            startsWith: setup.domain
+          }
+        }
+      });
+
+      process.stdout.write('\n[IntegrationInitializer] Cleaning Cloudinary old assets...');
+      for await (const item of items) {
+        try {
+          const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+          await cloudinary.api.delete_resources_by_prefix(`${ARTIFACTS_PATH}/${item.id}`);
+          await cloudinary.api.delete_folder(`${ARTIFACTS_PATH}/${item.id}`);
+        } catch (error) {
+          //do nothing
+        }
+        process.stdout.write('.');
       }
-    });
+      process.stdout.write('done\n');
+
+      await db.item.deleteMany({
+        where: {
+          integrationUrl: {
+            startsWith: setup.domain
+          }
+        }
+      });
+    }
+
+    if (itemName) {
+      await db.systemParameter.upsert({
+        where: {
+          key: SystemParameterType.INTEGRATION_ITEM_NAME
+        },
+        update: {
+          value: itemName
+        },
+        create: {
+          key: SystemParameterType.INTEGRATION_ITEM_NAME,
+          value: itemName
+        }
+      });
+
+      const systemParameters = await db.systemParameter.findMany({
+        where: {
+          key: SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+        }
+      });
+
+      const itemReintegrationParam = systemParameters.find(
+        (param) => param.key === SystemParameterType.INTEGRATION_REINTEGRATE_ITEM_ID
+      );
+      const isItemReintegration = !!(itemReintegrationParam && Number(itemReintegrationParam.value));
+
+      if (isItemReintegration) {
+        try {
+          const ARTIFACTS_PATH = process.env.NEXT_PUBLIC_STORAGE_ARTIFACTS_PATH || 'papermodel';
+          console.log('[IntegrationInitializer] Cleaning Cloudinary old assets...');
+          await cloudinary.api.delete_resources_by_prefix(`${ARTIFACTS_PATH}/${itemReintegrationParam.value}`);
+          await cloudinary.api.delete_folder(`${ARTIFACTS_PATH}/${itemReintegrationParam.value}`);
+        } catch (error) {
+          //do nothing
+        }
+      }
+    }
 
     console.log(`[IntegrationInitializer] Extracting all site URLs...`);
     const uniqueSiteUrls = await getAllSiteUrls(setup.domain, setup.key);
@@ -97,10 +153,10 @@ export default api(async (req, res, _ctx) => {
     let status;
     switch (type) {
       case IntegrationProcessingType.READ_URLS:
-        status = UrlIntegrationStatus.readingPending; //TODO rename enum property
+        status = UrlIntegrationStatus.readingPending;
         break;
       case IntegrationProcessingType.SIMULATION:
-        status = UrlIntegrationStatus.simulationPending; //TODO rename enum property
+        status = UrlIntegrationStatus.simulationPending;
         break;
       case IntegrationProcessingType.INTEGRATION:
         status = UrlIntegrationStatus.pending;
@@ -117,13 +173,15 @@ export default api(async (req, res, _ctx) => {
       }))
     });
 
-    await db.integrationLog.create({
-      data: {
-        key: ItemSimulationReference.percentage,
-        reference: 'Global',
-        value: '0'
-      }
-    });
+    if (type !== IntegrationProcessingType.READ_URLS) {
+      await db.integrationLog.create({
+        data: {
+          key: ItemSimulationReference.percentage,
+          reference: 'Global',
+          value: '0%'
+        }
+      });
+    }
 
     console.log(`[IntegrationInitializer] Integration initialized!`);
 

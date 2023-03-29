@@ -9,7 +9,11 @@ const basicValidation = {
   categorySelector: z.string(),
   categoryBinding: z.string(),
   schemesSelector: z.string(),
-  descriptionSelector: z.string().nullish()
+  descriptionSelector: z.string().nullish(),
+  author: z.string().nullish(),
+  authorLink: z.string().nullish(),
+  licenseType: z.string().nullish(),
+  licenseTypeLink: z.string().nullish()
 };
 
 export const CreateIntegrationSetupValidation = z.object({
