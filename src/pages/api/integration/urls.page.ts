@@ -330,7 +330,6 @@ const processIntegration = async () => {
     }
 
     if (isSimulation || isIntegration) {
-      console.log(`[UrlIntegrationJOB] Creating ItemIntegrations...`);
       await db.itemIntegration.deleteMany({
         where: {
           status: {
@@ -366,6 +365,8 @@ const processIntegration = async () => {
           (pageUrl) => !existingUrls.some((existingUrl) => pageUrl === existingUrl)
         );
       }
+
+      console.log(`[UrlIntegrationJOB] Creating ItemIntegrations...`);
 
       if (selectedItemName) {
         const pageItems = uniquePageItems.filter(

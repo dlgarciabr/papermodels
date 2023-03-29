@@ -35,6 +35,8 @@ import * as googleRecaptcha from 'react-google-recaptcha-v3';
 import * as utils from './utils';
 
 // global arrange
+const categories = [{ id: 1, name: 'category test' }];
+
 const items = [
   {
     id: 1,
@@ -151,11 +153,21 @@ const items = [
 describe('Item listing', () => {
   test('Open Item list with items', async () => {
     // arrange
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: items.slice(0, 10),
-      hasMore: true
-    });
+    const useInvokeCallback = async (queryFn) => {
+      if (queryFn === getItems) {
+        return {
+          items: items.slice(0, 10),
+          count: 30
+        };
+      } else if (queryFn === getCategories) {
+        return {
+          categories,
+          count: 1
+        };
+      }
+    };
+
+    setupUseInvoke(useInvokeCallback);
 
     // act
     render(<ItemsPage />);
@@ -167,23 +179,30 @@ describe('Item listing', () => {
 
   test('Open Item list and navigate through pages', async () => {
     // arrange
-    const useInvokeCallback = async (_queryFn, params) => {
-      switch (params.skip) {
-        case 0:
-          return {
-            items: items.slice(0, 10),
-            count: 30
-          };
-        case 10:
-          return {
-            items: items.slice(10),
-            count: 30
-          };
-        default:
-          return {
-            items: [],
-            count: 30
-          };
+    const useInvokeCallback = async (queryFn, params) => {
+      if (queryFn === getItems) {
+        switch (params.skip) {
+          case 0:
+            return {
+              items: items.slice(0, 10),
+              count: 30
+            };
+          case 10:
+            return {
+              items: items.slice(10),
+              count: 30
+            };
+          default:
+            return {
+              items: [],
+              count: 30
+            };
+        }
+      } else if (queryFn === getCategories) {
+        return {
+          categories,
+          count: 1
+        };
       }
     };
 
@@ -424,7 +443,19 @@ describe('Item changing', () => {
       hasMore: false
     };
 
-    setupUseInvokeOnce(paginatedQueryReturnData);
+    setupUseInvokeImplementation((queryFn: any): any => {
+      if (queryFn === getItems) {
+        return {
+          collectionName: 'items',
+          items: [initialItem]
+        };
+      } else if (queryFn === getCategories) {
+        return {
+          categories
+        };
+      }
+      return {};
+    });
 
     setupUseQueryReturn(initialItem);
 
@@ -751,20 +782,28 @@ describe('Item removing', () => {
     // arrange
     const itemName = 'name test item';
 
-    setupUseInvokeOnce({
-      collectionName: 'items',
-      items: [
-        {
-          id: 1,
-          name: itemName,
-          category: {
-            name: 'category'
-          },
-          files: [],
-          itemIntegrationLogs: []
-        }
-      ],
-      hasMore: false
+    setupUseInvokeImplementation((queryFn: any): any => {
+      if (queryFn === getItems) {
+        return {
+          collectionName: 'items',
+          items: [
+            {
+              id: 1,
+              name: itemName,
+              category: {
+                name: 'category'
+              },
+              files: [],
+              itemIntegrationLogs: []
+            }
+          ]
+        };
+      } else if (queryFn === getCategories) {
+        return {
+          categories
+        };
+      }
+      return {};
     });
 
     window.confirm = vi.fn(() => true);
