@@ -81,6 +81,7 @@ const Home: BlitzPage = () => {
   const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [categoryLoadTimes, setCategoryLoadTimes] = useState<number>(0);
   const search = useSearch();
   const getSugestions = useGetSugestions();
   const getItemsByCategory = useGetItemsByCategory();
@@ -102,15 +103,22 @@ const Home: BlitzPage = () => {
     }
   };
 
-  const loadCaterogies = async () => {
-    const { categories } = await invoke(getCategoriesAnonymous, {
-      orderBy: { name: 'asc' }
-    });
-    const categoriesWithImage = categories.map((category) => ({
-      ...category,
-      imagePath: categoryImage.find((image) => image.categoryName === category.name)?.imageSrc || dogDefaultImage
-    }));
-    setCategories(categoriesWithImage);
+  const loadCategories = async () => {
+    try {
+      const { categories } = await invoke(getCategoriesAnonymous, {
+        orderBy: { name: 'asc' }
+      });
+      const categoriesWithImage = categories.map((category) => ({
+        ...category,
+        imagePath: categoryImage.find((image) => image.categoryName === category.name)?.imageSrc || dogDefaultImage
+      }));
+      setCategories(categoriesWithImage);
+    } catch (error) {
+      if (categoryLoadTimes < 5) {
+        setTimeout(loadCategories, 2000);
+        setCategoryLoadTimes(categoryLoadTimes + 1);
+      }
+    }
   };
 
   useEffect(() => {
@@ -127,8 +135,8 @@ const Home: BlitzPage = () => {
   }, [router.query.expression]);
 
   useEffect(() => {
+    void loadCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    void loadCaterogies();
   }, []);
 
   const cleanSearch = () => {

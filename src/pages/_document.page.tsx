@@ -13,6 +13,7 @@ class MyDocument extends Document {
     return (
       <Html lang='en'>
         <Head>
+          <meta name='description' content='Papermodels paper craft models and toys for playing and hobby' />
           {process.env.NODE_ENV != 'development' && (
             <>
               <Script src='https://www.googletagmanager.com/gtag/js?id=G-B8W9NCLDY8' strategy='afterInteractive' />
