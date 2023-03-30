@@ -80,7 +80,7 @@ const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSetup, setSelectedSetup] = useState<IntegrationSetup>({ ...initialSetupValue });
-  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<{ key: string; error: string }[]>([]);
   const [integrationSetups, setIntegrationSetups] = useState<IntegrationSetup[]>([]);
   const [errors, setErrors] = useState<IError[]>([]);
   const [fileIntegrationJob, setFileIntegrationJob] = useState<NodeJS.Timeout | null>();
@@ -150,31 +150,32 @@ const Integration = () => {
 
   const validateAllSelectors = () => {
     setFieldErrors([]);
-    const errors: string[] = [];
+    const errors: { key: string; error: string }[] = [];
+
     const hasItemUrlSelector = validateJson(selectedSetup.itemUrlSelector);
-    if (!hasItemUrlSelector) {
-      errors.push('itemUrlSelector');
+    if (!hasItemUrlSelector || JSON.parse(selectedSetup.itemUrlSelector).length === 0) {
+      errors.push({ key: 'itemUrlSelector', error: 'required' });
     }
 
     const hasPreviewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
     if (!hasPreviewImagesSelector) {
-      errors.push('previewImagesSelector');
+      errors.push({ key: 'previewImagesSelector', error: 'required' });
     }
 
     const hasDescriptionSelector =
       !!selectedSetup.descriptionSelector && validateJson(selectedSetup.descriptionSelector);
     if (!hasDescriptionSelector) {
-      errors.push('descriptionSelector');
+      errors.push({ key: 'descriptionSelector', error: 'required' });
     }
 
     const hasCategorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
     if (!hasCategorySelector) {
-      errors.push('categorySelector');
+      errors.push({ key: 'categorySelector', error: 'required' });
     }
 
     const hasCategoryBinding = !!selectedSetup.categoryBinding && validateJson(selectedSetup.categoryBinding);
     if (!hasCategoryBinding) {
-      errors.push('categoryBinding');
+      errors.push({ key: 'categoryBinding', error: 'required' });
     }
 
     const hasSchemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
@@ -183,10 +184,10 @@ const Integration = () => {
       const linkSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.LINK);
       const clickSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.CLICK);
       if (!linkSelector && !clickSelector) {
-        errors.push('schemesSelector');
+        errors.push({ key: 'schemesSelector', error: 'required' });
       }
     } else {
-      errors.push('schemesSelector');
+      errors.push({ key: 'schemesSelector', error: 'required' });
     }
 
     setFieldErrors(errors);
@@ -515,7 +516,7 @@ const Integration = () => {
                 name='name'
                 fullWidth
                 onChange={(e) => setParam(e as any)}
-                error={fieldErrors.includes('name')}
+                error={fieldErrors.some((error) => error.key === 'name')}
               />
             ) : (
               <FormControl fullWidth>
@@ -544,7 +545,7 @@ const Integration = () => {
               fullWidth
               disabled={!creatingSetup}
               onChange={(e) => setParam(e as any)}
-              error={fieldErrors.includes('key')}
+              error={fieldErrors.some((error) => error.key === 'key')}
             />
           </Grid>
           <Grid item xs={2}>
@@ -606,8 +607,9 @@ const Integration = () => {
                       onChangeSelectors={(json) => handleChangeSelector('itemUrlSelector', json)}
                       leftKey='type'
                       rightKey='value'
+                      hasError={fieldErrors.some((error) => error.key === 'itemUrlSelector')}
                     />
-                    <TextField
+                    {/* <TextField
                       label='Item url selector'
                       value={selectedSetup.itemUrlSelector || ''}
                       name='itemUrlSelector'
@@ -615,8 +617,8 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('itemUrlSelector')}
-                    />
+                      error={fieldErrors.some(error => error.key === 'itemUrlSelector')}
+                    /> */}
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
@@ -627,7 +629,7 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('descriptionSelector')}
+                      error={fieldErrors.some((error) => error.key === 'descriptionSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -639,7 +641,7 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('previewImagesSelector')}
+                      error={fieldErrors.some((error) => error.key === 'previewImagesSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -651,7 +653,7 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('categorySelector')}
+                      error={fieldErrors.some((error) => error.key === 'categorySelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -663,7 +665,7 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('schemesSelector')}
+                      error={fieldErrors.some((error) => error.key === 'schemesSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -675,7 +677,7 @@ const Integration = () => {
                       multiline
                       rows={6}
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('categoryBinding')}
+                      error={fieldErrors.some((error) => error.key === 'categoryBinding')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -685,7 +687,7 @@ const Integration = () => {
                       name='author'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('author')}
+                      error={fieldErrors.some((error) => error.key === 'author')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -695,7 +697,7 @@ const Integration = () => {
                       name='authorLink'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('authorLink')}
+                      error={fieldErrors.some((error) => error.key === 'authorLink')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -705,7 +707,7 @@ const Integration = () => {
                       name='licenseType'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('licenseType')}
+                      error={fieldErrors.some((error) => error.key === 'licenseType')}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -715,7 +717,7 @@ const Integration = () => {
                       name='licenseTypeLink'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.includes('licenseTypeLink')}
+                      error={fieldErrors.some((error) => error.key === 'licenseTypeLink')}
                     />
                   </Grid>
                 </Grid>

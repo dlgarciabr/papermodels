@@ -113,6 +113,10 @@ table.content-info {
           height: 100px;
         }
       }
+
+      &--error {
+        background-color: #f9b8aa;
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import { MdAddCircle, MdRemoveCircle } from 'react-icons/md';
 import { IntegrationSelector } from 'types';
 import { ISelectorProps } from '../Selector/types';
 
-export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSelectors }: ISelectorProps) => {
+export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSelectors, hasError }: ISelectorProps) => {
   const [selectors, setSelectors] = useState<IntegrationSelector[]>([]);
 
   useEffect(() => {
@@ -71,23 +71,17 @@ export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSele
 
   return (
     <Card>
-      <CardContent className='selector-box'>
-        <Typography>{label}</Typography>
-        {
-          selectors.length === 0 ? (
-            <Grid container xs={12} justifyContent='center' alignItems='center' className='MuiGrid-container--empty'>
-              <Grid item>
-                <Button onClick={() => createEmptyLine()}>add new selector</Button>
-              </Grid>
+      <CardContent className={`selector-box ${hasError ? 'selector-box--error' : ''}`}>
+        <Typography variant='body2'>{label}</Typography>
+        {selectors.length === 0 ? (
+          <Grid container xs={12} justifyContent='center' alignItems='center' className='MuiGrid-container--empty'>
+            <Grid item>
+              <Button onClick={() => createEmptyLine()}>add new selector</Button>
             </Grid>
-          ) : (
-            // <Grid container xs={12} justifyContent='center' alignItems='start'>
-            // {
-            selectors.map((selector, index) => renderLine(selector, index))
-          )
-          // }
-          // </Grid>
-        }
+          </Grid>
+        ) : (
+          selectors.map((selector, index) => renderLine(selector, index))
+        )}
       </CardContent>
     </Card>
   );

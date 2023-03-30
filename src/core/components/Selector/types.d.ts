@@ -4,4 +4,5 @@ export interface ISelectorProps {
   onChangeSelectors: (modifiedJsonSelectors: string) => void;
   leftKey: string;
   rightKey: string;
+  hasError: boolean;
 }
