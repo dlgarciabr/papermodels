@@ -49,6 +49,7 @@ import { Routes } from '@blitzjs/next';
 import Link from 'next/link';
 import getItem from 'src/items/queries/getItem';
 import createIntegrationSetup from 'src/integration-setups/mutations/createIntegrationSetup';
+import Selector from 'src/core/components/Selector';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -74,32 +75,6 @@ const initialSetupValue = Object.freeze({
   createdAt: new Date(),
   updatedAt: new Date()
 });
-
-// interface IKeyParProps {
-//   keyA: string;
-//   keyB: string;
-//   valueA: string;
-//   valueB: string;
-// }
-
-// const renderKeyPairFromSelectorJSON = (json: string) => {
-//   if (!json) {
-//     return '';
-//   }
-//   const jsonList = JSON.parse(json) as any[];
-//   return jsonList.map(json => (
-//     <KeyPair key={getSimpleRandomKey()} keyA='type' keyB='value' valueA={json.type} valueB={json.value} />
-//   ))
-// }
-
-// const KeyPair = (props: IKeyParProps) => {
-//   return (
-//     <>
-//       {props.keyA} <input type='text' value={props.valueA} size={10} />
-//       {props.keyB} <input type='text' value={props.valueB} size={30} />
-//     </>
-//   )
-// }
 
 const Integration = () => {
   const [logs, setLogs] = useState<IntegrationLog[]>([]);
@@ -359,9 +334,13 @@ const Integration = () => {
   };
 
   const setParam = (e: ChangeEvent<HTMLInputElement>) => {
+    handleChangeSelector(e.target.name, e.target.value);
+  };
+
+  const handleChangeSelector = (selectorKey: string, jsonSelector: string) => {
     setSelectedSetup({
       ...selectedSetup,
-      [e.target.name]: e.target.value
+      [selectorKey]: jsonSelector
     });
   };
 
@@ -621,10 +600,16 @@ const Integration = () => {
               <AccordionDetails>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    {/* {renderKeyPairFromSelectorJSON(selectedSetup.itemUrlSelector)} */}
+                    <Selector
+                      label='Item url selector'
+                      jsonSelectors={selectedSetup.itemUrlSelector}
+                      onChangeSelectors={(json) => handleChangeSelector('itemUrlSelector', json)}
+                      leftKey='type'
+                      rightKey='value'
+                    />
                     <TextField
                       label='Item url selector'
-                      value={selectedSetup.itemUrlSelector}
+                      value={selectedSetup.itemUrlSelector || ''}
                       name='itemUrlSelector'
                       fullWidth
                       multiline
@@ -636,7 +621,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Description selector'
-                      value={selectedSetup.descriptionSelector}
+                      value={selectedSetup.descriptionSelector || ''}
                       name='descriptionSelector'
                       fullWidth
                       multiline
@@ -648,7 +633,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Preview images selector'
-                      value={selectedSetup.previewImagesSelector}
+                      value={selectedSetup.previewImagesSelector || ''}
                       name='previewImagesSelector'
                       fullWidth
                       multiline
@@ -660,7 +645,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Category selector'
-                      value={selectedSetup.categorySelector}
+                      value={selectedSetup.categorySelector || ''}
                       name='categorySelector'
                       fullWidth
                       multiline
@@ -672,7 +657,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Schemes selector'
-                      value={selectedSetup.schemesSelector}
+                      value={selectedSetup.schemesSelector || ''}
                       name='schemesSelector'
                       fullWidth
                       multiline
@@ -684,7 +669,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Category binding'
-                      value={selectedSetup.categoryBinding}
+                      value={selectedSetup.categoryBinding || ''}
                       name='categoryBinding'
                       fullWidth
                       multiline
@@ -696,7 +681,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Author'
-                      value={selectedSetup.author}
+                      value={selectedSetup.author || ''}
                       name='author'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
@@ -706,7 +691,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='Author link'
-                      value={selectedSetup.authorLink}
+                      value={selectedSetup.authorLink || ''}
                       name='authorLink'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
@@ -716,7 +701,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='License type'
-                      value={selectedSetup.licenseType}
+                      value={selectedSetup.licenseType || ''}
                       name='licenseType'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
@@ -726,7 +711,7 @@ const Integration = () => {
                   <Grid item xs={6}>
                     <TextField
                       label='License type link'
-                      value={selectedSetup.licenseTypeLink}
+                      value={selectedSetup.licenseTypeLink || ''}
                       name='licenseTypeLink'
                       fullWidth
                       onChange={(e) => setParam(e as any)}
