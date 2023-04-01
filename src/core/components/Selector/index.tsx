@@ -5,8 +5,18 @@ import { MdAddCircle, MdRemoveCircle } from 'react-icons/md';
 import { IntegrationSelector } from 'types';
 import { ISelectorProps } from '../Selector/types';
 
-export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSelectors, hasError }: ISelectorProps) => {
+export const Selector = ({
+  label,
+  jsonSelectors,
+  leftKey,
+  rightKey,
+  onChangeSelectors,
+  hasError = false,
+  leftXS = 2,
+  rightXS = 10
+}: ISelectorProps) => {
   const [selectors, setSelectors] = useState<IntegrationSelector[]>([]);
+  const [showError, setShowError] = useState<boolean>(false);
 
   useEffect(() => {
     if (jsonSelectors) {
@@ -18,6 +28,7 @@ export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSele
 
   const createEmptyLine = () => {
     setSelectors([...selectors, { type: '', value: '' } as any]);
+    setShowError(false);
   };
 
   const removeLine = (index: number) => {
@@ -25,6 +36,7 @@ export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSele
     selectorsToModify.splice(index, 1);
     setSelectors([...selectorsToModify]);
     onChangeSelectors(JSON.stringify(selectorsToModify));
+    setShowError(false);
   };
 
   const handleChangeSelector = (index: number, key: string, value: string) => {
@@ -32,30 +44,35 @@ export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSele
     selectorsToModify[index]![key] = value;
     setSelectors([...selectorsToModify]);
     onChangeSelectors(JSON.stringify(selectorsToModify));
+    setShowError(false);
   };
+
+  useEffect(() => {
+    setShowError(hasError);
+  }, [hasError]);
 
   const renderLine = (selector: IntegrationSelector, index: number) => (
     <Grid key={index} container spacing={0.2} rowSpacing={1} className='marginBotton5px'>
-      <Grid item xs={2}>
+      <Grid item xs={leftXS}>
         <TextField
           fullWidth
           label={leftKey}
-          value={selector.type}
+          value={selector[leftKey]}
           size='small'
           onChange={(e) => handleChangeSelector(index, leftKey, e.target.value)}
         />
       </Grid>
-      <Grid item container xs={10} alignItems='center'>
-        <Grid item xs={10}>
+      <Grid item container xs={rightXS} alignItems='center'>
+        <Grid item xs={9}>
           <TextField
             fullWidth
             label={rightKey}
-            value={selector.value}
+            value={selector[rightKey]}
             size='small'
             onChange={(e) => handleChangeSelector(index, rightKey, e.target.value)}
           />
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={3} minWidth='57px'>
           <IconButton size='small' aria-label='delete' onClick={() => removeLine(index)}>
             <MdRemoveCircle fontSize='inherit' />
           </IconButton>
@@ -71,7 +88,7 @@ export const Selector = ({ label, jsonSelectors, leftKey, rightKey, onChangeSele
 
   return (
     <Card>
-      <CardContent className={`selector-box ${hasError ? 'selector-box--error' : ''}`}>
+      <CardContent className={`selector-box ${showError ? 'selector-box--error' : ''}`}>
         <Typography variant='body2'>{label}</Typography>
         {selectors.length === 0 ? (
           <Grid container xs={12} justifyContent='center' alignItems='center' className='MuiGrid-container--empty'>

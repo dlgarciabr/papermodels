@@ -621,7 +621,7 @@ const Integration = () => {
                     /> */}
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
+                    {/* <TextField
                       label='Description selector'
                       value={selectedSetup.descriptionSelector || ''}
                       name='descriptionSelector'
@@ -630,10 +630,18 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'descriptionSelector')}
+                    /> */}
+                    <Selector
+                      label='Description selector'
+                      jsonSelectors={selectedSetup.descriptionSelector || ''}
+                      onChangeSelectors={(json) => handleChangeSelector('descriptionSelector', json)}
+                      leftKey='type'
+                      rightKey='value'
+                      hasError={fieldErrors.some((error) => error.key === 'descriptionSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
+                    {/* <TextField
                       label='Preview images selector'
                       value={selectedSetup.previewImagesSelector || ''}
                       name='previewImagesSelector'
@@ -642,10 +650,18 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'previewImagesSelector')}
+                    /> */}
+                    <Selector
+                      label='Preview images selector'
+                      jsonSelectors={selectedSetup.previewImagesSelector || ''}
+                      onChangeSelectors={(json) => handleChangeSelector('previewImagesSelector', json)}
+                      leftKey='type'
+                      rightKey='value'
+                      hasError={fieldErrors.some((error) => error.key === 'previewImagesSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
+                    {/* <TextField
                       label='Category selector'
                       value={selectedSetup.categorySelector || ''}
                       name='categorySelector'
@@ -654,10 +670,18 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'categorySelector')}
+                    /> */}
+                    <Selector
+                      label='Category selector'
+                      jsonSelectors={selectedSetup.categorySelector || ''}
+                      onChangeSelectors={(json) => handleChangeSelector('categorySelector', json)}
+                      leftKey='type'
+                      rightKey='value'
+                      hasError={fieldErrors.some((error) => error.key === 'categorySelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
+                    {/* <TextField
                       label='Schemes selector'
                       value={selectedSetup.schemesSelector || ''}
                       name='schemesSelector'
@@ -666,10 +690,18 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'schemesSelector')}
+                    /> */}
+                    <Selector
+                      label='Schemes selector'
+                      jsonSelectors={selectedSetup.schemesSelector || ''}
+                      onChangeSelectors={(json) => handleChangeSelector('schemesSelector', json)}
+                      leftKey='type'
+                      rightKey='value'
+                      hasError={fieldErrors.some((error) => error.key === 'schemesSelector')}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <TextField
+                    {/* <TextField
                       label='Category binding'
                       value={selectedSetup.categoryBinding || ''}
                       name='categoryBinding'
@@ -678,6 +710,16 @@ const Integration = () => {
                       rows={6}
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'categoryBinding')}
+                    /> */}
+                    <Selector
+                      label='Category binding'
+                      jsonSelectors={selectedSetup.categoryBinding || ''}
+                      onChangeSelectors={(json) => handleChangeSelector('categoryBinding', json)}
+                      leftKey='systemCategoryName'
+                      rightKey='pageCategoryName'
+                      leftXS={5}
+                      rightXS={7}
+                      hasError={fieldErrors.some((error) => error.key === 'categoryBinding')}
                     />
                   </Grid>
                   <Grid item xs={6}>
