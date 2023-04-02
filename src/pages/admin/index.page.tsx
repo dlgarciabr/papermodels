@@ -37,9 +37,11 @@ const UserInfo = () => {
   } else {
     return (
       <>
-        <Button variant='contained' onClick={() => router.push(Routes.SignupPage())}>
-          Sign Up
-        </Button>
+        {process.env.NODE_ENV === 'development' && (
+          <Button variant='contained' onClick={() => router.push(Routes.SignupPage())}>
+            Sign Up
+          </Button>
+        )}
         <Button variant='contained' onClick={() => router.push(Routes.LoginPage())}>
           Login
         </Button>

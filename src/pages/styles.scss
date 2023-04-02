@@ -3,7 +3,7 @@
 html,
 body,
 div#__next,
-div#__next>div {
+div#__next > div {
   height: 100%;
 }
 
@@ -100,6 +100,23 @@ table.content-info {
 
     &--clickable {
       cursor: pointer;
+    }
+  }
+
+  .MuiCardContent-root {
+    &.selector-box {
+      height: 135px;
+      overflow-y: auto;
+
+      .MuiGrid-container {
+        &--empty {
+          height: 100px;
+        }
+      }
+
+      &--error {
+        background-color: #f9b8aa;
+      }
     }
   }
 }
@@ -231,6 +248,10 @@ table.content-info {
   span {
     margin-top: 130px;
   }
+}
+
+.marginBotton5px {
+  margin-bottom: 5px;
 }
 
 .width30pc {

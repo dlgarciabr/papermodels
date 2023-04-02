@@ -33,7 +33,6 @@ import { getPdfThumbnailUrl } from 'src/utils/fileStorage';
 import CategoryCarousel from 'src/core/components/CategoryCarousel';
 import getCategoriesAnonymous from 'src/categories/queries/getCategoriesAnonymous';
 import { invoke } from '@blitzjs/rpc';
-import { categoryImage } from './categoryImage.json';
 import Loading from 'src/core/components/Loading';
 import { ISearchData } from './items/index.types';
 
@@ -81,7 +80,7 @@ const Home: BlitzPage = () => {
   const [isEmptySearchAtempt, setEmptySearchAtempt] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [categoryLoadTimes, setCategoryLoadTimes] = useState<number>(0);
+  const [categoryLoadingTimes, setCategoryLoadingTimes] = useState<number>(0);
   const search = useSearch();
   const getSugestions = useGetSugestions();
   const getItemsByCategory = useGetItemsByCategory();
@@ -108,18 +107,25 @@ const Home: BlitzPage = () => {
       const { categories } = await invoke(getCategoriesAnonymous, {
         orderBy: { name: 'asc' }
       });
+      const { categoryImages } = await import('./categoryImages.json');
       const categoriesWithImage = categories.map((category) => ({
         ...category,
-        imagePath: categoryImage.find((image) => image.categoryName === category.name)?.imageSrc || dogDefaultImage
+        imagePath: categoryImages.find((image) => image.categoryName === category.name)?.imageSrc || dogDefaultImage
       }));
       setCategories(categoriesWithImage);
     } catch (error) {
-      if (categoryLoadTimes < 5) {
-        setTimeout(loadCategories, 2000);
-        setCategoryLoadTimes(categoryLoadTimes + 1);
+      if (categoryLoadingTimes < 5) {
+        setCategoryLoadingTimes(categoryLoadingTimes + 1);
+      } else {
+        setCategories([]);
       }
     }
   };
+
+  useEffect(() => {
+    setTimeout(loadCategories, 2000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryLoadingTimes]);
 
   useEffect(() => {
     adjustSearchFieldMarginTop();
@@ -213,6 +219,9 @@ const Home: BlitzPage = () => {
       )),
     [data.items]
   );
+
+  const isHideCategories = categoryLoadingTimes >= 5 || data.items.length > 0;
+
   return (
     <Layout title='Home'>
       <Head>
@@ -301,7 +310,7 @@ const Home: BlitzPage = () => {
               <Typography>Total pages: {data.pages}</Typography>
             </Grid>
           </Grid>
-          <Grid item container xs={12} justifyContent='center' className={data.items.length > 0 ? 'hidden' : ''}>
+          <Grid item container xs={12} justifyContent='center' className={isHideCategories ? 'hidden' : ''}>
             <Grid item xs={12} className='justify-content-center height50px'>
               <Typography>or see our categories</Typography>
             </Grid>

@@ -150,6 +150,15 @@ export default api(async (req, res, _ctx) => {
     await db.$queryRaw`TRUNCATE TABLE \"public\".\"ItemIntegration\" CASCADE;`;
     await db.$queryRaw`TRUNCATE TABLE \"public\".\"UrlIntegration\";`;
 
+    const extensionsToIgnore = ['pdf', 'zip'];
+
+    const removedEndingExpressions = uniqueSiteUrls.filter(
+      (url) => !extensionsToIgnore.some((extension) => url.endsWith(extension))
+    );
+
+    console.log(`[IntegrationInitializer] ${removedEndingExpressions.length} URLs found!`);
+    console.log(`[IntegrationInitializer] Saving extracted site URLs...`);
+
     let status;
     switch (type) {
       case IntegrationProcessingType.READ_URLS:
@@ -163,10 +172,8 @@ export default api(async (req, res, _ctx) => {
         break;
     }
 
-    console.log(`[IntegrationInitializer] Saving extracted site URLs...`);
-
     await db.urlIntegration.createMany({
-      data: uniqueSiteUrls.map((url) => ({
+      data: removedEndingExpressions.map((url) => ({
         status,
         url,
         setupId: setup.id

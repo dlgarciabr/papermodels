@@ -36,6 +36,7 @@ import { shortenTextWithEllipsis } from 'src/utils/string';
 import { LoadingButton } from '@mui/lab';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -111,6 +112,7 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
 };
 
 export const Item = () => {
+  const currentUser = useCurrentUser();
   const itemId = useParam('itemId', 'number');
   const router = useContext(RouterContext);
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -167,6 +169,8 @@ export const Item = () => {
       });
     }
   };
+
+  const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
   const renderDescriptionDialog = () => {
     return (
@@ -295,7 +299,6 @@ export const Item = () => {
               <Image src={logo2.src} alt='papermodel' width='430px' height='100px' layout='fixed' className='logo' />
             </a>
           </Grid>
-          {/* <Grid container item spacing={1}> */}
           <Grid item container xs={12} md={6}>
             <Grid item xs={12}>
               <Paper variant='outlined' elevation={0} className='item-main-image'>
@@ -362,6 +365,13 @@ export const Item = () => {
                         Download all
                       </Button>
                     </Grid> */}
+                    {currentUser && (
+                      <Grid item xs={10}>
+                        <Button variant='contained' fullWidth onClick={() => goToEditPage(item!.id)}>
+                          Edit
+                        </Button>
+                      </Grid>
+                    )}
                   </Grid>
                 </Paper>
               </Grid>
@@ -370,8 +380,6 @@ export const Item = () => {
               </Grid>
             </Grid>
           </Grid>
-
-          {/* </Grid> */}
         </Grid>
       </Container>
     </>

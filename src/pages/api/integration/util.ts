@@ -58,7 +58,14 @@ export const getTextFromNodeAsString = (content: string, querySelector: string) 
  * @returns a unique list of URLs
  */
 export const getAllSiteUrls = async (url: string, key: string): Promise<string[]> => {
-  const allUrls = (await readPageUrls(url, 'a')) as string[];
+  const allUrls = ((await readPageUrls(url, 'a')) as string[]).map((foundUrl) => {
+    if (foundUrl.startsWith('/')) {
+      return `${url}${foundUrl}`;
+    } else {
+      return foundUrl;
+    }
+  });
+  allUrls.push(url);
   const removedNonDomainName = allUrls.filter((link) => !!link && link.toLowerCase().indexOf(key.toLowerCase()) > 0);
   const renamedHttpToHttps = removedNonDomainName.map((url) => url.replace('http://', 'https://'));
   const removeFinalSlash = renamedHttpToHttps.map((url) => {

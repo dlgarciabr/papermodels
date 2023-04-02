@@ -66,6 +66,7 @@ const extractPageItems = async (
 ): Promise<IPageItem[]> => {
   let pageItems: IPageItem[] = [];
   const pageContent = await fetchPageAsString(pageUrl);
+
   for await (const itemSelector of itemSelectors) {
     const itemNodes = executeSelectorAllOnHtmlText(pageContent, itemSelector.value);
     pageItems = pageItems.concat(
@@ -285,7 +286,6 @@ const processIntegration = async () => {
           categorySelectorsCache,
           categoryBindingsCache
         );
-
         items.forEach((item) => {
           if (item.url && item.url.indexOf(setup.key) < 0) {
             item.url = `${setup.domain}${item.url}`;
