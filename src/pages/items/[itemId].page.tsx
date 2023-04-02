@@ -36,6 +36,7 @@ import { shortenTextWithEllipsis } from 'src/utils/string';
 import { LoadingButton } from '@mui/lab';
 import { showToast } from 'src/core/components/Toast';
 import { ToastType } from 'src/core/components/Toast/types.d';
+import { useCurrentUser } from 'src/users/hooks/useCurrentUser';
 
 const renderContentAndUrlRow = (label: string, name: string | null, url: string | null) => {
   const renderAuthorContent = () => {
@@ -111,6 +112,7 @@ const DetailsTable = ({ item }: { item: ItemWithChildren }) => {
 };
 
 export const Item = () => {
+  const currentUser = useCurrentUser();
   const itemId = useParam('itemId', 'number');
   const router = useContext(RouterContext);
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -167,6 +169,8 @@ export const Item = () => {
       });
     }
   };
+
+  const goToEditPage = (id: number) => router.push(Routes.EditItemPage({ itemId: id }));
 
   const renderDescriptionDialog = () => {
     return (
@@ -361,6 +365,13 @@ export const Item = () => {
                         Download all
                       </Button>
                     </Grid> */}
+                    {currentUser && (
+                      <Grid item xs={10}>
+                        <Button variant='contained' fullWidth onClick={() => goToEditPage(item!.id)}>
+                          Edit
+                        </Button>
+                      </Grid>
+                    )}
                   </Grid>
                 </Paper>
               </Grid>

@@ -1,11 +1,9 @@
 import { AuthenticationError, PromiseReturnType } from 'blitz';
-import Link from 'next/link';
 import { LabeledTextField } from 'src/core/components/Form/LabeledTextField';
 import { Form, FORM_ERROR } from 'src/core/components/Form';
 import login from 'src/auth/mutations/login';
 import { Login } from 'src/auth/validations';
 import { useMutation } from '@blitzjs/rpc';
-import { Routes } from '@blitzjs/next';
 
 type LoginFormProps = {
   onSuccess?: (user: PromiseReturnType<typeof login>) => void;
@@ -37,19 +35,7 @@ export const LoginForm = (props: LoginFormProps) => {
         }}>
         <LabeledTextField name='email' label='Email' placeholder='Email' />
         <LabeledTextField name='password' label='Password' placeholder='Password' type='password' />
-        <div>
-          <Link href={Routes.ForgotPasswordPage()}>
-            <a>Forgot your password?</a>
-          </Link>
-        </div>
       </Form>
-
-      <div style={{ marginTop: '1rem' }}>
-        Or{' '}
-        <Link href={Routes.SignupPage()}>
-          <a>Sign Up</a>
-        </Link>
-      </div>
     </div>
   );
 };
