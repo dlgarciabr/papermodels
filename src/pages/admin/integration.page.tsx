@@ -50,6 +50,7 @@ import Link from 'next/link';
 import getItem from 'src/items/queries/getItem';
 import createIntegrationSetup from 'src/integration-setups/mutations/createIntegrationSetup';
 import Selector from 'src/core/components/Selector';
+import deleteIntegrationSetup from 'src/integration-setups/mutations/deleteIntegrationSetup';
 
 interface IIntegrationLogFilter {
   field: string;
@@ -94,6 +95,7 @@ const Integration = () => {
   );
   const [updateIntegrationSetupMutation] = useMutation(updateIntegrationSetup);
   const [createIntegrationSetupMutation] = useMutation(createIntegrationSetup);
+  const [deleteIntegrationSetupMutation] = useMutation(deleteIntegrationSetup);
   const [expandedAccordion, setExpandedAccordion] = useState(false);
   const [creatingSetup, setCreatingSetup] = useState<boolean>(false);
   const [replaceItems, setReplaceItems] = useState<boolean>(false);
@@ -154,29 +156,23 @@ const Integration = () => {
 
     const hasItemUrlSelector = validateJson(selectedSetup.itemUrlSelector);
     if (!hasItemUrlSelector || JSON.parse(selectedSetup.itemUrlSelector).length === 0) {
-      errors.push({ key: 'itemUrlSelector', error: 'required' });
+      errors.push({ key: 'itemUrlSelector', error: 'selector required' });
     }
 
-    const hasPreviewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
-    if (!hasPreviewImagesSelector) {
-      errors.push({ key: 'previewImagesSelector', error: 'required' });
-    }
+    // const hasPreviewImagesSelector = validateJson(selectedSetup.previewImagesSelector);
+    // if (!hasPreviewImagesSelector) {
+    //   errors.push({ key: 'previewImagesSelector', error: 'selector required' });
+    // }
 
-    const hasDescriptionSelector =
-      !!selectedSetup.descriptionSelector && validateJson(selectedSetup.descriptionSelector);
-    if (!hasDescriptionSelector) {
-      errors.push({ key: 'descriptionSelector', error: 'required' });
-    }
+    // const hasCategorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
+    // if (!hasCategorySelector) {
+    //   errors.push({ key: 'categorySelector', error: 'selector required' });
+    // }
 
-    const hasCategorySelector = !!selectedSetup.categorySelector && validateJson(selectedSetup.categorySelector);
-    if (!hasCategorySelector) {
-      errors.push({ key: 'categorySelector', error: 'required' });
-    }
-
-    const hasCategoryBinding = !!selectedSetup.categoryBinding && validateJson(selectedSetup.categoryBinding);
-    if (!hasCategoryBinding) {
-      errors.push({ key: 'categoryBinding', error: 'required' });
-    }
+    // const hasCategoryBinding = !!selectedSetup.categoryBinding && validateJson(selectedSetup.categoryBinding);
+    // if (!hasCategoryBinding) {
+    //   errors.push({ key: 'categoryBinding', error: 'selector required' });
+    // }
 
     const hasSchemesSelector = !!selectedSetup.schemesSelector && validateJson(selectedSetup.schemesSelector);
     if (hasSchemesSelector) {
@@ -184,10 +180,10 @@ const Integration = () => {
       const linkSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.LINK);
       const clickSelector = schemeSelectors.find((selector) => selector.type === IntegrationSelectorType.CLICK);
       if (!linkSelector && !clickSelector) {
-        errors.push({ key: 'schemesSelector', error: 'required' });
+        errors.push({ key: 'schemesSelector', error: 'selector required' });
       }
     } else {
-      errors.push({ key: 'schemesSelector', error: 'required' });
+      errors.push({ key: 'schemesSelector', error: 'selector required' });
     }
 
     setFieldErrors(errors);
@@ -429,8 +425,24 @@ const Integration = () => {
   };
 
   const handleClickSaveSetup = async () => {
-    await createIntegrationSetupMutation(selectedSetup);
+    await createIntegrationSetupMutation({
+      ...selectedSetup,
+      descriptionSelector: '[]',
+      itemUrlSelector: '[]',
+      previewImagesSelector: '[]',
+      categorySelector: '[]',
+      categoryBinding: '[]',
+      schemesSelector: '[]'
+    });
     showToast(ToastType.SUCCESS, 'Setup created!');
+    setSelectedSetup({ ...initialSetupValue });
+    setCreatingSetup(false);
+    void loadSetups();
+  };
+
+  const handleClickDeleteSetup = async () => {
+    await deleteIntegrationSetupMutation({ id: selectedSetup.id });
+    showToast(ToastType.SUCCESS, 'Setup deleted!');
     setSelectedSetup({ ...initialSetupValue });
     setCreatingSetup(false);
     void loadSetups();
@@ -508,7 +520,7 @@ const Integration = () => {
       </Link>
       <Container component='main'>
         <Grid container spacing={2}>
-          <Grid item xs={5}>
+          <Grid item xs={4}>
             {creatingSetup ? (
               <TextField
                 label='Setup name'
@@ -517,6 +529,7 @@ const Integration = () => {
                 fullWidth
                 onChange={(e) => setParam(e as any)}
                 error={fieldErrors.some((error) => error.key === 'name')}
+                size='small'
               />
             ) : (
               <FormControl fullWidth>
@@ -527,6 +540,7 @@ const Integration = () => {
                   name='selectedSetup'
                   placeholder='Setup'
                   fullWidth
+                  size='small'
                   onChange={(e) => handleSelectSetup(Number(e.target.value))}>
                   {integrationSetups.map((item) => (
                     <MenuItem key={Math.random().toString(36).substring(2, 15)} value={item.id}>
@@ -537,18 +551,18 @@ const Integration = () => {
               </FormControl>
             )}
           </Grid>
-          <Grid item xs={5}>
+          <Grid item xs={4}>
             <TextField
               label='Setup key'
               value={selectedSetup.key}
               name='key'
               fullWidth
-              disabled={!creatingSetup}
               onChange={(e) => setParam(e as any)}
               error={fieldErrors.some((error) => error.key === 'key')}
+              size='small'
             />
           </Grid>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Button
               onClick={() => {
                 setSelectedSetup({ ...initialSetupValue });
@@ -561,6 +575,9 @@ const Integration = () => {
             <Button onClick={() => handleClickSaveSetup()} variant='outlined' disabled={!creatingSetup}>
               Save
             </Button>
+            <Button onClick={() => handleClickDeleteSetup()} variant='outlined' disabled={creatingSetup}>
+              Delete
+            </Button>
           </Grid>
           <Grid item xs={6}>
             <TextField
@@ -569,6 +586,7 @@ const Integration = () => {
               value={selectedSetup.domain}
               name='domain'
               onChange={(e) => setParam(e as any)}
+              size='small'
             />
           </Grid>
           <Grid item xs={6}>
@@ -578,6 +596,7 @@ const Integration = () => {
               value={itemName}
               name='itemName'
               onChange={(e) => setItemName(e.target.value)}
+              size='small'
             />
           </Grid>
           <Grid item xs={12}>
@@ -608,29 +627,10 @@ const Integration = () => {
                       leftKey='type'
                       rightKey='value'
                       hasError={fieldErrors.some((error) => error.key === 'itemUrlSelector')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'itemUrlSelector')?.error}
                     />
-                    {/* <TextField
-                      label='Item url selector'
-                      value={selectedSetup.itemUrlSelector || ''}
-                      name='itemUrlSelector'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some(error => error.key === 'itemUrlSelector')}
-                    /> */}
                   </Grid>
                   <Grid item xs={6}>
-                    {/* <TextField
-                      label='Description selector'
-                      value={selectedSetup.descriptionSelector || ''}
-                      name='descriptionSelector'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some((error) => error.key === 'descriptionSelector')}
-                    /> */}
                     <Selector
                       label='Description selector'
                       jsonSelectors={selectedSetup.descriptionSelector || ''}
@@ -638,19 +638,10 @@ const Integration = () => {
                       leftKey='type'
                       rightKey='value'
                       hasError={fieldErrors.some((error) => error.key === 'descriptionSelector')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'descriptionSelector')?.error}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    {/* <TextField
-                      label='Preview images selector'
-                      value={selectedSetup.previewImagesSelector || ''}
-                      name='previewImagesSelector'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some((error) => error.key === 'previewImagesSelector')}
-                    /> */}
                     <Selector
                       label='Preview images selector'
                       jsonSelectors={selectedSetup.previewImagesSelector || ''}
@@ -658,19 +649,10 @@ const Integration = () => {
                       leftKey='type'
                       rightKey='value'
                       hasError={fieldErrors.some((error) => error.key === 'previewImagesSelector')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'previewImagesSelector')?.error}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    {/* <TextField
-                      label='Category selector'
-                      value={selectedSetup.categorySelector || ''}
-                      name='categorySelector'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some((error) => error.key === 'categorySelector')}
-                    /> */}
                     <Selector
                       label='Category selector'
                       jsonSelectors={selectedSetup.categorySelector || ''}
@@ -678,19 +660,10 @@ const Integration = () => {
                       leftKey='type'
                       rightKey='value'
                       hasError={fieldErrors.some((error) => error.key === 'categorySelector')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'categorySelector')?.error}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    {/* <TextField
-                      label='Schemes selector'
-                      value={selectedSetup.schemesSelector || ''}
-                      name='schemesSelector'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some((error) => error.key === 'schemesSelector')}
-                    /> */}
                     <Selector
                       label='Schemes selector'
                       jsonSelectors={selectedSetup.schemesSelector || ''}
@@ -698,19 +671,10 @@ const Integration = () => {
                       leftKey='type'
                       rightKey='value'
                       hasError={fieldErrors.some((error) => error.key === 'schemesSelector')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'schemesSelector')?.error}
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    {/* <TextField
-                      label='Category binding'
-                      value={selectedSetup.categoryBinding || ''}
-                      name='categoryBinding'
-                      fullWidth
-                      multiline
-                      rows={6}
-                      onChange={(e) => setParam(e as any)}
-                      error={fieldErrors.some((error) => error.key === 'categoryBinding')}
-                    /> */}
                     <Selector
                       label='Category binding'
                       jsonSelectors={selectedSetup.categoryBinding || ''}
@@ -720,6 +684,7 @@ const Integration = () => {
                       leftXS={5}
                       rightXS={7}
                       hasError={fieldErrors.some((error) => error.key === 'categoryBinding')}
+                      errorMessage={fieldErrors.find((error) => error.key === 'categoryBinding')?.error}
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -730,6 +695,7 @@ const Integration = () => {
                       fullWidth
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'author')}
+                      size='small'
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -740,6 +706,7 @@ const Integration = () => {
                       fullWidth
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'authorLink')}
+                      size='small'
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -750,6 +717,7 @@ const Integration = () => {
                       fullWidth
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'licenseType')}
+                      size='small'
                     />
                   </Grid>
                   <Grid item xs={6}>
@@ -760,6 +728,7 @@ const Integration = () => {
                       fullWidth
                       onChange={(e) => setParam(e as any)}
                       error={fieldErrors.some((error) => error.key === 'licenseTypeLink')}
+                      size='small'
                     />
                   </Grid>
                 </Grid>
@@ -846,6 +815,7 @@ const Integration = () => {
               label='Field'
               value={filter.field}
               onChange={(e) => setFilter({ ...filter, field: e.target.value })}
+              size='small'
             />
           </Grid>
           <Grid item xs={5}>
@@ -854,6 +824,7 @@ const Integration = () => {
               label='Value'
               value={filter.value}
               onChange={(e) => setFilter({ ...filter, value: e.target.value })}
+              size='small'
             />
           </Grid>
           <Grid item xs={2}>

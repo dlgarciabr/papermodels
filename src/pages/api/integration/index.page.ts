@@ -252,7 +252,11 @@ const processItemIntegration = async () => {
         for await (const node of previewImageNodes) {
           const src = node.getAttribute('src');
           if (src) {
-            if (!isSimulation) {
+            if (isSimulation) {
+              files.push({
+                storagePath: src
+              } as UploadItemFile);
+            } else {
               console.log(`[ItemIntegrationJOB] Uploading preview image ${src}...`);
               try {
                 const response = await uploadImage(src, `${ARTIFACTS_PATH}/${item!.id}`);

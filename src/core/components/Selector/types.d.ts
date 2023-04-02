@@ -5,6 +5,7 @@ export interface ISelectorProps {
   leftKey: string;
   rightKey: string;
   hasError?: boolean;
+  errorMessage?: string;
   leftXS?: number;
   rightXS?: number;
 }
