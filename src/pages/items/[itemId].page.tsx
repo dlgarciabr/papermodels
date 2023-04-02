@@ -295,7 +295,6 @@ export const Item = () => {
               <Image src={logo2.src} alt='papermodel' width='430px' height='100px' layout='fixed' className='logo' />
             </a>
           </Grid>
-          {/* <Grid container item spacing={1}> */}
           <Grid item container xs={12} md={6}>
             <Grid item xs={12}>
               <Paper variant='outlined' elevation={0} className='item-main-image'>
@@ -370,8 +369,6 @@ export const Item = () => {
               </Grid>
             </Grid>
           </Grid>
-
-          {/* </Grid> */}
         </Grid>
       </Container>
     </>
