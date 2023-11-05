@@ -357,7 +357,7 @@ export const Item = () => {
                         startIcon={<MdDownload />}
                         disabled={!item || !hasFileType(FileType.instruction, item?.files!)}
                         onClick={() => void handleClickDownloadFile(FileType.instruction)}>
-                        Download instrunctions
+                        Download instructions
                       </LoadingButton>
                     </Grid>
                     {/* <Grid item xs={10}>

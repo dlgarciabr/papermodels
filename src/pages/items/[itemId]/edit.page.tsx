@@ -24,7 +24,7 @@ import { ToastType } from 'src/core/components/Toast/types.d';
 import Loading from 'src/core/components/Loading';
 import { UpdateItemValidation } from 'src/items/schemas';
 import { ItemWithChildren } from 'types';
-import { Button, Checkbox } from '@mui/material';
+import { Button, Checkbox, Container, Grid, TextField } from '@mui/material';
 import { DropzoneProps } from 'src/core/components/Dropzone/types';
 
 const Files = (props: {
@@ -78,6 +78,7 @@ export const EditItem = () => {
   const router = useContext(RouterContext);
   const itemId = useParam('itemId', 'number') as number;
   const [isLoading, setLoading] = useState<boolean>(false);
+  const [filesUrls, setFilesUrls] = useState<string[]>([]);
   const [item, queryResult] = useQuery(
     getItem,
     { id: itemId },
@@ -168,13 +169,25 @@ export const EditItem = () => {
     validateFiles: isSaving
   };
 
+  const addNewFileUrl = () => {
+    const filesUrlsToChange = [...filesUrls];
+    filesUrlsToChange.push('');
+    setFilesUrls(filesUrlsToChange);
+  };
+
+  const handleChangeFileUrl = (index: number, value: string) => {
+    const filesUrlsToChange = [...filesUrls];
+    filesUrlsToChange[index] = value;
+    setFilesUrls(filesUrlsToChange);
+  };
+
   return (
     <>
       <Head>
         <title>Edit Item {item.id}</title>
       </Head>
       <Loading visible={isLoading} />
-      <div>
+      <Container component='main'>
         <h1>Edit Item {item.name}</h1>
         <ItemForm
           submitText='Update Item'
@@ -226,13 +239,21 @@ export const EditItem = () => {
         ) : (
           ''
         )}
+        <a onClick={addNewFileUrl}>add files urls</a>
+        <Grid container>
+          {filesUrls.map((fileUrl, index) => (
+            <Grid item xs={12} key={getSimpleRandomKey()}>
+              <TextField size='small' value={fileUrl} onChange={(e) => handleChangeFileUrl(index, e.target.value)} />
+            </Grid>
+          ))}
+        </Grid>
         <button type='button' onClick={() => goToPreviewPage(item.id)} style={{ marginLeft: '0.5rem' }}>
           preview
         </button>
         <button disabled={filesToUpload.length === 0} onClick={handleClickSaveFiles}>
           Save files
         </button>
-      </div>
+      </Container>
     </>
   );
 };

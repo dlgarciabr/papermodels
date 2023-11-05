@@ -960,7 +960,7 @@ describe('Item viewing', () => {
     render(<Item />);
 
     // action
-    const schemesDownloadButton = screen.getByText('Download instrunctions');
+    const schemesDownloadButton = screen.getByText('Download instructions');
     expect(schemesDownloadButton).toBeInTheDocument();
 
     await userEvent.click(schemesDownloadButton);

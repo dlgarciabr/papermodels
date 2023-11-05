@@ -50,7 +50,6 @@ Blitz comes with a powerful CLI that is designed to make development easy and fa
   start     Start a production server
   export    Export your Blitz app as a static application
   prisma    Run prisma commands
-  * blitz prisma migrate reset //clean data from database
   * blitz prisma studio
   * blitz db seed
   * blitz prisma migrate dev    Upgrade your database
